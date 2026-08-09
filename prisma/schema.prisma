@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  players   Player[]
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  hostId          String
+  status          String   @default("waiting") // waiting, playing, finished
+  phase           String   @default("lobby")    // lobby, night, day, voting, game_over
+  dayCount        Int      @default(0)
+  hostMode        String   @default("auto")    // auto, direct, hybrid
+  hostIsPlayer    Boolean  @default(false)
+  config          String   @default("{}")       // JSON: role config
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  players         Player[]
+  nightActions    NightAction[]
+  chatMessages    ChatMessage[]
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  username  String
+  role      String   @default("") // werewolf, villager, seer, witch, guard, hunter, cupid, white_werewolf
+  isAlive   Boolean  @default(true)
+  isReady   Boolean  @default(false)
+  seatIndex Int      @default(0)
+  joinedAt  DateTime @default(now())
+
+  @@unique([roomId, userId])
+}
+
+model NightAction {
+  id         String   @id @default(cuid())
+  roomId     String
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  dayCount   Int
+  actorId    String
+  actionType String   // wolf_bite, seer_check, witch_save, witch_poison, guard_protect, cupid_link
+  targetId   String?
+  extraData  String   @default("{}") // JSON for additional info
+  createdAt  DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId  String
+  senderName String
+  content   String
+  msgType   String   @default("public") // public, dead, wolf, system
+  phase     String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model GameLog {
+  id        String   @id @default(cuid())
+  roomId    String
+  dayCount  Int
+  event     String   // phase_change, death, save, vote_result, game_end
+  detail    String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+}
