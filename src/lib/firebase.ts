@@ -8,9 +8,19 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app'
 import { getAuth, type Auth } from 'firebase/auth'
 import { getFirestore, type Firestore } from 'firebase/firestore'
 
+// authDomain: dùng CHÍNH domain đang chạy app (same-origin — /__/auth/* được
+// next.config.ts proxy về firebaseapp.com). Fix Google sign-in bị trình duyệt
+// chặn third-party storage khi authDomain khác origin. SSR fallback về env.
+// Yêu cầu: domain app phải có trong Authorized redirect URIs của OAuth client
+// (GCP Console → Credentials) dạng https://<domain>/__/auth/handler.
+const sameOriginAuthDomain =
+  typeof window !== 'undefined' && process.env.NEXT_PUBLIC_AUTH_SAME_ORIGIN === '1'
+    ? window.location.host
+    : process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  authDomain: sameOriginAuthDomain,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,

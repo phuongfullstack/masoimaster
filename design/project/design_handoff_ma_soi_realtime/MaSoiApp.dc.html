@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@keyframes msPulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes msGlow{0%,100%{box-shadow:0 0 0 1px #A7C5EB,0 0 14px -2px rgba(167,197,235,.35)}50%{box-shadow:0 0 0 1px #A7C5EB,0 0 26px 2px rgba(167,197,235,.6)}}
+@keyframes msFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes msSpin{to{transform:rotate(360deg)}}
+@keyframes msRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes msBar{0%{width:12%}50%{width:74%}100%{width:96%}}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;gap:14px;font-family:'Be Vietnam Pro',system-ui,sans-serif">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+<div style="height:100%;box-sizing:border-box;padding:{{ rootPad }};overflow:hidden;position:relative;color:#FFFFFE;font-family:'Be Vietnam Pro',system-ui,sans-serif;-webkit-font-smoothing:antialiased">
+<div style="position:absolute;inset:0;z-index:0;background:{{ bgGradient }}"></div>
+<div style="position:absolute;inset:0;z-index:0;opacity:{{ starsOpacity }};background-image:radial-gradient(1.2px 1.2px at 18% 12%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 62% 8%,rgba(255,255,255,.5),transparent),radial-gradient(1.4px 1.4px at 84% 22%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 34% 30%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 74% 44%,rgba(255,255,255,.35),transparent),radial-gradient(1.2px 1.2px at 8% 52%,rgba(255,255,255,.4),transparent)"></div>
+<div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column">
+
+<!-- ══════════ LOGIN ══════════ -->
+<sc-if value="{{ sLogin }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 30px">
+<div style="text-align:center;margin-bottom:38px">
+<div style="font-size:56px;line-height:1;filter:drop-shadow(0 0 22px rgba(167,197,235,.55));animation:msFloat 6s ease-in-out infinite">🌙</div>
+<div style="margin-top:18px;font-size:31px;font-weight:800;letter-spacing:.16em;color:#FFFFFE">MA SÓI</div>
+<div style="margin-top:5px;font-size:11px;font-weight:600;letter-spacing:.42em;color:#A7C5EB">REALTIME</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px;background:#1A1825;border:1px solid #2E2B3F;border-radius:16px;padding:15px 16px">
+<span style="font-size:15px;opacity:.5">👤</span>
+<input value="{{ username }}" onChange="{{ onName }}" placeholder="{{ t.nickPh }}" style="flex:1;background:transparent;border:0;outline:none;color:#FFFFFE;font-size:15px;font-family:'Be Vietnam Pro',system-ui;font-weight:500" />
+</div>
+<button onClick="{{ goHome }}" style="height:50px;border:0;border-radius:16px;background:#A7C5EB;color:#0F0E17;font-size:15px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 24px -6px rgba(167,197,235,.7)" style-hover="background:#8FB3DE">{{ t.enter }} <span style="font-size:17px">→</span></button>
+</div>
+<div style="display:flex;align-items:center;gap:12px;margin:26px 0 14px">
+<div style="flex:1;height:1px;background:#2E2B3F"></div>
+<div style="font-size:11px;color:#94A1B2">{{ t.orSso }}</div>
+<div style="flex:1;height:1px;background:#2E2B3F"></div>
+</div>
+<div style="display:flex;gap:10px">
+<button style="flex:1;height:46px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#94A1B2;font-size:13px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="border-color:#A7C5EB;color:#FFFFFE"><span style="width:18px;height:18px;border-radius:50%;background:#fff;color:#0F0E17;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">G</span>Google</button>
+<button style="flex:1;height:46px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#94A1B2;font-size:13px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="border-color:#A7C5EB;color:#FFFFFE"><span style="width:18px;height:18px;border-radius:50%;background:#5865F2;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">D</span>Discord</button>
+</div>
+</div>
+<div style="text-align:center;font-size:10.5px;color:#4A5568;padding-bottom:4px">v1.0 · Powered by Supabase</div>
+</sc-if>
+
+<!-- ══════════ HOME ══════════ -->
+<sc-if value="{{ sHome }}" hint-placeholder-val="{{ false }}">
+<div style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex:none">
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:19px">🌙</span><span style="font-size:15px;font-weight:800;letter-spacing:.1em">MA SÓI</span></div>
+<div style="display:flex;align-items:center;gap:8px;background:#1A1825;border:1px solid #2E2B3F;border-radius:9999px;padding:5px 12px 5px 5px">
+<span style="width:24px;height:24px;border-radius:50%;background:#3B3264;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">B</span>
+<span style="font-size:12px;font-weight:600;color:#94A1B2">{{ username }}</span>
+</div>
+</div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:8px 20px 20px;display:flex;flex-direction:column;gap:22px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<button onClick="{{ createRoom }}" style="text-align:left;border:1px solid #A7C5EB;border-radius:20px;background:linear-gradient(160deg,#1F2233,#1A1825);padding:18px 16px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE;animation:msGlow 3.5s ease-in-out infinite">
+<div style="font-size:24px;margin-bottom:26px">＋</div>
+<div style="font-size:14px;font-weight:700">{{ t.createRoom }}</div>
+<div style="font-size:11px;color:#A7C5EB;margin-top:2px">{{ t.createSub }}</div>
+</button>
+<button onClick="{{ joinRoom }}" style="text-align:left;border:1px solid #2E2B3F;border-radius:20px;background:#1A1825;padding:18px 16px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE" style-hover="background:#232136;border-color:#A7C5EB">
+<div style="font-size:22px;margin-bottom:28px">⌕</div>
+<div style="font-size:14px;font-weight:700">{{ t.joinRoom }}</div>
+<div style="font-size:11px;color:#94A1B2;margin-top:2px">{{ t.joinSub }}</div>
+</button>
+</div>
+<div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#94A1B2;text-transform:uppercase;margin-bottom:10px">{{ t.recent }}</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ rooms }}" as="r" hint-placeholder-count="2">
+<button onClick="{{ r.open }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#1A1825;border:1px solid #2E2B3F;border-radius:18px;padding:13px 14px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE" style-hover="background:#232136;border-color:#3B3A52">
+<span style="width:38px;height:38px;border-radius:12px;background:#232136;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none">🐺</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:13.5px;font-weight:700">{{ r.name }}</span>
+<span style="display:block;font-size:11px;color:#94A1B2;margin-top:1px">{{ r.status }}</span>
+</span>
+<span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none">
+<span style="font-size:12px;font-weight:700;color:#A7C5EB">{{ r.count }}</span>
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:9999px;background:{{ r.badgeBg }};color:{{ r.badgeFg }}">{{ r.badge }}</span>
+</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div style="background:#1A1825;border:1px solid #2E2B3F;border-radius:20px;padding:16px">
+<div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#94A1B2;margin-bottom:12px"><span>📊</span>{{ t.stats }}</div>
+<div style="display:flex;justify-content:space-between">
+<div><div style="font-size:22px;font-weight:800">12</div><div style="font-size:10.5px;color:#94A1B2">{{ t.matches }}</div></div>
+<div><div style="font-size:22px;font-weight:800;color:#38A169">7</div><div style="font-size:10.5px;color:#94A1B2">{{ t.wins }}</div></div>
+<div><div style="font-size:22px;font-weight:800;color:#A7C5EB">67%</div><div style="font-size:10.5px;color:#94A1B2">{{ t.winRate }}</div></div>
+</div>
+<div style="margin-top:12px;height:5px;border-radius:9999px;background:#0F0E17;overflow:hidden"><div style="height:100%;width:67%;border-radius:9999px;background:linear-gradient(90deg,#38A169,#A7C5EB)"></div></div>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ LOBBY ══════════ -->
+<sc-if value="{{ sLobby }}" hint-placeholder-val="{{ false }}">
+<div style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex:none;border-bottom:1px solid #2E2B3F">
+<button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:0;color:#94A1B2;font-size:13px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">← {{ t.back }}</button>
+<button onClick="{{ copyCode }}" style="display:flex;align-items:center;gap:7px;background:#1A1825;border:1px solid #2E2B3F;border-radius:9999px;padding:6px 12px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui">
+<span style="font-size:12.5px;font-weight:800;letter-spacing:.12em;color:#A7C5EB">#A3F2</span><span style="font-size:11px;opacity:.6">📋</span>
+</button>
+</div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:16px 18px 12px;display:flex;flex-direction:column;gap:18px">
+<div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#94A1B2;text-transform:uppercase">{{ t.config }}</div>
+<span style="font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:9999px;background:rgba(236,201,75,.14);color:#ECC94B">👑 HOST</span>
+</div>
+<button onClick="{{ openConfig }}" style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#1A1825;border:1px solid #2E2B3F;border-radius:18px;padding:14px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE;text-align:left" style-hover="border-color:#A7C5EB">
+<div><div style="font-size:15px;font-weight:700">8 {{ t.people }}</div><div style="font-size:10.5px;color:#94A1B2">{{ t.preset }}</div></div>
+<div><div style="font-size:15px;font-weight:700;color:#E53E3E">{{ wolfCount }} {{ t.wolves }}</div><div style="font-size:10.5px;color:#38A169">✓ {{ t.balanced }} · {{ t.tapToEdit }}</div></div>
+</button>
+</div>
+<div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#94A1B2;text-transform:uppercase">{{ t.players }}</div>
+<div style="font-size:12px;font-weight:800;color:#A7C5EB">{{ readyLabel }}</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+<sc-for list="{{ lobbyPlayers }}" as="p" hint-placeholder-count="8">
+<div style="background:#1A1825;border:1px solid #2E2B3F;border-radius:16px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;animation:msRise .4s ease-out both">
+<span style="position:relative;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:{{ p.avatarBg }};color:#FFFFFE">{{ p.initial }}
+<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#38A169;border:2px solid #1A1825;animation:msPulse 2s ease-in-out infinite"></span>
+<span style="position:absolute;top:-7px;right:-6px;font-size:11px;opacity:{{ p.hostOpacity }}">👑</span>
+</span>
+<span style="font-size:10px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+<span style="font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:9999px;background:{{ p.readyBg }};color:{{ p.readyFg }}">{{ p.readyText }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+<div style="flex:none;padding:0 18px;display:flex;flex-direction:column;gap:10px">
+<button onClick="{{ startGame }}" style="height:52px;border:0;border-radius:18px;background:linear-gradient(100deg,#A7C5EB,#C9DDF3);color:#0F0E17;font-size:15px;font-weight:800;letter-spacing:.04em;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 28px -6px rgba(167,197,235,.75)">🐺 {{ t.startGame }}</button>
+<div style="display:flex;gap:9px">
+<button onClick="{{ copyCode }}" style="flex:1;height:42px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#A7C5EB;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB">📋 {{ t.copyCode }}</button>
+<button style="flex:1;height:42px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#A7C5EB;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB">📤 {{ t.share }}</button>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:10.5px;color:#94A1B2"><span style="width:6px;height:6px;border-radius:50%;background:#38A169;animation:msPulse 2s ease-in-out infinite"></span>{{ onlineLabel }}</div>
+</div>
+</sc-if>
+
+<!-- ══════════ PHÁT THẺ BÀI ══════════ -->
+<sc-if value="{{ sDeal }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;padding:10px 24px 6px">
+<div style="text-align:center;font-size:13px;font-weight:800;letter-spacing:.2em;color:#A7C5EB">{{ t.dealTitle }}</div>
+<div style="margin-top:6px;text-align:center;font-size:11.5px;color:#94A1B2">{{ t.dealing }}</div>
+<div style="margin-top:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:11px">
+<sc-for list="{{ dealCards }}" as="c" hint-placeholder-count="8">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+<div style="{{ c.style }}">{{ c.mark }}
+<span style="position:absolute;inset:5px;border-radius:9px;border:1px solid rgba(167,197,235,.14)"></span>
+</div>
+<span style="font-size:9px;font-weight:600;color:#94A1B2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.label }}</span>
+</div>
+</sc-for>
+</div>
+<div style="margin-top:26px;text-align:center;font-size:14px;font-weight:700;line-height:1.5">{{ t.dealReady }}</div>
+<div style="margin-top:14px;display:flex;align-items:flex-start;gap:9px;background:rgba(236,201,75,.09);border:1px solid rgba(236,201,75,.35);border-radius:14px;padding:11px 13px">
+<span style="font-size:13px">⚠️</span><span style="font-size:11.5px;line-height:1.55;color:#ECC94B;text-wrap:pretty">{{ t.dealWarn }}</span>
+</div>
+<button onClick="{{ toReveal }}" style="margin-top:auto;margin-bottom:6px;height:52px;border:0;border-radius:18px;background:#A7C5EB;color:#0F0E17;font-size:15px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 28px -6px rgba(167,197,235,.75)">🎴 {{ t.flipMine }}</button>
+</div>
+</sc-if>
+
+<!-- ══════════ ROLE REVEAL ══════════ -->
+<sc-if value="{{ sReveal }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 26px">
+<div onPointerDown="{{ peekOn }}" onPointerUp="{{ peekOff }}" onPointerLeave="{{ peekOff }}" style="{{ revealCardStyle }}">
+<div style="font-size:48px;line-height:1;filter:drop-shadow(0 0 20px rgba(167,197,235,.45))">{{ peekOpen }}</div>
+<div style="{{ secretReveal }}">
+<div style="font-size:24px;font-weight:800;letter-spacing:.05em">{{ myRoleName }}</div>
+<div style="display:inline-block;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.1em;padding:4px 12px;border-radius:9999px;background:{{ roleBorder }};color:#0F0E17">{{ myFactionName }}</div>
+<div style="margin-top:13px;font-size:12.5px;line-height:1.65;color:rgba(255,255,254,.72);text-wrap:pretty">{{ myRoleDesc }}</div>
+<sc-if value="{{ showBadges }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;justify-content:center;gap:8px;margin-top:13px">
+<sc-for list="{{ roleBadges }}" as="b" hint-placeholder-count="2">
+<span style="font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:9999px;background:{{ b.bg }};border:1px solid {{ b.bd }};color:{{ b.fg }}">{{ b.text }}</span>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ showTeam }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:15px;padding-top:13px;border-top:1px solid rgba(167,197,235,.18)">
+<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,254,.5);margin-bottom:9px">{{ t.teammates }}</div>
+<div style="display:flex;justify-content:center;gap:7px;flex-wrap:wrap">
+<sc-for list="{{ teamPills }}" as="m" hint-placeholder-count="2">
+<span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 11px 5px 5px;border-radius:9999px;background:rgba(255,255,255,.06);border:1px solid #353251">
+<span style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:{{ m.avatarBg }}">{{ m.initial }}</span>{{ m.name }}
+</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:13px;font-size:11px;line-height:1.55;color:{{ roleBorder }};background:rgba(0,0,0,.28);border-radius:11px;padding:9px 11px;text-wrap:pretty">⚑ {{ myRoleNote }}</div>
+</sc-if>
+</div>
+<div style="margin-top:18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,254,.5)">{{ peekHint }}</div>
+</div>
+<div style="margin-top:18px;display:flex;align-items:flex-start;gap:9px;background:rgba(236,201,75,.09);border:1px solid rgba(236,201,75,.35);border-radius:14px;padding:11px 13px">
+<span style="font-size:13px">⚠️</span><span style="font-size:11.5px;line-height:1.55;color:#ECC94B">{{ t.peekWarn }}</span>
+</div>
+<button onClick="{{ toNight }}" style="margin-top:12px;height:46px;border:1px solid #2E2B3F;border-radius:16px;background:transparent;color:#94A1B2;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.continue }} →</button>
+</div>
+</sc-if>
+
+<!-- ══════════ NIGHT ══════════ -->
+<sc-if value="{{ sNight }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;padding:4px 20px 12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap"><span style="font-size:17px">🌙</span><span style="font-size:13.5px;font-weight:800;letter-spacing:.1em">{{ nightLabel }}</span>
+<span style="flex:none;font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:9999px;background:rgba(167,197,235,.1);border:1px solid rgba(167,197,235,.26);color:#7E93AF">{{ modeBadge }}</span></div>
+<div style="display:flex;align-items:center;gap:5px;background:rgba(229,62,62,.14);border:1px solid rgba(229,62,62,.35);border-radius:9999px;padding:4px 11px"><span style="font-size:10px">⏱</span><span style="font-size:12px;font-weight:800;color:#E53E3E;font-variant-numeric:tabular-nums">{{ timerLabel }}</span></div>
+</div>
+<div style="margin-top:10px;height:3px;border-radius:9999px;background:#1A1825;overflow:hidden"><div style="height:100%;border-radius:9999px;background:linear-gradient(90deg,#A7C5EB,#9F7AEA);width:{{ timerPct }}"></div></div>
+</div>
+
+<sc-if value="{{ nWaiting }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;padding:0 20px">
+<div style="text-align:center;padding:22px 0 26px"><div style="font-size:64px;line-height:1;filter:drop-shadow(0 0 30px rgba(167,197,235,.35));animation:msFloat 7s ease-in-out infinite">🌑</div></div>
+<sc-if value="{{ seqMode }}" hint-placeholder-val="{{ true }}">
+<div style="text-align:center;font-size:16px;font-weight:700;letter-spacing:.04em;margin-bottom:6px">{{ t.nightRunning }}</div>
+<div style="text-align:center;font-size:12px;line-height:1.6;color:#94A1B2;text-wrap:pretty;padding:0 6px">{{ t.nightAnon }}</div>
+<div style="display:flex;justify-content:center;gap:9px;margin-top:20px">
+<sc-for list="{{ nightSlots }}" as="s" hint-placeholder-count="4">
+<span style="width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;background:{{ s.bg }};border:1px solid {{ s.bd }};color:{{ s.fg }}">{{ s.mark }}</span>
+</sc-for>
+</div>
+<div style="text-align:center;margin-top:11px;font-size:11px;font-weight:700;color:#4A5568">{{ actedLabel }}</div>
+</sc-if>
+<sc-if value="{{ simMode }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;font-size:16px;font-weight:700;letter-spacing:.04em;margin-bottom:6px">{{ t.simRunning }}</div>
+<div style="text-align:center;font-size:12px;line-height:1.6;color:#94A1B2;text-wrap:pretty;padding:0 6px">{{ t.simAnon }}</div>
+<div style="margin-top:20px;height:8px;border-radius:9999px;background:#1A1825;overflow:hidden"><div style="height:100%;width:62%;border-radius:9999px;background:linear-gradient(90deg,#A7C5EB,#9F7AEA)"></div></div>
+<div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:#4A5568">{{ simDoneLabel }}</div>
+</sc-if>
+<div style="margin-top:auto;margin-bottom:6px;border-top:1px solid #2E2B3F;padding-top:14px;display:flex;align-items:center;gap:12px">
+<span style="width:44px;height:44px;border-radius:14px;background:#211E30;border:1px solid #353251;display:flex;align-items:center;justify-content:center;font-size:17px">🎴</span>
+<div style="flex:1"><div style="font-size:10.5px;color:#94A1B2">{{ t.yourRole }}</div><div style="font-size:15px;font-weight:800;letter-spacing:.24em;color:#4A5568">{{ t.hiddenRole }}</div></div>
+<div style="display:flex;align-items:center;gap:7px"><span style="width:13px;height:13px;border:2px solid #2E2B3F;border-top-color:#A7C5EB;border-radius:50%;display:inline-block;animation:msSpin .9s linear infinite"></span><span style="font-size:10.5px;color:#94A1B2">{{ t.waitTurn }}</span></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ nTurn }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:0 20px">
+<div style="display:flex;align-items:center;gap:11px;border-radius:16px;padding:12px 14px;background:linear-gradient(100deg,rgba(167,197,235,.14),transparent);border:1px solid rgba(167,197,235,.5);animation:msGlow 3s ease-in-out infinite">
+<span style="font-size:22px">🌙</span>
+<div><div style="font-size:14px;font-weight:800;letter-spacing:.06em">{{ t.yourTurnPlain }}</div><div style="font-size:10.5px;color:#7E93AF;font-weight:500">{{ t.holdToCheck }}</div></div>
+</div>
+
+<sc-if value="{{ isWolfTurn }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:11px;background:rgba(255,255,255,.04);border:1px solid #353251;border-radius:14px;padding:10px 12px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+<span style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#7E93AF">{{ t.packLive }}</span>
+<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:#94A1B2"><span style="width:5px;height:5px;border-radius:50%;background:#38A169;animation:msPulse 1.6s ease-in-out infinite"></span>realtime</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ packStatus }}" as="w" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:8px;font-size:11px">
+<span style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:{{ w.avatarBg }}">{{ w.initial }}</span>
+<span style="font-weight:700">{{ w.name }}</span>
+<span style="color:{{ w.color }}">{{ w.text }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isWitchTurn }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ seqMode }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:11px;display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px solid #353251;border-radius:14px;padding:11px 13px">
+<span style="width:34px;height:34px;border-radius:50%;background:#4A3B2D;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">C</span>
+<div><div style="font-size:10px;color:#94A1B2">{{ t.tonightVictim }}</div><div style="font-size:13.5px;font-weight:800">Chi</div></div>
+</div>
+</sc-if>
+<sc-if value="{{ simMode }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:11px;display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px dashed #353251;border-radius:14px;padding:11px 13px">
+<span style="width:34px;height:34px;border-radius:50%;background:#211E30;border:1px dashed #4A5568;display:flex;align-items:center;justify-content:center;font-size:14px;color:#4A5568">?</span>
+<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#94A1B2">{{ t.victimUnknown }}</div><div style="font-size:10.5px;line-height:1.5;color:#4A5568;text-wrap:pretty">{{ t.victimUnknownSub }}</div></div>
+</div>
+</sc-if>
+<div style="margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:9px">
+<sc-for list="{{ potionBtns }}" as="b" hint-placeholder-count="2">
+<button onClick="{{ b.go }}" disabled="{{ b.out }}" style="{{ b.style }}">
+<span style="font-size:20px">{{ b.emoji }}</span>
+<span style="font-size:12px;font-weight:700">{{ b.label }}</span>
+<span style="font-size:9.5px;opacity:.7">{{ b.count }}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMediumTurn }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:12px;flex:1;min-height:0;display:flex;flex-direction:column;background:rgba(255,255,255,.04);border:1px solid #353251;border-radius:16px;padding:12px 13px">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+<span style="font-size:10px;font-weight:800;letter-spacing:.1em;color:#7E93AF">{{ t.seanceTitle }}</span>
+<span style="font-size:9.5px;color:#4A5568">{{ t.anon }}</span>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ seance }}" as="m" hint-placeholder-count="2">
+<div style="display:flex;gap:9px;align-items:flex-start;animation:msRise .4s ease-out both">
+<span style="flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:#211E30;border:1px solid #353251">👤</span>
+<div style="min-width:0">
+<span style="font-size:10px;font-weight:700;color:#7E93AF">{{ t.someoneDead }}</span>
+<div style="font-size:12.5px;line-height:1.55;color:rgba(255,255,254,.85);font-style:italic;text-wrap:pretty">{{ m.text }}</div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="flex:none;margin-top:11px;padding-top:10px;border-top:1px solid #2E2B3F;display:flex;align-items:flex-start;gap:7px;font-size:10px;line-height:1.5;color:#4A5568;text-wrap:pretty"><span>🔒</span>{{ t.seanceNote }}</div>
+</div>
+</sc-if>
+<div style="margin:14px 0 10px;font-size:12.5px;font-weight:600;color:#94A1B2;text-wrap:pretty">{{ turnPrompt }}</div>
+<sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+<sc-for list="{{ targets }}" as="p" hint-placeholder-count="8">
+<button onClick="{{ p.pick }}" disabled="{{ p.locked }}" style="{{ p.cellStyle }}">
+<span style="position:relative;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:{{ p.avatarBg }};color:#FFFFFE">{{ p.initial }}
+<span style="position:absolute;bottom:-3px;right:-5px;font-size:8px;font-weight:800;padding:1px 4px;border-radius:9999px;background:#E53E3E;color:#fff;opacity:{{ p.packOpacity }}">{{ p.packMark }}</span>
+</span>
+<span style="font-size:9.5px;font-weight:600;color:#FFFFFE;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+<span style="font-size:8px;font-weight:700;color:#4A5568;height:9px">{{ p.lockNote }}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+<div style="margin-top:auto;padding-top:12px;padding-bottom:6px;display:flex;flex-direction:column;gap:8px">
+<button onClick="{{ confirmAction }}" disabled="{{ noTarget }}" style="height:50px;border:0;border-radius:18px;background:{{ confirmBg }};color:{{ confirmFg }};font-size:14.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:{{ confirmGlow }}">{{ confirmLabel }}</button>
+<sc-if value="{{ canSkip }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ skipAction }}" style="height:40px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#94A1B2;font-size:12px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.skipNight }}</button>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ nResult }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;padding:0 20px">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:16px"><span style="font-size:18px">🌙</span><span style="font-size:12.5px;font-weight:700;letter-spacing:.1em;color:#7E93AF">{{ nightLabel }}</span></div>
+<sc-if value="{{ resultAck }}" hint-placeholder-val="{{ false }}">
+<div style="border-radius:24px;border:1.5px solid {{ roleBorder }};background:{{ ackGradient }};padding:28px 20px;text-align:center">
+<div style="font-size:46px;line-height:1;filter:drop-shadow(0 0 18px {{ roleBorder }})">{{ myRoleEmoji }}</div>
+<div style="margin-top:14px;font-size:16px;font-weight:800;letter-spacing:.03em">{{ t.ackTitle }}</div>
+<div style="margin-top:8px;font-size:12px;line-height:1.6;color:rgba(255,255,254,.62);text-wrap:pretty">{{ t.ackSub }}</div>
+<div style="margin-top:14px;display:inline-block;font-size:11px;font-weight:700;padding:5px 12px;border-radius:9999px;background:rgba(0,0,0,.3);color:{{ roleBorder }}">{{ ackTarget }}</div>
+</div>
+</sc-if>
+<sc-if value="{{ resultInfo }}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{ peekOn }}" onPointerUp="{{ peekOff }}" onPointerLeave="{{ peekOff }}" style="border-radius:24px;border:2px solid {{ scryBorder }};background:{{ scryGradient }};padding:26px 20px;text-align:center;cursor:pointer;user-select:none;box-shadow:0 0 34px -12px {{ scryBorder }}">
+<span style="display:inline-flex;width:52px;height:52px;border-radius:50%;align-items:center;justify-content:center;font-size:19px;font-weight:800;background:{{ scryAvatarBg }}">{{ scryInitial }}</span>
+<div style="margin-top:12px;font-size:15px;font-weight:700">{{ scryName }}</div>
+<div style="{{ secretScry }}">
+<div style="font-size:23px;font-weight:800;letter-spacing:.06em;color:{{ scryBorder }}">{{ scryVerdict }}</div>
+</div>
+<div style="margin-top:16px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,254,.5)">{{ peekHint }}</div>
+</div>
+</sc-if>
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:#38A169"><span>✅</span>{{ t.actionLogged }}</div>
+<div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#4A5568"><span>⏳</span>{{ t.waitOthers }}</div>
+</div>
+<button onClick="{{ toDawn }}" style="margin-top:auto;margin-bottom:6px;height:46px;border:1px solid #2E2B3F;border-radius:16px;background:transparent;color:#94A1B2;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.waitDawn }} →</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ nDecoy }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;gap:20px">
+<div style="width:78px;height:78px;border-radius:50%;border:1.5px solid #2E2B3F;display:flex;align-items:center;justify-content:center;position:relative">
+<span style="position:absolute;inset:-1.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:#A7C5EB;animation:msSpin 1.6s linear infinite"></span>
+<span style="font-size:28px;opacity:.75">⏳</span>
+</div>
+<div style="text-align:center"><div style="font-size:14px;font-weight:700;line-height:1.5">{{ t.decoyTitle }}</div><div style="margin-top:6px;font-size:11.5px;color:#94A1B2">{{ t.decoySub }}</div></div>
+<div style="width:100%;height:5px;border-radius:9999px;background:#1A1825;overflow:hidden"><div style="height:100%;border-radius:9999px;background:linear-gradient(90deg,#A7C5EB,#9F7AEA);animation:msBar 4.5s ease-in-out infinite alternate"></div></div>
+<div style="font-size:10px;color:#4A5568;text-align:center;line-height:1.6">{{ t.decoyNote }}</div>
+</div>
+</sc-if>
+</sc-if>
+
+<!-- ══════════ DAWN ══════════ -->
+<sc-if value="{{ sDawn }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ toDeath }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;cursor:pointer">
+<div style="font-size:82px;line-height:1;filter:drop-shadow(0 0 40px rgba(236,201,75,.5));animation:msFloat 4s ease-in-out infinite">🌅</div>
+<div style="text-align:center;animation:msRise .8s ease-out both">
+<div style="font-size:22px;font-weight:800;letter-spacing:.05em">{{ t.dawnTitle }}</div>
+<div style="margin-top:8px;font-size:12.5px;color:#94A1B2">{{ t.dawnSub }}</div>
+</div>
+<div style="width:120px;height:3px;border-radius:9999px;background:rgba(255,255,255,.12);overflow:hidden"><div style="height:100%;background:#ECC94B;animation:msBar 2.4s linear forwards"></div></div>
+</div>
+</sc-if>
+
+<!-- ══════════ RẠNG SÁNG RIÊNG TƯ ══════════ -->
+<sc-if value="{{ sAftermath }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 26px">
+<div style="text-align:center;font-size:11px;font-weight:800;letter-spacing:.18em;color:#94A1B2;margin-bottom:16px">{{ t.fxTitle }}</div>
+<div style="{{ fxCardStyle }}">
+<div style="font-size:60px;line-height:1;filter:drop-shadow(0 0 24px {{ fxColor }})">{{ fxEmoji }}</div>
+<div style="margin-top:16px;font-size:20px;font-weight:800;letter-spacing:.04em;color:{{ fxColor }}">{{ fxTitleText }}</div>
+<div style="margin-top:10px;font-size:12.5px;line-height:1.65;color:rgba(255,255,254,.72);text-wrap:pretty">{{ fxSubText }}</div>
+<sc-if value="{{ fxShowPack }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(167,197,235,.18)">
+<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,254,.5);margin-bottom:9px">{{ t.packKnow }}</div>
+<div style="display:flex;justify-content:center;gap:7px;flex-wrap:wrap">
+<sc-for list="{{ teamPills }}" as="m" hint-placeholder-count="2">
+<span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 11px 5px 5px;border-radius:9999px;background:rgba(255,255,255,.06);border:1px solid #353251">
+<span style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:{{ m.avatarBg }}">{{ m.initial }}</span>{{ m.name }}
+</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="margin-top:18px;display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,.04);border:1px solid #2E2B3F;border-radius:14px;padding:11px 13px">
+<span style="font-size:12px;opacity:.7">🔒</span><span style="font-size:11px;line-height:1.55;color:#94A1B2;text-wrap:pretty">{{ t.fxOnlyYou }}</span>
+</div>
+<button onClick="{{ toDeathFromFx }}" style="margin-top:14px;height:50px;border:0;border-radius:18px;background:#A7C5EB;color:#0F0E17;font-size:14.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 24px -8px rgba(167,197,235,.7)">{{ t.continue }} →</button>
+</div>
+</sc-if>
+
+<!-- ══════════ DEATH ══════════ -->
+<sc-if value="{{ sDeath }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;padding:4px 20px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid #2E2B3F">
+<span style="font-size:17px">☀️</span><span style="font-size:14px;font-weight:800;letter-spacing:.14em">{{ dayLabel }}</span>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;padding:20px;gap:18px">
+<div style="text-align:center"><div style="font-size:58px;line-height:1;filter:drop-shadow(0 0 22px rgba(229,62,62,.4))">💀</div></div>
+<div style="font-size:13px;font-weight:600;color:#94A1B2;text-align:center">{{ t.deathIntro }}</div>
+<div style="background:linear-gradient(150deg,#3B1A1A,#1F0D0D);border:1.5px solid rgba(229,62,62,.5);border-radius:22px;padding:20px">
+<div style="display:flex;align-items:center;gap:13px">
+<span style="position:relative;width:48px;height:48px;border-radius:50%;background:#4A5568;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:rgba(255,255,255,.55)">C
+<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.85">💀</span>
+</span>
+<div style="flex:1">
+<div style="font-size:15.5px;font-weight:800;text-decoration:line-through;text-decoration-color:rgba(255,255,255,.45);color:#94A1B2">Chi</div>
+<div style="font-size:11.5px;color:#E53E3E;font-weight:600;margin-top:2px">{{ t.diedInNight }}</div>
+</div>
+</div>
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(229,62,62,.22);display:flex;align-items:flex-start;gap:8px">
+<span style="font-size:12px;opacity:.6">🔒</span>
+<span style="font-size:11px;line-height:1.55;color:rgba(255,255,254,.5);text-wrap:pretty">{{ t.notRevealed }}</span>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;background:#1A3B2A;border:1px solid rgba(56,161,105,.45);border-radius:16px;padding:13px 15px;opacity:.4">
+<span style="font-size:17px">✨</span><div><div style="font-size:12.5px;font-weight:700;color:#38A169">{{ t.safeTitle }}</div><div style="font-size:10.5px;color:rgba(56,161,105,.7)">{{ t.safeSub }}</div></div>
+</div>
+<button onClick="{{ afterDeath }}" style="margin-top:auto;height:50px;border:0;border-radius:18px;background:#A7C5EB;color:#0F0E17;font-size:14.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 24px -8px rgba(167,197,235,.7)">{{ afterDeathLabel }} →</button>
+</div>
+</sc-if>
+
+<!-- ══════════ HUNTER SHOT ══════════ -->
+<sc-if value="{{ sHunter }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 20px 6px">
+<div style="text-align:center"><div style="font-size:56px;line-height:1;filter:drop-shadow(0 0 26px rgba(229,62,62,.55));animation:msFloat 4s ease-in-out infinite">🏹</div></div>
+<div style="margin-top:12px;text-align:center">
+<div style="font-size:19px;font-weight:800;letter-spacing:.05em;color:#E53E3E">{{ t.hunterTitle }}</div>
+<div style="margin-top:7px;font-size:12.5px;line-height:1.6;color:#94A1B2;text-wrap:pretty">{{ t.hunterSub }}</div>
+</div>
+<div style="margin:16px 0 10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#ECC94B"><span>⏱</span>{{ timerLabel }} · {{ t.hunterHurry }}</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+<sc-for list="{{ targets }}" as="p" hint-placeholder-count="8">
+<button onClick="{{ p.pick }}" disabled="{{ p.locked }}" style="{{ p.cellStyle }}">
+<span style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:{{ p.avatarBg }};color:#FFFFFE">{{ p.initial }}</span>
+<span style="font-size:9.5px;font-weight:600;color:#FFFFFE;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+</button>
+</sc-for>
+</div>
+<div style="margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:8px">
+<button onClick="{{ confirmAction }}" disabled="{{ noTarget }}" style="height:50px;border:0;border-radius:18px;background:{{ shootBg }};color:{{ shootFg }};font-size:14.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:{{ shootGlow }}">🏹 {{ t.shoot }}</button>
+<button onClick="{{ toDay }}" style="height:40px;border:1px solid #2E2B3F;border-radius:14px;background:transparent;color:#94A1B2;font-size:12px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.noShoot }}</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ DAY ══════════ -->
+<sc-if value="{{ sDay }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ ghost }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;margin:0 20px 10px;display:flex;align-items:center;gap:9px;background:rgba(74,85,104,.22);border:1px solid #4A5568;border-radius:14px;padding:9px 12px">
+<span style="font-size:15px">👻</span><span style="font-size:11.5px;font-weight:600;color:#94A1B2">{{ t.ghostBanner }}</span>
+</div>
+</sc-if>
+<div style="flex:none;padding:4px 20px 12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:9px"><span style="font-size:17px">☀️</span><span style="font-size:14px;font-weight:800;letter-spacing:.14em">{{ dayLabel }}</span></div>
+<div style="display:flex;align-items:center;gap:7px">
+<button onClick="{{ toHost }}" style="display:flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:9999px;border:1px solid rgba(236,201,75,.35);background:rgba(236,201,75,.1);color:#ECC94B;font-size:10.5px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="background:rgba(236,201,75,.24)">👑 Host</button>
+<div style="display:flex;align-items:center;gap:5px;background:rgba(236,201,75,.14);border:1px solid rgba(236,201,75,.35);border-radius:9999px;padding:4px 11px"><span style="font-size:10px">⏱</span><span style="font-size:12px;font-weight:800;color:#ECC94B;font-variant-numeric:tabular-nums">{{ timerLabel }}</span></div>
+</div>
+</div>
+<div style="margin-top:11px;display:flex;align-items:center;gap:14px;font-size:11px;font-weight:700">
+<span style="color:#38A169">● {{ aliveLabel }}</span><span style="color:#4A5568">💀 {{ deadLabel }}</span>
+</div>
+</div>
+<div style="flex:none;padding:0 20px 12px;display:flex;gap:9px;overflow-x:auto;scrollbar-width:none">
+<sc-for list="{{ dayStrip }}" as="p" hint-placeholder-count="8">
+<div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:46px">
+<span style="position:relative;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:{{ p.avatarBg }};border:2px solid {{ p.stripBd }};opacity:{{ p.cardAlpha }}">{{ p.initial }}
+<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:{{ p.skullOpacity }}">💀</span>
+<span style="position:absolute;-bottom:0;top:-6px;right:-6px;font-size:11px;opacity:{{ p.loveOpacity }}">💘</span>
+<span style="position:absolute;bottom:-4px;left:-5px;font-size:10px;opacity:{{ p.markOpacity }}">🐦</span>
+</span>
+<span style="font-size:9px;font-weight:600;color:{{ p.stripFg }};text-decoration:{{ p.strike }};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+</div>
+</sc-for>
+</div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;background:#141222;border-top:1px solid #2E2B3F">
+<sc-if value="{{ notGhost }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;padding:10px 20px 6px;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#94A1B2"><span>💬</span>CHAT</div>
+</sc-if>
+<sc-if value="{{ ghost }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;padding:9px 16px 7px;display:flex;gap:6px">
+<sc-for list="{{ chatTabs }}" as="tb" hint-placeholder-count="2">
+<button onClick="{{ tb.go }}" style="{{ tb.style }}">{{ tb.label }}</button>
+</sc-for>
+</div>
+<div style="flex:none;padding:0 20px 6px;display:flex;align-items:center;gap:7px;font-size:10px;line-height:1.45;color:#4A5568;text-wrap:pretty"><span>🔒</span>{{ chatNote }}</div>
+</sc-if>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 20px 8px;display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ chat }}" as="m" hint-placeholder-count="4">
+<div style="display:flex;gap:8px;align-items:flex-start;animation:msRise .3s ease-out both">
+<span style="flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;background:{{ m.avatarBg }};opacity:{{ m.alpha }}">{{ m.initial }}</span>
+<div style="min-width:0">
+<span style="font-size:10.5px;font-weight:700;color:{{ m.nameColor }}">{{ m.name }}</span>
+<div style="font-size:12px;line-height:1.5;color:{{ m.textColor }};font-style:{{ m.italic }};text-wrap:pretty">{{ m.text }}</div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="flex:none;padding:8px 16px 10px;display:flex;flex-direction:column;gap:9px;border-top:1px solid #2E2B3F">
+<div style="display:flex;gap:8px;opacity:{{ inputAlpha }}">
+<div style="flex:1;background:#1A1825;border:1px solid #2E2B3F;border-radius:14px;padding:11px 13px;display:flex">
+<input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" disabled="{{ inputLocked }}" placeholder="{{ inputPh }}" style="flex:1;background:transparent;border:0;outline:none;color:#FFFFFE;font-size:12.5px;font-family:'Be Vietnam Pro',system-ui" />
+</div>
+<button onClick="{{ send }}" disabled="{{ inputLocked }}" style="width:52px;border:0;border-radius:14px;background:{{ sendBg }};color:{{ sendFg }};font-size:12px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">{{ t.send }}</button>
+</div>
+<sc-if value="{{ notGhost }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toVote }}" style="height:46px;border-radius:16px;background:rgba(229,62,62,.16);border:1px solid #E53E3E;color:#FF8A8A;font-size:13.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="background:rgba(229,62,62,.28)">🗳 {{ t.startVote }}</button>
+</sc-if>
+<sc-if value="{{ ghost }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;font-size:10.5px;color:#4A5568;line-height:1.5;padding:6px 0">{{ t.ghostNote }}</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ VOTING ══════════ -->
+<sc-if value="{{ sVote }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;padding:4px 20px 12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:9px"><span style="font-size:17px">🗳</span><span style="font-size:14px;font-weight:800;letter-spacing:.14em">{{ t.voting }}</span></div>
+<div style="display:flex;align-items:center;gap:5px;background:rgba(229,62,62,.14);border:1px solid rgba(229,62,62,.35);border-radius:9999px;padding:4px 11px"><span style="font-size:10px">⏱</span><span style="font-size:12px;font-weight:800;color:#E53E3E;font-variant-numeric:tabular-nums">{{ timerLabel }}</span></div>
+</div>
+</div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:0 20px">
+<div style="font-size:12.5px;font-weight:600;color:#94A1B2;margin-bottom:11px">{{ t.pickToEject }}</div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ voteRows }}" as="p" hint-placeholder-count="8">
+<div style="display:flex;align-items:center;gap:11px;border-radius:16px;padding:10px 12px;background:{{ p.voteBg }};border:1.5px solid {{ p.voteBd }};opacity:{{ p.cardAlpha }}">
+<span style="position:relative;flex:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:{{ p.avatarBg }}">{{ p.initial }}
+<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;opacity:{{ p.skullOpacity }}">💀</span>
+</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:13px;font-weight:700;text-decoration:{{ p.strike }};color:{{ p.stripFg }}">{{ p.name }}</span>
+<span style="display:flex;align-items:center;gap:6px;margin-top:2px">
+<span style="font-size:10px;color:#94A1B2">{{ p.tallyText }}</span>
+<span style="{{ p.fxBadgeStyle }}">{{ p.fxBadge }}</span>
+</span>
+</span>
+<button onClick="{{ p.vote }}" disabled="{{ p.dead }}" style="flex:none;height:32px;padding:0 14px;border-radius:9999px;border:1px solid {{ p.btnBd }};background:{{ p.btnBg }};color:{{ p.btnFg }};font-size:11px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">{{ p.btnText }}</button>
+</div>
+</sc-for>
+</div>
+<div style="flex:none;padding:14px 0 6px">
+<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;color:#94A1B2;margin-bottom:7px"><span>{{ voteProgressLabel }}</span><span style="color:#A7C5EB">{{ votePct }}</span></div>
+<div style="height:7px;border-radius:9999px;background:#1A1825;overflow:hidden"><div style="height:100%;border-radius:9999px;background:linear-gradient(90deg,#A7C5EB,#E53E3E);transition:width .5s ease-out;width:{{ votePct }}"></div></div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button onClick="{{ whiteVote }}" style="flex:1;height:44px;border:1px dashed #2E2B3F;border-radius:16px;background:transparent;color:#94A1B2;font-size:12.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">🗳 {{ t.whiteVote }}</button>
+<button onClick="{{ toVoteResult }}" style="flex:none;padding:0 16px;height:44px;border:1px solid rgba(236,201,75,.4);border-radius:16px;background:rgba(236,201,75,.1);color:#ECC94B;font-size:12.5px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="background:rgba(236,201,75,.24)">👑 {{ t.closeVote }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ VOTE RESULT ══════════ -->
+<sc-if value="{{ sVoteResult }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 20px 6px">
+<div style="display:flex;align-items:center;gap:9px;padding-bottom:14px"><span style="font-size:17px">🗳</span><span style="font-size:14px;font-weight:800;letter-spacing:.14em">{{ t.voteResult }}</span></div>
+<div style="border-radius:24px;border:1.5px solid {{ outcomeBd }};background:{{ outcomeBg }};padding:22px 20px;text-align:center">
+<div style="font-size:46px;line-height:1;filter:drop-shadow(0 0 20px {{ outcomeBd }})">{{ outcomeEmoji }}</div>
+<div style="margin-top:13px;font-size:19px;font-weight:800;letter-spacing:.03em;color:{{ outcomeBd }}">{{ outcomeTitle }}</div>
+<div style="margin-top:8px;font-size:12.5px;line-height:1.6;color:rgba(255,255,254,.7);text-wrap:pretty">{{ outcomeSub }}</div>
+</div>
+<div style="margin:18px 0 9px;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:#94A1B2;text-transform:uppercase">{{ t.tally }}</div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ tallyRows }}" as="r" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:{{ r.avatarBg }}">{{ r.initial }}</span>
+<span style="flex:none;width:44px;font-size:11.5px;font-weight:700">{{ r.name }}</span>
+<span style="flex:1;height:9px;border-radius:9999px;background:#1A1825;overflow:hidden"><span style="display:block;height:100%;border-radius:9999px;background:{{ r.barColor }};width:{{ r.barWidth }}"></span></span>
+<span style="flex:none;width:22px;text-align:right;font-size:11.5px;font-weight:800;color:{{ r.barColor }}">{{ r.n }}</span>
+</div>
+</sc-for>
+</div>
+<button onClick="{{ afterVote }}" style="flex:none;margin-top:12px;height:48px;border:0;border-radius:18px;background:#A7C5EB;color:#0F0E17;font-size:14px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 24px -8px rgba(167,197,235,.7)">{{ afterVoteLabel }} →</button>
+</div>
+</sc-if>
+
+<!-- ══════════ GAME OVER ══════════ -->
+<sc-if value="{{ sOver }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:8px 20px 6px">
+<div style="text-align:center"><div style="font-size:52px;line-height:1;filter:drop-shadow(0 0 26px rgba(236,201,75,.55));animation:msFloat 5s ease-in-out infinite">🏆</div></div>
+<div style="margin-top:14px;border-radius:24px;border:1.5px solid #38A169;background:linear-gradient(160deg,rgba(56,161,105,.28),rgba(26,59,42,.5));padding:20px;text-align:center;box-shadow:0 0 40px -14px #38A169">
+<div style="font-size:22px;font-weight:800;letter-spacing:.04em">{{ t.villageWins }}</div>
+<div style="margin-top:7px;font-size:12px;color:rgba(255,255,254,.72)">{{ t.allWolvesOut }}</div>
+<div style="margin-top:16px;display:flex;justify-content:center;gap:24px">
+<div><div style="font-size:17px;font-weight:800">25′</div><div style="font-size:10px;color:#94A1B2">{{ t.duration }}</div></div>
+<div><div style="font-size:17px;font-weight:800">3/8</div><div style="font-size:10px;color:#94A1B2">{{ t.survivors }}</div></div>
+<div><div style="font-size:17px;font-weight:800;color:#ECC94B">Bạn</div><div style="font-size:10px;color:#94A1B2">MVP</div></div>
+</div>
+</div>
+<div style="margin:16px 0 9px;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:#94A1B2;text-transform:uppercase">{{ t.allRoles }}</div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ finalRoles }}" as="p" hint-placeholder-count="8">
+<div style="display:flex;align-items:center;gap:10px;background:{{ p.roleBg }};border:1px solid {{ p.roleBd }};border-radius:14px;padding:9px 12px;opacity:{{ p.cardAlpha }}">
+<span style="flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:{{ p.avatarBg }}">{{ p.initial }}</span>
+<span style="flex:1;font-size:12.5px;font-weight:700;text-decoration:{{ p.strike }}">{{ p.name }}</span>
+<span style="font-size:15px">{{ p.roleEmoji }}</span>
+<span style="font-size:10.5px;font-weight:700;color:{{ p.roleBd }}">{{ p.roleName }}</span>
+</div>
+</sc-for>
+</div>
+<div style="flex:none;display:flex;gap:9px;padding-top:12px">
+<button onClick="{{ replay }}" style="flex:1;height:48px;border:0;border-radius:16px;background:#A7C5EB;color:#0F0E17;font-size:13.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 22px -8px rgba(167,197,235,.7)">{{ t.replay }}</button>
+<button onClick="{{ goHome }}" style="flex:1;height:48px;border:1px solid #2E2B3F;border-radius:16px;background:transparent;color:#94A1B2;font-size:13.5px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.toHome }}</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ HOST PANEL ══════════ -->
+<sc-if value="{{ sHost }}" hint-placeholder-val="{{ false }}">
+<div style="height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #2E2B3F">
+<button onClick="{{ toDay }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:0;color:#94A1B2;font-size:13px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">← Room</button>
+<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#ECC94B">👑 Host Panel <span style="font-size:10px;opacity:.7">🔒</span></div>
+</div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 18px 8px;gap:13px">
+<div>
+<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#94A1B2;margin-bottom:8px">HOST MODE</div>
+<div style="display:flex;gap:7px;background:#1A1825;border:1px solid #2E2B3F;border-radius:14px;padding:4px">
+<sc-for list="{{ hostModes }}" as="m" hint-placeholder-count="3">
+<button onClick="{{ m.go }}" style="flex:1;height:34px;border:0;border-radius:11px;font-size:12px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;background:{{ m.bg }};color:{{ m.fg }}">{{ m.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="flex:none">
+<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#94A1B2;margin-bottom:8px">{{ t.nightModeLabel }}</div>
+<div style="display:flex;gap:7px;background:#1A1825;border:1px solid #2E2B3F;border-radius:14px;padding:4px">
+<sc-for list="{{ nightModes }}" as="m" hint-placeholder-count="2">
+<button onClick="{{ m.go }}" style="{{ m.style }}">{{ m.label }}</button>
+</sc-for>
+</div>
+<div style="margin-top:7px;font-size:10px;line-height:1.5;color:#4A5568;text-wrap:pretty">{{ nightModeHint }}</div>
+</div>
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;background:#141222;border:1px solid #2E2B3F;border-radius:18px;overflow:hidden">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #2E2B3F">
+<span style="font-size:11px;font-weight:800;letter-spacing:.1em;color:#A7C5EB">MASTER LOG</span>
+<span style="font-size:9.5px;color:#4A5568">{{ t.hostOnly }}</span>
+</div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:12px 14px;display:flex;flex-direction:column;gap:9px;font-variant-numeric:tabular-nums">
+<sc-for list="{{ masterLog }}" as="l" hint-placeholder-count="10">
+<div style="display:flex;gap:8px;font-size:11px;line-height:1.5">
+<span style="flex:none;width:44px;font-weight:800;color:{{ l.headColor }}">{{ l.head }}</span>
+<span style="color:{{ l.color }}">{{ l.text }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-if value="{{ hostManual }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none">
+<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#ECC94B;margin-bottom:8px">{{ t.intervene }}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+<sc-for list="{{ interveneBtns }}" as="b" hint-placeholder-count="4">
+<button onClick="{{ b.go }}" style="height:38px;border:1px solid rgba(236,201,75,.4);border-radius:12px;background:rgba(236,201,75,.08);color:#ECC94B;font-size:11px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="background:rgba(236,201,75,.2)">{{ b.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<div style="flex:none;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#94A1B2">PHASE CONTROL</div>
+<div style="display:flex;gap:8px">
+<button disabled="{{ hostLocked }}" onClick="{{ toDawn }}" style="flex:1;height:44px;border:1px solid {{ phaseBd }};border-radius:16px;background:{{ phaseBg }};color:{{ phaseFg }};font-size:12.5px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">{{ t.toDayPhase }} →</button>
+<button disabled="{{ hostLocked }}" onClick="{{ toOver }}" style="flex:none;padding:0 16px;height:44px;border:1px solid {{ dangerBd }};border-radius:16px;background:{{ dangerBg }};color:{{ dangerFg }};font-size:12.5px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">{{ t.endGame }}</button>
+</div>
+<div style="font-size:9.5px;color:#4A5568;text-align:center;line-height:1.5">{{ hostHint }}</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<!-- ══════════ XEM LẠI THẺ BÀI ══════════ -->
+<sc-if value="{{ showCardFab }}" hint-placeholder-val="{{ false }}">
+<button onPointerDown="{{ cardOn }}" onPointerUp="{{ cardOff }}" onPointerLeave="{{ cardOff }}" style="position:absolute;right:16px;bottom:32px;z-index:35;display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9999px;border:1px solid #2E2B3F;background:rgba(26,24,37,.94);color:#A7C5EB;font-size:11.5px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;user-select:none;box-shadow:0 8px 24px rgba(0,0,0,.5)" style-hover="border-color:#A7C5EB">🎴 {{ t.cardFab }}</button>
+</sc-if>
+<sc-if value="{{ cardOpen }}" hint-placeholder-val="{{ false }}">
+<div onPointerUp="{{ cardOff }}" onPointerLeave="{{ cardOff }}" style="position:absolute;top:0;left:0;right:0;height:874px;z-index:48;background:rgba(9,8,14,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;overflow:hidden">
+<div style="{{ revealCardStyle }}">
+<div style="font-size:48px;line-height:1;filter:drop-shadow(0 0 20px rgba(167,197,235,.45))">{{ myRoleEmoji }}</div>
+<div style="margin-top:14px;font-size:23px;font-weight:800;letter-spacing:.05em">{{ myRoleName }}</div>
+<div style="display:inline-block;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.1em;padding:4px 12px;border-radius:9999px;background:{{ roleBorder }};color:#0F0E17">{{ myFactionName }}</div>
+<div style="margin-top:12px;font-size:12px;line-height:1.6;color:rgba(255,255,254,.72);text-wrap:pretty">{{ myRoleDesc }}</div>
+<sc-if value="{{ showTeam }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:15px;padding-top:13px;border-top:1px solid rgba(167,197,235,.18)">
+<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,254,.5);margin-bottom:9px">{{ t.packKnow }}</div>
+<div style="display:flex;justify-content:center;gap:7px;flex-wrap:wrap">
+<sc-for list="{{ teamPills }}" as="m" hint-placeholder-count="2">
+<span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 11px 5px 5px;border-radius:9999px;background:rgba(255,255,255,.06);border:1px solid #353251">
+<span style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:{{ m.avatarBg }}">{{ m.initial }}</span>{{ m.name }}
+</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+<div style="margin-top:20px;font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,254,.45)">{{ t.cardRelease }}</div>
+</div>
+</sc-if>
+
+<!-- ══════════ CONFIG SHEET (HOST) ══════════ -->
+<sc-if value="{{ configOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:0;left:0;right:0;height:874px;z-index:45;background:rgba(15,14,23,.7);backdrop-filter:blur(6px);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
+<div style="background:#1A1825;border-top:1px solid #2E2B3F;border-radius:26px 26px 0 0;padding:16px 20px 34px;max-height:820px;display:flex;flex-direction:column">
+<div style="width:38px;height:4px;border-radius:9999px;background:#2E2B3F;margin:0 auto 15px"></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+<span style="font-size:15px;font-weight:800">{{ t.editRoles }}</span>
+<span style="font-size:11px;font-weight:700;color:{{ balanceColor }}">{{ assignedLabel }}</span>
+</div>
+<div style="font-size:11px;color:#94A1B2;margin-bottom:14px">{{ t.editRolesSub }}</div>
+<div style="display:flex;flex-direction:column;gap:8px;max-height:236px;overflow-y:auto;scrollbar-width:none;flex:0 1 auto">
+<sc-for list="{{ configRows }}" as="r" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:11px;background:#141222;border:1px solid {{ r.bd }};border-radius:14px;padding:9px 11px">
+<span style="width:32px;height:32px;border-radius:50%;background:{{ r.bg }};border:1px solid {{ r.bd }};display:flex;align-items:center;justify-content:center;font-size:15px">{{ r.emoji }}</span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:12.5px;font-weight:700">{{ r.name }}</span>
+<span style="display:block;font-size:9.5px;color:#94A1B2">{{ r.faction }}</span>
+</span>
+<span style="display:flex;align-items:center;gap:9px">
+<button onClick="{{ r.dec }}" style="width:28px;height:28px;border-radius:9px;border:1px solid #2E2B3F;background:transparent;color:#94A1B2;font-size:15px;font-weight:700;cursor:pointer;font-family:'Be Vietnam Pro',system-ui">−</button>
+<span style="width:16px;text-align:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums">{{ r.n }}</span>
+<button onClick="{{ r.inc }}" style="width:28px;height:28px;border-radius:9px;border:1px solid #2E2B3F;background:transparent;color:#A7C5EB;font-size:15px;font-weight:700;cursor:pointer;font-family:'Be Vietnam Pro',system-ui">+</button>
+</span>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ unbalanced }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:12px;display:flex;align-items:flex-start;gap:9px;background:rgba(236,201,75,.1);border:1px solid rgba(236,201,75,.4);border-radius:14px;padding:11px 13px">
+<span style="font-size:13px">⚠️</span><span style="font-size:11px;line-height:1.55;color:#ECC94B;text-wrap:pretty">{{ balanceWarning }}</span>
+</div>
+</sc-if>
+<div style="display:flex;gap:9px;margin-top:14px;flex:none">
+<button onClick="{{ closeConfig }}" style="flex:none;padding:0 18px;height:48px;border:1px solid #2E2B3F;border-radius:16px;background:transparent;color:#94A1B2;font-size:13px;font-weight:600;font-family:'Be Vietnam Pro',system-ui;cursor:pointer">{{ t.cancel }}</button>
+<button onClick="{{ saveConfig }}" style="flex:1;height:48px;border:0;border-radius:16px;background:#A7C5EB;color:#0F0E17;font-size:13.5px;font-weight:800;font-family:'Be Vietnam Pro',system-ui;cursor:pointer;box-shadow:0 0 22px -8px rgba(167,197,235,.7)">{{ t.saveConfig }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ══════════ GHOST DIM ══════════ -->
+<sc-if value="{{ ghostDim }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:5;background:rgba(15,14,23,.32);pointer-events:none"></div>
+</sc-if>
+
+<!-- ══════════ DISCONNECT ══════════ -->
+<sc-if value="{{ sDisconnect }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:50;background:rgba(15,14,23,.82);backdrop-filter:blur(14px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:0 34px">
+<div style="font-size:52px;line-height:1;animation:msPulse 2.2s ease-in-out infinite">⚠️</div>
+<div style="text-align:center">
+<div style="font-size:17px;font-weight:800">{{ t.dcTitle }}</div>
+<div style="margin-top:9px;font-size:12.5px;color:#94A1B2">{{ t.dcSub }}</div>
+<div style="margin-top:5px;font-size:12px;font-weight:700;color:#ECC94B;font-variant-numeric:tabular-nums">{{ dcCountdown }}</div>
+</div>
+<div style="width:76px;height:76px;border-radius:50%;border:2px solid #2E2B3F;border-top-color:#A7C5EB;animation:msSpin 1.1s linear infinite"></div>
+<button onClick="{{ goHome }}" style="width:100%;height:48px;border:1px solid #2E2B3F;border-radius:16px;background:#1A1825;color:#94A1B2;font-size:13px;font-weight:700;font-family:'Be Vietnam Pro',system-ui;cursor:pointer" style-hover="border-color:#A7C5EB;color:#FFFFFE">{{ t.toHome }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:60px;left:0;right:0;z-index:60;display:flex;justify-content:center;pointer-events:none">
+<div style="display:flex;align-items:center;gap:8px;background:rgba(26,24,37,.96);border:1px solid #38A169;border-radius:9999px;padding:9px 15px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:msRise .3s ease-out both">
+<span style="font-size:12px">✓</span><span style="font-size:11.5px;font-weight:600">{{ toast }}</span>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+<sc-if value="{{ showNav }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:402px">
+<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center">
+<sc-for list="{{ roleChips }}" as="r" hint-placeholder-count="10">
+<button onClick="{{ r.go }}" title="{{ r.name }}" style="font-size:13px;width:30px;height:30px;border-radius:9999px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:{{ r.bg }};border:1px solid {{ r.bd }}">{{ r.emoji }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ sNight }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:6px;justify-content:center">
+<sc-for list="{{ nightTabs }}" as="tb" hint-placeholder-count="4">
+<button onClick="{{ tb.go }}" style="font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:5px 11px;border-radius:9999px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;background:{{ tb.bg }};border:1px solid {{ tb.bd }};color:{{ tb.fg }}">{{ tb.label }}</button>
+</sc-for>
+</div>
+</sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center">
+<sc-for list="{{ navItems }}" as="n" hint-placeholder-count="14">
+<button onClick="{{ n.go }}" style="font-size:9.5px;font-weight:700;letter-spacing:.03em;padding:5px 10px;border-radius:9999px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;background:{{ n.bg }};border:1px solid {{ n.bd }};color:{{ n.fg }}">{{ n.label }}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:6px">
+<button onClick="{{ toggleLang }}" style="font-size:10px;font-weight:700;padding:6px 12px;border-radius:9999px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;background:#1A1825;border:1px solid #2E2B3F;color:#A7C5EB">🌐 {{ langLabel }}</button>
+<button onClick="{{ toggleGhost }}" style="font-size:10px;font-weight:700;padding:6px 12px;border-radius:9999px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;background:{{ ghostBtnBg }};border:1px solid #2E2B3F;color:#94A1B2">👻 Ghost</button>
+<button onClick="{{ toggleDc }}" style="font-size:10px;font-weight:700;padding:6px 12px;border-radius:9999px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;background:#1A1825;border:1px solid #2E2B3F;color:#94A1B2">⚠️ Disconnect</button>
+</div>
+</div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:440,&quot;height&quot;:1010},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;home&quot;,&quot;lobby&quot;,&quot;lobby-config&quot;,&quot;reveal&quot;,&quot;reveal-shown&quot;,&quot;night&quot;,&quot;night-turn&quot;,&quot;night-result&quot;,&quot;night-decoy&quot;,&quot;dawn&quot;,&quot;death&quot;,&quot;hunter&quot;,&quot;day&quot;,&quot;day-ghost&quot;,&quot;vote&quot;,&quot;vote-result&quot;,&quot;vote-tie&quot;,&quot;over&quot;,&quot;host&quot;,&quot;host-direct&quot;,&quot;disconnect&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;wolf&quot;,&quot;alpha&quot;,&quot;seer&quot;,&quot;witch&quot;,&quot;guard&quot;,&quot;hunter&quot;,&quot;cupid&quot;,&quot;elder&quot;,&quot;doctor&quot;,&quot;villager&quot;],&quot;default&quot;:&quot;seer&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;vi&quot;,&quot;en&quot;],&quot;default&quot;:&quot;vi&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;interactive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const ROLES = {
+  wolf:{e:'🐺',vi:'SÓI',en:'WEREWOLF',f:'wolf',team:true,
+    dvi:'Mỗi đêm cùng bầy chọn 1 người để cắn.',den:'Each night the pack picks one player to kill.',
+    act:'wolf',pvi:'Chọn người để cắn đêm nay:',pen:'Choose tonight’s victim:',cvi:'Xác nhận cắn',cen:'Confirm the kill'},
+  alpha:{e:'👹',vi:'SÓI ĐẦU SỎ',en:'ALPHA WOLF',f:'wolf',team:true,alpha:true,
+    dvi:'Dẫn dắt bầy sói. Khi bầy chia phiếu, lựa chọn của bạn quyết định.',den:'You lead the pack. When the wolves split, your pick decides.',
+    nvi:'Phiếu của bạn thắng khi bầy hoà.',nen:'Your vote breaks a tie inside the pack.',
+    act:'wolf',pvi:'Chọn người để cắn đêm nay:',pen:'Choose tonight’s victim:',cvi:'Xác nhận cắn',cen:'Confirm the kill'},
+  seer:{e:'🔮',vi:'TIÊN TRI',en:'SEER',f:'village',
+    dvi:'Mỗi đêm bạn có thể soi 1 người để biết họ thuộc phe nào.',den:'Each night you may inspect one player to learn their faction.',
+    act:'seer',pvi:'Chọn 1 người để soi phe:',pen:'Choose someone to inspect:',cvi:'Xác nhận soi',cen:'Confirm inspection'},
+  witch:{e:'🧪',vi:'PHÙ THỦY',en:'WITCH',f:'village',
+    dvi:'Bạn có 1 thuốc cứu và 1 thuốc độc, mỗi loại dùng được 1 lần cả ván.',den:'You hold one healing potion and one poison, each usable once per game.',
+    badges:[['Thuốc cứu: 1','Heal: 1','#38A169'],['Thuốc độc: 1','Poison: 1','#E53E3E']],
+    act:'witch',pvi:'Chọn người để đầu độc:',pen:'Choose who to poison:',cvi:'Xác nhận',cen:'Confirm'},
+  guard:{e:'🛡️',vi:'BẢO VỆ',en:'GUARD',f:'village',
+    dvi:'Mỗi đêm bảo vệ 1 người khỏi bị cắn.',den:'Each night you shield one player from the wolves.',
+    nvi:'Không bảo vệ cùng một người 2 đêm liên tiếp.',nen:'You may not shield the same player two nights running.',
+    act:'guard',pvi:'Chọn người để bảo vệ:',pen:'Choose who to protect:',cvi:'Xác nhận bảo vệ',cen:'Confirm protection'},
+  hunter:{e:'🏹',vi:'SĂN THỦ',en:'HUNTER',f:'village',
+    dvi:'Bạn không hành động ban đêm.',den:'You take no action at night.',
+    nvi:'Khi chết, bạn được bắn 1 người đi theo.',nen:'When you die, you take one player down with you.'},
+  cupid:{e:'💘',vi:'THẦN TÌNH YÊU',en:'CUPID',f:'neutral',
+    dvi:'Đêm đầu tiên bạn ghép đôi 2 người chơi.',den:'On the first night you bind two players together.',
+    nvi:'Một người trong cặp chết thì người kia chết theo.',nen:'If one of the pair dies, the other dies with them.',
+    act:'cupid',pvi:'Chọn 2 người để ghép đôi:',pen:'Choose two players to bind:',cvi:'Xác nhận ghép đôi',cen:'Confirm the pairing'},
+  elder:{e:'👴',vi:'LÃO LÀNG',en:'ELDER',f:'village',
+    dvi:'Bạn chịu được 1 lần bị sói cắn.',den:'You survive the first wolf attack.',
+    nvi:'Nếu bị dân xử, làng mất thêm 1 vai trò đặc biệt.',nen:'If the village lynches you, it loses one special role.'},
+  doctor:{e:'💊',vi:'BÁC SĨ',en:'DOCTOR',f:'village',
+    dvi:'Mỗi đêm chữa 1 người, không được tự chữa.',den:'Heal one player each night; never yourself.',
+    act:'doctor',pvi:'Chọn người để chữa:',pen:'Choose who to heal:',cvi:'Xác nhận chữa',cen:'Confirm the treatment'},
+  villager:{e:'👤',vi:'DÂN THƯỜNG',en:'VILLAGER',f:'village',dashed:true,
+    dvi:'Bạn không có khả năng đặc biệt.',den:'You have no special ability.',
+    nvi:'Dựa vào phân tích và lá phiếu của mình.',nen:'Your weapons are reasoning and your vote.'},
+  wolfseer:{e:'🌘',vi:'SÓI TIÊN TRI',en:'WOLF SEER',f:'wolf',team:true,
+    dvi:'Mỗi đêm soi 1 người để biết họ có phải Tiên Tri hay không.',den:'Each night, check whether one player is the Seer.',
+    nvi:'Bạn vẫn cắn cùng bầy như sói thường.',nen:'You still bite with the pack like any wolf.',
+    act:'wolfseer',pvi:'Chọn 1 người để soi Tiên Tri:',pen:'Check one player for the Seer:',cvi:'Xác nhận soi',cen:'Confirm the check'},
+  cursedwolf:{e:'🌑',vi:'SÓI NGUYỀN',en:'CURSED WOLF',f:'wolf',team:true,
+    dvi:'Một lần mỗi ván, biến 1 dân thường thành sói thay vì cắn chết họ.',den:'Once per game, turn a villager into a wolf instead of killing them.',
+    nvi:'Dùng xong lời nguyền, bạn cắn như sói thường.',nen:'Once the curse is spent you bite like an ordinary wolf.',
+    act:'curse',pvi:'Chọn người để nguyền:',pen:'Choose who to curse:',cvi:'Xác nhận nguyền',cen:'Confirm the curse'},
+  detective:{e:'🕵️',vi:'THÁM TỬ',en:'DETECTIVE',f:'village',
+    dvi:'Mỗi đêm so 2 người để biết họ có cùng phe hay không.',den:'Each night compare two players to learn whether they share a faction.',
+    nvi:'Bạn biết họ cùng phe, nhưng không biết là phe nào.',nen:'You learn whether they match, never which side they are on.',
+    act:'detective',pvi:'Chọn 2 người để so phe:',pen:'Choose two players to compare:',cvi:'Xác nhận so phe',cen:'Confirm the comparison'},
+  raven:{e:'🐦',vi:'CON QUẠ',en:'RAVEN',f:'village',
+    dvi:'Mỗi đêm đánh dấu 1 người.',den:'Each night you mark one player.',
+    nvi:'Người bị đánh dấu bắt đầu buổi biểu quyết hôm sau với 2 phiếu sẵn.',nen:'The marked player starts the next vote already holding two votes.',
+    act:'raven',pvi:'Chọn người để đánh dấu:',pen:'Choose who to mark:',cvi:'Xác nhận đánh dấu',cen:'Confirm the mark'},
+  medium:{e:'🕯️',vi:'BÀ ĐỒNG',en:'MEDIUM',f:'village',
+    dvi:'Ban đêm bạn nghe được tiếng của những người đã chết.',den:'At night you hear the voices of the dead.',
+    nvi:'Bạn không biết ai đang nói, và không nhắn lại được. Nghe, rồi tự suy luận.',nen:'You never learn who is speaking and you cannot answer. Listen, then reason.',
+    act:'medium',pvi:'Đêm nay cõi chết lên tiếng:',pen:'Tonight the dead speak:',cvi:'Đã nghe xong',cen:'Done listening'},
+  chief:{e:'🏛️',vi:'TRƯỞNG LÀNG',en:'VILLAGE CHIEF',f:'village',
+    dvi:'Bạn không hành động ban đêm.',den:'You take no action at night.',
+    nvi:'Lá phiếu của bạn tính thành 2 khi biểu quyết.',nen:'Your vote counts double at the daily vote.'},
+  jester:{e:'🤡',vi:'THẰNG NGỐ',en:'JESTER',f:'neutral',
+    dvi:'Bạn không hành động ban đêm.',den:'You take no action at night.',
+    nvi:'Bạn thắng một mình nếu bị làng biểu quyết loại.',nen:'You win alone if the village votes you out.'}
+};
+const ORDER = ['wolf','alpha','wolfseer','cursedwolf','seer','witch','guard','hunter','detective','medium','raven','cupid','elder','doctor','chief','jester','villager'];
+const FACTION = {
+  wolf:{bg:'#3B1A1A',bd:'#E53E3E',vi:'PHE SÓI',en:'WEREWOLVES',g:'#1a0505'},
+  village:{bg:'#1A3B2A',bd:'#38A169',vi:'PHE DÂN',en:'VILLAGE',g:'#0a1f14'},
+  neutral:{bg:'#2D1B4E',bd:'#9F7AEA',vi:'TRUNG LẬP',en:'NEUTRAL',g:'#1a0a2e'}
+};
+const PLAYERS = [
+  {id:1,name:'Bạn',initial:'B',avatarBg:'#3B3264',role:'seer',alive:true,ready:true,host:true,you:true},
+  {id:2,name:'An',initial:'A',avatarBg:'#2D3748',role:'wolf',alive:true,ready:true},
+  {id:3,name:'Bình',initial:'B',avatarBg:'#2D4A3E',role:'villager',alive:true,ready:true},
+  {id:4,name:'Chi',initial:'C',avatarBg:'#4A3B2D',role:'witch',alive:false,ready:false},
+  {id:5,name:'Dũng',initial:'D',avatarBg:'#3B2D4A',role:'wolf',alive:true,ready:true},
+  {id:6,name:'Hà',initial:'H',avatarBg:'#2D3B4A',role:'guard',alive:true,ready:false},
+  {id:7,name:'Khoa',initial:'K',avatarBg:'#4A2D3B',role:'hunter',alive:true,ready:true},
+  {id:8,name:'Linh',initial:'L',avatarBg:'#3B4A2D',role:'villager',alive:true,ready:true}
+];
+const T = {
+vi:{nickPh:'Nhập biệt danh...',enter:'Vào trò chơi',orSso:'hoặc đăng nhập bằng',createRoom:'Tạo phòng mới',createSub:'+ NEW',joinRoom:'Nhập mã phòng',joinSub:'Tham gia',recent:'Phòng gần đây',stats:'Thống kê của bạn',matches:'Trận',wins:'Thắng',winRate:'Tỷ lệ thắng',back:'Quay lại',config:'Cấu hình trò chơi',people:'người',preset:'Giải đấu',wolves:'Sói',balanced:'Cân bằng',tapToEdit:'nhấn để sửa',players:'Người chơi',startGame:'BẮT ĐẦU TRÒ CHƠI',copyCode:'Copy mã',share:'Chia sẻ',ready:'sẵn',waiting:'chờ',online:'online',peekWarn:'Đừng để người khác nhìn màn hình! Thả tay ra là ẩn ngay.',peekHold:'NHẤN GIỮ ĐỂ XEM',peekRelease:'THẢ RA ĐỂ ẨN',teammates:'ĐỒNG ĐỘI CỦA BẠN',continue:'Tiếp tục',nightN:'ĐÊM THỨ 1',dayN:'NGÀY THỨ 1',yourRole:'Vai trò của bạn',waitTurn:'chờ đến lượt...',yourTurn:'Lượt của bạn',nightRunning:'Đêm đang diễn ra',nightAnon:'Các vai trò đang lần lượt hành động. Bạn sẽ được gọi khi đến lượt mình.',actedCount:'vai trò đã hành động',actionLogged:'Hành động của bạn đã được ghi nhận.',waitOthers:'Chờ các vai trò còn lại kết thúc.',packLive:'BẦY SÓI ĐANG CHỌN',tonightVictim:'Đêm nay sói đã cắn',usedUp:'đã dùng hết',skipNight:'Bỏ qua đêm nay',waitDawn:'Chờ rạng sáng',isWolf:'LÀ SÓI!',isVillager:'LÀ DÂN',decoyTitle:'Đang chờ các vai trò khác hành động...',decoySub:'Giữ im lặng, đừng để lộ biểu cảm',decoyNote:'Màn hình mồi — người bên cạnh không biết bạn có hành động hay không.',dawnTitle:'Trời sáng rồi...',dawnSub:'Đêm qua có người đã chết',deathIntro:'Đêm qua, người sau đã chết:',diedInNight:'đã chết trong đêm',notRevealed:'Nguyên nhân cái chết và vai trò của Chi không được tiết lộ. Hãy tự suy luận.',safeTitle:'Đêm qua bình yên!',safeSub:'Không ai chết',hunterTitle:'BẠN ĐÃ BỊ LOẠI',hunterSub:'Trước khi ngã xuống, bạn được bắn 1 người đi theo mình.',hunterHurry:'quyết định nhanh',shoot:'Bắn',noShoot:'Không bắn ai',ghostBanner:'Bạn đã chết. Xem trò chơi tiếp...',ghostNote:'Người chết không được chat và không được bỏ phiếu.',ghostPh:'Bạn không thể nhắn tin',msgPh:'Nhập tin nhắn...',send:'Gửi',startVote:'Bắt đầu biểu quyết',voting:'BIỂU QUYẾT',pickToEject:'Chọn 1 người để loại bỏ:',vote:'vote',voted:'đã vote',whiteVote:'Bỏ phiếu trắng',votes:'phiếu',dead:'đã chết',voteResult:'KẾT QUẢ BIỂU QUYẾT',tally:'Phân bố phiếu',ejected:'BỊ LOẠI KHỎI LÀNG',ejectedSub:'Vai trò của An không được tiết lộ.',tieTitle:'KHÔNG ĐỦ SỐ PHIẾU',tieSub:'Hai người bằng phiếu. Không ai bị loại, ngày kết thúc.',villageWins:'PHE DÂN THẮNG! 🎉',allWolvesOut:'Tất cả sói đã bị loại',duration:'Thời gian',survivors:'Sống sót',allRoles:'Danh sách vai trò',replay:'Chơi lại',toHome:'Về trang chủ',hostOnly:'chỉ host xem được',intervene:'CAN THIỆP',closeVote:'Chốt',dealTitle:'PHÁT THẺ BÀI',dealing:'Đang chia thẻ cho 8 người...',dealReady:'Thẻ của bạn đã nằm sấp trước mặt',yourCard:'Thẻ của bạn',flipMine:'Lật thẻ của tôi',dealWarn:'Chỉ mình bạn được xem thẻ này. Nghiêng máy hoặc che màn hình trước khi lật.',cardFab:'Thẻ bài',tabVillage:'Làng',tabGhost:'Người chết',readOnly:'chỉ đọc',ghostMsgPh:'Nhắn cho người đã chết...',livingCantHear:'Người sống không nghe được bạn',ghostChannelNote:'Chỉ người đã chết đọc được kênh này. Người sống không thấy gì.',villageReadOnly:'Bạn đã chết — chỉ xem được chat của làng, không nói được.',cardHold:'GIỮ ĐỂ XEM THẺ CỦA BẠN',cardRelease:'THẢ RA LÀ ẨN NGAY',packKnow:'Bầy sói nhận ra nhau',fxTitle:'CHUYỆN XẢY RA VỚI BẠN',fxOnlyYou:'Chỉ mình bạn thấy màn này. Người bên cạnh không biết đêm qua bạn có bị gì không.',fxSavedT:'BẠN ĐÃ SỐNG SÓT',fxSavedS:'Đêm qua sói đã chọn bạn. Có người che cho bạn — nhưng bạn không biết là ai.',fxCursedT:'BẠN ĐÃ BỊ NGUYỀN',fxCursedS:'Từ đêm nay bạn thuộc phe Sói. Thẻ bài của bạn đã đổi, và bầy đã nhận ra bạn.',fxElderT:'BẠN CHỊU ĐƯỢC CÚ CẮN',fxElderS:'Lão Làng sống sót lần đầu tiên. Lần sau thì không — và đừng để lộ mình là ai.',fxPoisonT:'BẠN ĐÃ TRÚNG ĐỘC',fxPoisonS:'Một liều thuốc độc đã tìm đến bạn trong đêm. Không ai biết vì sao bạn chết.',fxNoneT:'ĐÊM QUA BẠN BÌNH YÊN',fxNoneS:'Không có gì xảy ra với bạn. Điều đó cũng không nói lên được gì nhiều.',confirmGeneric:'Xác nhận',yourTurnPlain:'ĐẾN LƯỢT BẠN',holdToCheck:'Giữ 🎴 nếu cần xem lại vai của mình',hiddenRole:'• • •',nightModeLabel:'LƯỢT ĐÊM',seqName:'Lần lượt',simName:'Đồng thời',seqHint:'Từng vai một theo thứ tự. Chậm hơn, nhưng Phù Thủy biết ai vừa bị cắn và cứu có mục tiêu.',simHint:'Tất cả hành động cùng lúc. Nhanh hơn hẳn, nhưng Phù Thủy phải cứu mù — không ai biết sói vừa chọn ai.',simRunning:'Cả làng đang hành động cùng lúc',simAnon:'Không có thứ tự. Hãy chọn xong trước khi hết giờ.',doneCount:'người đã xong',victimUnknown:'Chưa biết ai bị cắn',victimUnknownSub:'Sói vẫn đang chọn. Dùng thuốc cứu lúc này là đặt cược.',blindSave:'Cứu mù một người',ravenMark:'dấu quạ +2',chiefMark:'phiếu ×2',lovers:'cặp đôi',seanceTitle:'TIẾNG TỪ CÕI CHẾT',anon:'ẩn danh',someoneDead:'Một người đã chết',seanceNote:'Bạn không biết ai đang nói, và không nhắn lại được. Kênh này đóng khi trời sáng.',nextNight:'Sang đêm thứ ',endMatch:'Kết thúc ván',isSeer:'LÀ TIÊN TRI',notSeer:'KHÔNG PHẢI TIÊN TRI',sameSide:'CÙNG MỘT PHE',diffSide:'KHÁC PHE',ackTitle:'Đã ghi nhận hành động',ackSub:'Kết quả sẽ hiện ra vào rạng sáng cùng với cả làng.',toDayPhase:'Chuyển sang Ngày',endGame:'Kết thúc',dcTitle:'Mất kết nối với máy chủ',dcSub:'Đang thử kết nối lại...',copied:'Đã copy mã phòng #A3F2',editRoles:'Cấu hình vai trò',editRolesSub:'Số vai phải khớp với số người chơi trong phòng.',cancel:'Huỷ',saveConfig:'Lưu cấu hình',autoHint:'Auto-Pilot: hệ thống tự chuyển phase, nút điều khiển bị khoá.',manualHint:'Bạn đang điều khiển phase thủ công.'},
+en:{nickPh:'Enter a nickname...',enter:'Enter game',orSso:'or sign in with',createRoom:'Create room',createSub:'+ NEW',joinRoom:'Enter room code',joinSub:'Join',recent:'Recent rooms',stats:'Your stats',matches:'Games',wins:'Wins',winRate:'Win rate',back:'Back',config:'Game setup',people:'players',preset:'Tournament',wolves:'Wolves',balanced:'Balanced',tapToEdit:'tap to edit',players:'Players',startGame:'START GAME',copyCode:'Copy code',share:'Share',ready:'ready',waiting:'wait',online:'online',peekWarn:'Don’t let anyone see your screen! Release to hide instantly.',peekHold:'PRESS AND HOLD',peekRelease:'RELEASE TO HIDE',teammates:'YOUR PACK',continue:'Continue',nightN:'NIGHT 1',dayN:'DAY 1',yourRole:'Your role',waitTurn:'waiting for your turn...',yourTurn:'Your turn',nightRunning:'The night is unfolding',nightAnon:'Roles are acting one after another. You will be called when it is your turn.',actedCount:'roles have acted',actionLogged:'Your action has been recorded.',waitOthers:'Waiting for the remaining roles.',packLive:'THE PACK IS CHOOSING',tonightVictim:'Tonight the wolves bit',usedUp:'used up',skipNight:'Skip tonight',waitDawn:'Wait for dawn',isWolf:'IS A WOLF!',isVillager:'IS A VILLAGER',decoyTitle:'Waiting for other roles to act...',decoySub:'Stay quiet, give nothing away',decoyNote:'Decoy screen — nobody beside you can tell whether you acted.',dawnTitle:'Dawn breaks...',dawnSub:'Someone died last night',deathIntro:'Last night, we lost:',diedInNight:'died during the night',notRevealed:'Chi’s cause of death and role are not revealed. Work it out yourselves.',safeTitle:'A peaceful night!',safeSub:'Nobody died',hunterTitle:'YOU HAVE BEEN ELIMINATED',hunterSub:'Before you fall, you may take one player with you.',hunterHurry:'decide fast',shoot:'Take the shot',noShoot:'Shoot nobody',ghostBanner:'You are dead. Keep watching the game...',ghostNote:'The dead cannot chat and cannot vote.',ghostPh:'You cannot send messages',msgPh:'Type a message...',send:'Send',startVote:'Start the vote',voting:'VOTING',pickToEject:'Choose someone to eject:',vote:'vote',voted:'voted',whiteVote:'Abstain',votes:'votes',dead:'dead',voteResult:'VOTE RESULT',tally:'Vote distribution',ejected:'EJECTED FROM THE VILLAGE',ejectedSub:'An’s role is not revealed.',tieTitle:'NO MAJORITY',tieSub:'Two players tied. Nobody is ejected and the day ends.',villageWins:'VILLAGE WINS! 🎉',allWolvesOut:'All wolves eliminated',duration:'Duration',survivors:'Survivors',allRoles:'Final roles',replay:'Play again',toHome:'Back home',hostOnly:'host only',intervene:'INTERVENE',closeVote:'Close',dealTitle:'DEALING CARDS',dealing:'Dealing to 8 players...',dealReady:'Your card is face down in front of you',yourCard:'Your card',flipMine:'Flip my card',dealWarn:'Only you may see this card. Tilt the phone or cover the screen before flipping.',cardFab:'Card',tabVillage:'Village',tabGhost:'The dead',readOnly:'read-only',ghostMsgPh:'Message the dead...',livingCantHear:'The living cannot hear you',ghostChannelNote:'Only the dead can read this channel. The living see nothing.',villageReadOnly:'You are dead — you can read the village chat but not speak.',cardHold:'HOLD TO SEE YOUR CARD',cardRelease:'RELEASE AND IT HIDES',packKnow:'The pack recognises its own',fxTitle:'WHAT HAPPENED TO YOU',fxOnlyYou:'Only you see this screen. Nobody beside you can tell whether the night touched you.',fxSavedT:'YOU SURVIVED',fxSavedS:'The wolves chose you last night. Someone shielded you — you will never learn who.',fxCursedT:'YOU HAVE BEEN CURSED',fxCursedS:'From tonight you belong to the pack. Your card has changed, and the wolves know you now.',fxElderT:'YOU TOOK THE BITE',fxElderS:'The Elder survives the first attack. Not the second — and do not let on who you are.',fxPoisonT:'YOU WERE POISONED',fxPoisonS:'A dose found you in the night. Nobody will know why you died.',fxNoneT:'A QUIET NIGHT FOR YOU',fxNoneS:'Nothing touched you. That does not tell you very much either.',confirmGeneric:'Confirm',yourTurnPlain:'YOUR TURN',holdToCheck:'Hold 🎴 if you need to re-check your card',hiddenRole:'• • •',nightModeLabel:'NIGHT TURNS',seqName:'In order',simName:'Simultaneous',seqHint:'One role at a time. Slower, but the Witch learns who was bitten and heals with intent.',simHint:'Everyone acts at once. Far faster, but the Witch heals blind — nobody knows who the wolves picked.',simRunning:'The whole village is acting at once',simAnon:'No running order. Lock your choice in before the clock runs out.',doneCount:'players done',victimUnknown:'Tonight\u2019s victim is unknown',victimUnknownSub:'The wolves are still choosing. Spending the heal now is a gamble.',blindSave:'Heal someone blind',ravenMark:'raven mark +2',chiefMark:'vote ×2',lovers:'bound pair',seanceTitle:'VOICES FROM THE DEAD',anon:'anonymous',someoneDead:'Someone who died',seanceNote:'You never learn who is speaking and you cannot answer. The channel closes at dawn.',nextNight:'On to night ',endMatch:'End the match',isSeer:'IS THE SEER',notSeer:'NOT THE SEER',sameSide:'SAME FACTION',diffSide:'DIFFERENT FACTIONS',ackTitle:'Action recorded',ackSub:'The outcome surfaces at dawn, together with the whole village.',toDayPhase:'Advance to Day',endGame:'End game',dcTitle:'Lost connection to server',dcSub:'Reconnecting...',copied:'Copied room code #A3F2',editRoles:'Role setup',editRolesSub:'The role count must match the players in the room.',cancel:'Cancel',saveConfig:'Save setup',autoHint:'Auto-Pilot: the system advances phases; controls are locked.',manualHint:'You are advancing phases manually.'}
+};
+const BOT_CHAT = [
+  {id:2,vi:'Tôi nghĩ Dũng là sói, đêm qua im lặng lạ.',en:'I think Dũng is a wolf — too quiet last night.'},
+  {id:6,vi:'Tôi là Bảo Vệ, tôi đỡ cho An.',en:'I am the Guard, I covered An.'},
+  {id:5,vi:'Vô lý, tôi là dân thường mà!',en:'Nonsense, I am just a villager!'},
+  {id:7,vi:'Tiên Tri ra mặt đi, còn 2 sói.',en:'Seer, speak up — two wolves left.'}
+];
+const FX = {
+  none:{k:'None',e:'🌤️'}, saved:{k:'Saved',e:'🛡️'}, cursed:{k:'Cursed',e:'🌑'},
+  elder:{k:'Elder',e:'👴'}, poison:{k:'Poison',e:'☠️'}
+};
+const SEANCE = [
+  {vi:'Bình nói dối. Nó không phải dân thường.',en:'Bình is lying. He is no ordinary villager.'},
+  {vi:'Đêm 1 bầy sói chọn rất nhanh — chúng ngồi cạnh nhau.',en:'The pack chose fast on night 1 — they are sitting next to each other.'}
+];
+const GHOST_CHAT = [
+  {id:4,vi:'Mình bị sói cắn đêm 1. Bình nói dối, nó không phải dân.',en:'The wolves got me on night 1. Bình is lying, he is no villager.'},
+  {id:4,vi:'Tiếc là không nói ra được nữa 😤',en:'Shame we cannot say a word out there 😤'}
+];
+const LOG = [
+  {vi:'Đêm 1',en:'Night 1',lines:[['🛡️','BV bảo vệ An','Guard protects An','#38A169'],['🐺','Sói cắn Chi','Wolves bite Chi','#E53E3E'],['🧪','PT không dùng thuốc','Witch holds potions','#38A169'],['🔮','TT soi Dũng → Sói','Seer inspects Dũng → Wolf','#A7C5EB'],['💀','Chi chết','Chi dies','#94A1B2']]},
+  {vi:'Ngày 1',en:'Day 1',lines:[['🗳','Biểu quyết loại An (4 phiếu)','Vote ejects An (4 votes)','#ECC94B'],['🐺','An là Sói ✓','An was a Wolf ✓','#E53E3E']]},
+  {vi:'Đêm 2',en:'Night 2',lines:[['🛡️','BV bảo vệ Bình','Guard protects Bình','#38A169'],['🐺','Sói cắn Khoa','Wolves bite Khoa','#E53E3E'],['🏹','Săn Thủ bắn Dũng','Hunter shoots Dũng','#38A169']]}
+];
+const CFG = [['wolf',2],['seer',1],['witch',1],['guard',1],['hunter',1],['villager',2]];
+
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const s = props.screen || 'login';
+    const b = {lang:props.lang||'vi',username:'Bạn',role:props.role||'seer',screen:'login',nightPhase:'waiting',day:1,
+      peek:false,card:false,chatTab:'village',fx:'none',nightMode:props.nightMode||'seq',target:null,pair:[],witchMode:'idle',potions:{save:1,poison:1},chat:[],chatN:0,
+      votes:{},myVote:null,hostMode:'Auto',timer:30,dcTimer:30,toast:null,draft:'',dc:false,
+      ghost:false,configOpen:false,cfg:CFG.map(c=>c[1]),packIdx:0,outcome:'ejected'};
+    if (s === 'disconnect'){ b.screen='day'; b.dc=true; b.timer=120; }
+    else if (s === 'card-day'){ b.screen='day'; b.card=true; b.timer=120; b.chatN=5; }
+    else if (s === 'card-night'){ b.screen='night'; b.nightPhase='waiting'; b.card=true; }
+    else if (s === 'lobby-config'){ b.screen='lobby'; b.configOpen=true; }
+    else if (s === 'day-ghost'){ b.screen='day'; b.ghost=true; b.timer=120; b.chatN=5; }
+    else if (s.indexOf('aftermath') === 0){ b.screen='aftermath'; b.fx = s.split('-')[1] || 'none'; }
+    else if (s === 'ghost-chat'){ b.screen='day'; b.ghost=true; b.chatTab='ghost'; b.timer=120; b.chatN=5; }
+    else if (s === 'vote-tie'){ b.screen='vote-result'; b.outcome='tie'; }
+    else if (s === 'host-direct'){ b.screen='host'; b.hostMode='Direct'; }
+    else if (s.indexOf('night') === 0){ b.screen='night'; b.nightPhase=s.split('-')[1]||'waiting'; if(b.nightPhase==='result') b.target=5; if(b.nightPhase==='turn') b.target=null; }
+    else if (s.indexOf('reveal') === 0){ b.screen='reveal'; b.peek = s==='reveal-shown'; }
+    else b.screen = s;
+    if (b.screen === 'day' && !b.chatN){ b.timer=120; b.chatN=5; }
+    if (b.screen === 'vote'){ b.timer=30; b.votes={2:3,5:2}; }
+    if (b.screen === 'hunter'){ b.timer=15; }
+    this.state = b;
+  }
+  get live(){ return this.props.interactive !== false; }
+  componentDidMount(){
+    if (!this.live) return;
+    this.tick = setInterval(() => {
+      const cur = this.state;
+      if (cur.screen === 'night' && cur.nightPhase === 'decoy' && cur.timer <= 8){ this.go('dawn'); return; }
+      this.setState(st => {
+      const n = {};
+      if (st.timer > 0) n.timer = st.timer - 1;
+      if (st.dc && st.dcTimer > 0) n.dcTimer = st.dcTimer - 1;
+      if (st.screen === 'day' && st.chatN < BOT_CHAT.length && st.timer % 2 === 0) n.chatN = st.chatN + 1;
+      if (st.screen === 'night' && st.nightPhase === 'turn') n.packIdx = (st.packIdx + 1) % 6;
+      if (st.screen === 'night' && st.nightPhase === 'waiting' && st.timer === (st.nightMode === 'sim' ? 28 : 25))
+        n.nightPhase = (ROLES[st.role] && ROLES[st.role].act) ? 'turn' : 'decoy';
+      if (st.screen === 'vote'){
+        const c = Object.keys(st.votes).reduce((a,k)=>a+st.votes[k],0);
+        if (c < 6 && st.timer % 3 === 0) n.votes = Object.assign({}, st.votes, {2:(st.votes[2]||0)+1});
+      }
+      return n;
+      });
+    }, 1000);
+  }
+  componentWillUnmount(){ clearInterval(this.tick); clearTimeout(this.toastT); }
+  go(screen, extra){
+    if (!this.live) return;
+    const t = {night:30,day:120,vote:30,hunter:15}[screen] || 0;
+    this.setState(Object.assign({screen:screen,peek:false,timer:t,target:null,pair:[],witchMode:'idle',
+      chatN: screen==='day'?2:0, configOpen:false}, extra||{}));
+    if (screen === 'dawn') setTimeout(()=>this.setState(st => st.screen==='dawn'?{screen:'aftermath'}:{}), 2600);
+  }
+  flash(m){ this.setState({toast:m}); clearTimeout(this.toastT); this.toastT = setTimeout(()=>this.setState({toast:null}),2200); }
+  sendNow(){
+    const d = this.state.draft.trim(); if (!d) return;
+    this.setState(st => { const gh = st.ghost && st.chatTab === 'ghost';
+      return {draft:'', chat: st.chat.concat([{gh:gh, name: st.username + (gh?' 👻':''), initial:'B', avatarBg:'#3B3264', text:d,
+        alpha:1, nameColor: gh?'#C4A9F5':'#ECC94B', textColor:'#FFFFFE', italic:'normal'}])}; });
+  }
+  renderVals(){
+    const st = this.state, L = st.lang, t = T[L], live = this.live, sc = st.screen;
+    const on = f => live ? f : () => {};
+    const P = PLAYERS;
+    const R = ROLES[st.role] || ROLES.seer;
+    const fac = FACTION[R.f];
+    const peek = st.peek;
+    const alive = P.filter(p=>p.alive);
+    const ghostTab = st.ghost && st.chatTab === 'ghost';
+    const inputLocked = st.ghost && !ghostTab;
+    const nameOf = id => (P.find(p=>p.id===id)||{}).name || '';
+    const avOf = id => (P.find(p=>p.id===id)||{}).avatarBg || '#2D3748';
+    const iniOf = id => (P.find(p=>p.id===id)||{}).initial || '';
+    const blur = peek ? '0px' : '7px', al = peek ? 1 : 0.35;
+    const secret = 'transition:filter .15s ease-out,opacity .15s ease-out;filter:blur(' + blur + ');opacity:' + al;
+
+    const bg = {night:'linear-gradient(175deg,#0F0E17 0%,#151328 55%,#1A1A2E 100%)',
+      dawn:'linear-gradient(0deg,#4A3B2D 0%,#2D2B55 40%,#1A1825 100%)',
+      death:'linear-gradient(180deg,#1A1825 0%,#2D2B55 100%)',
+      hunter:'radial-gradient(110% 70% at 50% 0%,rgba(229,62,62,.28),transparent 70%),linear-gradient(180deg,#1A1825,#2D2B55)',
+      day:'linear-gradient(180deg,#1A1825 0%,#252344 100%)',
+      vote:'linear-gradient(180deg,#1F1B2E 0%,#2D2B55 100%)',
+      'vote-result':'linear-gradient(180deg,#1F1B2E 0%,#2D2B55 100%)',
+      over:'radial-gradient(120% 80% at 50% 110%,rgba(56,161,105,.35),transparent 70%),linear-gradient(180deg,#0F0E17,#141B18)',
+      reveal:'linear-gradient(180deg,#0F0E17,#12111C)'}[sc] || 'linear-gradient(180deg,#0F0E17 0%,#1A1825 100%)';
+
+    // ── night action config for the current role
+    const act = R.act || null;
+    const isPack = !!R.team, isWitchT = act === 'witch', isMediumT = act === 'medium';
+    const packIds = [2,5];
+    const packTargets = [3,6,7,8,3,7];
+    const packPick = packTargets[st.packIdx % packTargets.length];
+    const guardLast = 3, poisonMode = isWitchT && st.witchMode === 'poison';
+    const cupid = act === 'cupid' || act === 'detective';
+    const showGrid = !!act && !isMediumT && (!isWitchT || poisonMode);
+    const selIds = cupid ? st.pair : (st.target ? [st.target] : []);
+
+    const cell = (p, selected, locked, glowColor) =>
+      "border-radius:16px;padding:9px 3px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;transition:all .18s ease-out;background:" +
+      (selected ? (glowColor === '#E53E3E' ? 'rgba(229,62,62,.18)' : 'rgba(167,197,235,.16)') : '#1A1825') +
+      ';border:1.5px solid ' + (selected ? glowColor : '#2E2B3F') +
+      ';opacity:' + (locked ? 0.32 : 1) +
+      ';box-shadow:' + (selected ? '0 0 22px -6px ' + glowColor : 'none');
+
+    const accent = sc === 'hunter' ? '#E53E3E' : '#A7C5EB';
+    const targets = P.filter(p => !p.you).map(p => {
+      let locked = !p.alive;
+      let note = p.alive ? '' : t.dead;
+      if (act === 'guard' && p.id === guardLast){ locked = true; note = L==='vi' ? 'đêm qua' : 'last night'; }
+      if (isPack && p.role === 'wolf'){ locked = true; note = '🐺'; }
+      const sel = selIds.indexOf(p.id) >= 0;
+      return Object.assign({}, p, {
+        locked: locked, lockNote: note,
+        packOpacity: (isPack && p.id === packPick) ? 1 : 0,
+        packMark: 'D',
+        cellStyle: cell(p, sel, locked, accent),
+        pick: on(() => { if (locked) return;
+          if (cupid) this.setState(s2 => ({pair: s2.pair.indexOf(p.id)>=0 ? s2.pair.filter(x=>x!==p.id) : s2.pair.slice(0,1).concat([p.id])}));
+          else this.setState({target: p.id}); })
+      });
+    });
+    const ready = isMediumT ? true : (cupid ? st.pair.length === 2 : !!st.target);
+
+    const stepState = i => st.nightPhase === 'result' ? 'done' : (st.nightPhase === 'turn' ? (i<3?'done':'active') : (i<2?'done':(i===2?'active':'wait')));
+    const SS = {done:{m:'✓',bg:'rgba(56,161,105,.08)',bd:'rgba(56,161,105,.3)',fg:'#38A169'},
+      active:{m:'⏳',bg:'rgba(236,201,75,.1)',bd:'rgba(236,201,75,.45)',fg:'#ECC94B'},
+      wait:{m:'?',bg:'#1A1825',bd:'#2E2B3F',fg:'#94A1B2'}};
+    const nightSlots = [0,1,2,3].map(i => { const s2 = SS[stepState(i)]; return {mark:s2.m,bg:s2.bg,bd:s2.bd,fg:s2.fg}; });
+    const actedN = [0,1,2,3].filter(i => stepState(i)==='done').length;
+
+    const scryWolf = st.target === 5 || st.target === 2;
+    const infoRole = st.role === 'seer' || st.role === 'wolfseer' || st.role === 'detective';
+    const pairIds = st.pair.length === 2 ? st.pair : [3,6];
+    const samePair = FACTION[ROLES[(P.find(p=>p.id===pairIds[0])||{role:'villager'}).role].f] === FACTION[ROLES[(P.find(p=>p.id===pairIds[1])||{role:'villager'}).role].f];
+    let scryBd, verdict, subject;
+    if (st.role === 'wolfseer'){ scryBd = '#38A169'; verdict = '✓ ' + t.notSeer; subject = nameOf(st.target||5); }
+    else if (st.role === 'detective'){ scryBd = samePair ? '#38A169' : '#ECC94B'; verdict = (samePair?'✓ ':'⚠️ ') + (samePair?t.sameSide:t.diffSide); subject = nameOf(pairIds[0]) + ' & ' + nameOf(pairIds[1]); }
+    else { scryBd = scryWolf ? '#E53E3E' : '#38A169'; verdict = scryWolf ? ('⚠️ ' + t.isWolf) : ('✓ ' + t.isVillager); subject = nameOf(st.target||5); }
+
+    const voteTotal = Object.keys(st.votes).reduce((a,k)=>a+st.votes[k],0) + (st.myVote?1:0);
+    const tie = st.outcome === 'tie';
+    const tallyData = tie ? [[2,3],[5,3],[3,1]] : [[2,4],[5,2],[3,1]];
+
+    const navScreens = [['login','Login'],['home','Home'],['lobby','Lobby'],['deal','Deal'],['reveal','Reveal'],['night','Night'],['dawn','Dawn'],['aftermath','Aftermath'],['death','Death'],['hunter','Hunter'],['day','Day'],['vote','Vote'],['vote-result','Result'],['over','Over'],['host','Host']];
+
+    return {
+      t:t, username:st.username, bgGradient:bg,
+      starsOpacity: (sc==='night'||sc==='login'||sc==='reveal') ? 0.9 : 0.15,
+      sLogin:sc==='login', sHome:sc==='home', sLobby:sc==='lobby', sReveal:sc==='reveal',
+      sNight:sc==='night', sDawn:sc==='dawn', sDeath:sc==='death', sHunter:sc==='hunter',
+      sDay:sc==='day', sVote:sc==='vote', sVoteResult:sc==='vote-result', sOver:sc==='over',
+      sHost:sc==='host', sDisconnect:st.dc,
+      nWaiting: sc==='night'&&st.nightPhase==='waiting', nTurn: sc==='night'&&st.nightPhase==='turn',
+      nResult: sc==='night'&&st.nightPhase==='result', nDecoy: sc==='night'&&st.nightPhase==='decoy',
+      configOpen: st.configOpen, ghost: st.ghost, notGhost: !st.ghost,
+      ghostDim: st.ghost && sc==='day',
+      showNav: live, langLabel: L==='vi'?'Tiếng Việt':'English',
+      ghostBtnBg: st.ghost ? 'rgba(74,85,104,.4)' : '#1A1825',
+      navItems: navScreens.map(([k,label]) => ({label:label,
+        bg: sc===k?'#A7C5EB':'#1A1825', bd: sc===k?'#A7C5EB':'#2E2B3F', fg: sc===k?'#0F0E17':'#94A1B2',
+        go: on(()=>this.go(k))})),
+      roleChips: ORDER.map(k => ({emoji:ROLES[k].e, name:ROLES[k][L],
+        bg: st.role===k ? FACTION[ROLES[k].f].bg : '#1A1825',
+        bd: st.role===k ? FACTION[ROLES[k].f].bd : '#2E2B3F',
+        go: on(()=>this.setState({role:k,target:null,pair:[],witchMode:'idle',peek:false}))})),
+      nightTabs: [['waiting','Chờ lượt','Waiting'],['turn','Lượt của bạn','Your turn'],['result','Kết quả','Result'],['decoy','Decoy','Decoy']].map(([k,vi,en]) => ({
+        label: L==='vi'?vi:en,
+        bg: st.nightPhase===k?'rgba(167,197,235,.18)':'transparent',
+        bd: st.nightPhase===k?'#A7C5EB':'#2E2B3F',
+        fg: st.nightPhase===k?'#A7C5EB':'#4A5568',
+        go: on(()=>this.setState({nightPhase: (k==='turn' && !(ROLES[st.role]||{}).act) ? 'decoy' : k, peek:false, target:k==='result'?5:null}))})),
+      toggleLang: on(()=>this.setState({lang:L==='vi'?'en':'vi'})),
+      toggleGhost: on(()=>this.setState({ghost:!st.ghost})),
+      toggleDc: on(()=>this.setState({dc:!st.dc,dcTimer:30})),
+      onName: on(e=>this.setState({username:e.target.value})),
+      goHome: on(()=>this.go('home',{dc:false})),
+      createRoom: on(()=>{ this.flash(L==='vi'?'Đã tạo phòng #A3F2':'Room #A3F2 created'); this.go('lobby'); }),
+      joinRoom: on(()=>this.go('lobby')),
+      openConfig: on(()=>this.setState({configOpen:true})),
+      closeConfig: on(()=>this.setState({configOpen:false})),
+      saveConfig: on(()=>{ this.setState({configOpen:false}); this.flash(L==='vi'?'Đã lưu cấu hình':'Setup saved'); }),
+      startGame: on(()=>this.go('deal')),
+      copyCode: on(()=>this.flash(t.copied)),
+      sDeal: sc==='deal', sAftermath: sc==='aftermath',
+      fxEmoji: FX[st.fx].e, fxColor: '#A7C5EB',
+      fxCardStyle: 'box-sizing:border-box;min-height:290px;display:flex;flex-direction:column;justify-content:center;border-radius:26px;border:1.5px solid #353251;background:linear-gradient(155deg,#16141F,#211E30);padding:28px 22px;text-align:center;box-shadow:0 0 40px -16px rgba(167,197,235,.45)',
+      fxTitleText: t['fx' + FX[st.fx].k + 'T'], fxSubText: t['fx' + FX[st.fx].k + 'S'],
+      fxShowPack: st.fx === 'cursed',
+      toDeathFromFx: on(()=>this.go('death')),
+      dealCards: P.map((p,i) => ({
+        mine: p.you,
+        style: 'position:relative;aspect-ratio:3/4;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:' + (p.you?'26px':'19px') + ';background:linear-gradient(155deg,#1F2233,#14121F);border:1.5px solid ' + (p.you?'#A7C5EB':'#2E2B3F') + ';box-shadow:' + (p.you?'0 0 26px -6px rgba(167,197,235,.8)':'none') + ';opacity:' + (p.you?1:0.55) + ';animation:msRise .5s ease-out ' + (i*0.11) + 's both',
+        mark: p.you ? '🌙' : '🌙',
+        label: p.you ? t.yourCard : p.name
+      })),
+      toReveal: on(()=>this.go('reveal')),
+      showCardFab: ['night','death','day','vote','vote-result','hunter'].indexOf(sc) >= 0,
+      rootPad: (['night','death','day','vote','vote-result','hunter'].indexOf(sc) >= 0) ? '54px 0 80px' : '54px 0 30px',
+      cardOpen: st.card,
+      cardOn: on(()=>{ this.setState({card:true}); if (navigator.vibrate) navigator.vibrate(12); }),
+      cardOff: on(()=>this.setState({card:false})),
+      nightLabel: (L==='vi'?'ĐÊM THỨ ':'NIGHT ') + st.day,
+      dayLabel: (L==='vi'?'NGÀY THỨ ':'DAY ') + st.day,
+      toHost: on(()=>this.go('host')),
+      afterDeath: on(()=>this.go(st.role==='hunter' ? 'hunter' : 'day')),
+      afterDeathLabel: st.role==='hunter' ? (L==='vi'?'Bạn đã bị cắn':'You were bitten') : t.continue,
+      afterVote: on(()=>{ if (st.day >= 2) this.go('over'); else this.go('night',{day:st.day+1,nightPhase:'waiting'}); }),
+      afterVoteLabel: st.day >= 2 ? t.endMatch : (t.nextNight + (st.day+1)),
+      toNight: on(()=>this.go('night',{nightPhase:'waiting'})), toDawn: on(()=>this.go('dawn')),
+      toDeath: on(()=>this.go('death')), toDay: on(()=>this.go('day')),
+      toVote: on(()=>this.go('vote')), toVoteResult: on(()=>this.go('vote-result')),
+      toOver: on(()=>this.go('over')), replay: on(()=>this.go('lobby')),
+      peekOn: on(()=>{ this.setState({peek:true}); if (navigator.vibrate) navigator.vibrate(12); }),
+      peekOff: on(()=>this.setState({peek:false})),
+      peekOpen: peek ? R.e : '🔮',
+      peekHint: peek ? t.peekRelease : t.peekHold,
+      secretReveal: 'margin-top:16px;' + secret,
+      secretScry: 'margin-top:14px;' + secret,
+      revealCardStyle: 'position:relative;box-sizing:border-box;min-height:330px;display:flex;flex-direction:column;justify-content:center;border-radius:28px;border:2px solid #35325180;background:linear-gradient(155deg,#16141F 0%,#211E30 100%);padding:28px 22px;text-align:center;cursor:pointer;user-select:none;box-shadow:0 0 40px -14px rgba(167,197,235,.5)',
+      myRoleName: R[L], myRoleEmoji: R.e, myRoleDesc: L==='vi'?R.dvi:R.den,
+      myRoleNote: L==='vi'?R.nvi:R.nen, hasNote: !!R.nvi,
+      myFactionName: fac[L], roleBorder: '#A7C5EB', factionBg: '#211E30',
+      showBadges: !!R.badges,
+      roleBadges: (R.badges||[]).map(b => ({text: L==='vi'?b[0]:b[1], bg:'rgba(0,0,0,.3)', bd:b[2], fg:b[2]})),
+      showTeam: !!R.team,
+      teamPills: packIds.map(id => ({name:nameOf(id), initial:iniOf(id), avatarBg:avOf(id)})),
+      rooms: [
+        {name:'Room Alpha',status:L==='vi'?'đang chờ...':'waiting...',count:'6/10',badge:L==='vi'?'CHỜ':'OPEN',badgeBg:'rgba(56,161,105,.16)',badgeFg:'#38A169',open:on(()=>this.go('lobby'))},
+        {name:'Room Beta',status:L==='vi'?'đang chơi · 🔒':'in game · 🔒',count:'8/8',badge:L==='vi'?'ĐANG CHƠI':'LIVE',badgeBg:'rgba(236,201,75,.16)',badgeFg:'#ECC94B',open:on(()=>this.flash(L==='vi'?'Phòng đã đầy':'Room is full'))}],
+      lobbyPlayers: P.map(p=>({name:p.name,initial:p.initial,avatarBg:p.avatarBg,hostOpacity:p.host?1:0,
+        readyBg:p.ready?'rgba(56,161,105,.18)':'#232136',readyFg:p.ready?'#38A169':'#94A1B2',readyText:p.ready?t.ready:t.waiting})),
+      readyLabel: P.filter(p=>p.ready).length + '/8', onlineLabel: '8/8 ' + t.online,
+      wolfCount: st.cfg[0],
+      configRows: CFG.map((c,i) => { const r = ROLES[c[0]], f = FACTION[r.f];
+        return {emoji:r.e, name:r[L], faction:f[L], n:st.cfg[i], bg:f.bg, bd:f.bd,
+          inc: on(()=>this.setState(s2=>{const n=s2.cfg.slice(); n[i]++; return {cfg:n};})),
+          dec: on(()=>this.setState(s2=>{const n=s2.cfg.slice(); n[i]=Math.max(0,n[i]-1); return {cfg:n};}))}; }),
+      assignedLabel: st.cfg.reduce((a,b)=>a+b,0) + '/8',
+      unbalanced: st.cfg.reduce((a,b)=>a+b,0) !== 8 || st.cfg[0] > 2,
+      balanceColor: (st.cfg.reduce((a,b)=>a+b,0) === 8 && st.cfg[0] <= 2) ? '#38A169' : '#ECC94B',
+      balanceWarning: st.cfg.reduce((a,b)=>a+b,0) !== 8
+        ? (L==='vi' ? 'Tổng số vai (' + st.cfg.reduce((a,b)=>a+b,0) + ') chưa khớp 8 người trong phòng.' : 'Role total (' + st.cfg.reduce((a,b)=>a+b,0) + ') does not match the 8 players in the room.')
+        : (L==='vi' ? 'Nhiều hơn 2 Sói trong ván 8 người sẽ nghiêng hẳn về phe Sói.' : 'More than 2 wolves in an 8-player game tilts heavily to the pack.'),
+      timerLabel: Math.floor(st.timer/60) + ':' + (st.timer%60 < 10 ? '0' : '') + (st.timer%60),
+      timerPct: Math.round((st.timer/30)*100) + '%',
+      turnHeaderBg: 'linear-gradient(100deg,rgba(167,197,235,.16),transparent)',
+      isWolfTurn: isPack && !!act, isWitchTurn: isWitchT, showGrid: showGrid,
+      isMediumTurn: isMediumT,
+      seance: SEANCE.map(m => ({text:m[L]})),
+      packStatus: packIds.map((id,i) => ({name:nameOf(id), initial:iniOf(id), avatarBg:avOf(id),
+        color: i === 1 ? '#A7C5EB' : '#4A5568',
+        text: i === 1 ? (L==='vi'?'đang chọn ':'is choosing ') + nameOf(packPick) : (L==='vi'?'đang cân nhắc...':'still thinking...')})),
+      potionBtns: [
+        {emoji:'🧪', label: L==='vi'?'Thuốc cứu':'Heal', count: st.potions.save ? (L==='vi'?'còn 1':'1 left') : t.usedUp, out: !st.potions.save,
+         style: "display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:16px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE;background:" + (st.witchMode==='save'?'rgba(167,197,235,.18)':'#1A1825') + ';border:1.5px solid ' + (st.witchMode==='save'?'#A7C5EB':'#2E2B3F') + ';opacity:' + (st.potions.save?1:0.4),
+         go: on(()=>this.setState({witchMode:'save',target:null}))},
+        {emoji:'☠️', label: L==='vi'?'Thuốc độc':'Poison', count: st.potions.poison ? (L==='vi'?'còn 1':'1 left') : t.usedUp, out: !st.potions.poison,
+         style: "display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:16px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;color:#FFFFFE;background:" + (st.witchMode==='poison'?'rgba(167,197,235,.18)':'#1A1825') + ';border:1.5px solid ' + (st.witchMode==='poison'?'#A7C5EB':'#2E2B3F') + ';opacity:' + (st.potions.poison?1:0.4),
+         go: on(()=>this.setState({witchMode:'poison',target:null}))}],
+      turnPrompt: isWitchT
+        ? (st.witchMode==='save' ? (L==='vi'?'Bạn sẽ dùng thuốc cứu cho Chi.':'You will use the healing potion on Chi.')
+          : (poisonMode ? (L==='vi'?R.pvi:R.pen) : (L==='vi'?'Chọn một hành động, hoặc bỏ qua đêm nay.':'Pick an action, or skip tonight.')))
+        : (act ? (L==='vi'?R.pvi:R.pen) : ''),
+      targets: targets,
+      noTarget: isWitchT ? (st.witchMode==='idle' || (poisonMode && !st.target)) : (sc==='hunter' ? !st.target : !ready),
+      confirmLabel: sc==='hunter' ? t.shoot : t.confirmGeneric,
+      confirmBg: (isWitchT ? st.witchMode!=='idle' && (!poisonMode || st.target) : ready) ? accent : '#1A1825',
+      confirmFg: (isWitchT ? st.witchMode!=='idle' && (!poisonMode || st.target) : ready) ? '#0F0E17' : '#4A5568',
+      confirmGlow: (isWitchT ? st.witchMode!=='idle' && (!poisonMode || st.target) : ready) ? '0 0 26px -8px ' + accent : 'none',
+      confirmAction: on(()=>{ if (sc==='hunter'){ this.flash((L==='vi'?'Bạn đã bắn ':'You shot ') + nameOf(st.target)); this.go('day'); return; }
+        this.setState({nightPhase:'result', peek:false, target: st.target || (st.pair[0]||5)}); }),
+      canSkip: isWitchT, skipAction: on(()=>this.setState({nightPhase:'result',witchMode:'idle',target:5,peek:false})),
+      shootBg: st.target ? '#E53E3E' : '#1A1825', shootFg: st.target ? '#FFFFFE' : '#4A5568',
+      shootGlow: st.target ? '0 0 26px -8px #E53E3E' : 'none',
+      nightSlots: nightSlots, actedLabel: actedN + '/4 ' + t.actedCount,
+      seqMode: st.nightMode === 'seq', simMode: st.nightMode === 'sim',
+      simDoneLabel: '5/8 ' + t.doneCount,
+      modeBadge: st.nightMode === 'sim' ? ('⇉ ' + t.simName) : ('⇢ ' + t.seqName),
+      nightModes: [['seq',t.seqName],['sim',t.simName]].map(([k,label]) => ({
+        label: label,
+        style: "flex:1;height:34px;border-radius:11px;border:0;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;font-size:12px;font-weight:700;background:" +
+          (st.nightMode===k ? '#A7C5EB' : 'transparent') + ';color:' + (st.nightMode===k ? '#0F0E17' : '#94A1B2'),
+        go: on(()=>this.setState({nightMode:k}))})),
+      nightModeHint: st.nightMode === 'sim' ? t.simHint : t.seqHint,
+      resultInfo: infoRole, resultAck: !infoRole,
+      ackGradient: 'linear-gradient(155deg,#16141F,#211E30)',
+      ackTarget: (L==='vi'?'Mục tiêu: ':'Target: ') + subject,
+      scryName: subject, scryInitial: iniOf(st.role==='detective'?pairIds[0]:(st.target||5)), scryAvatarBg: avOf(st.role==='detective'?pairIds[0]:(st.target||5)),
+      scryVerdict: verdict, scryBorder: scryBd,
+      scryGradient: 'linear-gradient(155deg,rgba(0,0,0,.35),' + (scryBd==='#E53E3E'?'#3B1A1A':(scryBd==='#ECC94B'?'#2D2B55':'#1A3B2A')) + ')',
+      aliveLabel: (L==='vi'?'Sống ':'Alive ') + alive.length + '/8',
+      deadLabel: (L==='vi'?'Chết ':'Dead ') + (8-alive.length),
+      dayStrip: P.map(p => Object.assign({}, p, {
+        loveOpacity: (st.role === 'cupid' && (p.id === 3 || p.id === 6)) ? 1 : 0,
+        markOpacity: p.id === 3 ? 1 : 0,
+        stripBd: p.alive?'rgba(167,197,235,.45)':'#4A5568',
+        stripFg: p.alive?'#FFFFFE':'#4A5568', cardAlpha: p.alive?1:0.45,
+        skullOpacity: p.alive?0:0.9, strike: p.alive?'none':'line-through'})),
+      chat: (ghostTab
+        ? GHOST_CHAT.map(m => ({name:nameOf(m.id)+' 👻', initial:iniOf(m.id), avatarBg:avOf(m.id), text:m[L],
+            alpha:0.85, nameColor:'#9F7AEA', textColor:'rgba(255,255,254,.8)', italic:'italic'}))
+        : BOT_CHAT.slice(0, live ? st.chatN : BOT_CHAT.length).map(m => ({
+            name: nameOf(m.id), initial: iniOf(m.id), avatarBg: avOf(m.id), text: m[L],
+            alpha:1, nameColor:'#A7C5EB', textColor:'rgba(255,255,254,.88)', italic:'normal'}))
+        ).concat(st.chat.filter(m => !!m.gh === ghostTab)),
+      chatTabs: [['village',t.tabVillage + ' · ' + t.readOnly],['ghost','👻 ' + t.tabGhost]].map(([k,label]) => ({
+        label: label,
+        style: "flex:1;height:30px;border-radius:10px;cursor:pointer;font-family:'Be Vietnam Pro',system-ui;font-size:10.5px;font-weight:700;border:1px solid " +
+          (st.chatTab===k ? (k==='ghost'?'#9F7AEA':'#A7C5EB') : '#2E2B3F') + ';background:' +
+          (st.chatTab===k ? (k==='ghost'?'rgba(159,122,234,.2)':'rgba(167,197,235,.16)') : 'transparent') + ';color:' +
+          (st.chatTab===k ? (k==='ghost'?'#C4A9F5':'#A7C5EB') : '#4A5568'),
+        go: on(()=>this.setState({chatTab:k}))})),
+      ghostTab: ghostTab, inputLocked: inputLocked,
+      chatNote: ghostTab ? t.ghostChannelNote : t.villageReadOnly,
+      draft: st.draft,
+      inputPh: inputLocked ? t.livingCantHear : (ghostTab ? t.ghostMsgPh : t.msgPh),
+      inputAlpha: inputLocked ? 0.45 : 1,
+      sendBg: inputLocked ? '#232136' : (ghostTab ? '#9F7AEA' : '#A7C5EB'),
+      sendFg: inputLocked ? '#4A5568' : '#0F0E17',
+      onDraft: on(e=>this.setState({draft:e.target.value})),
+      onDraftKey: on(e=>{ if (e.key==='Enter') this.sendNow(); }),
+      send: on(()=>this.sendNow()),
+      voteRows: P.map(p => { const mine = st.myVote===p.id; const n = (st.votes[p.id]||0)+(mine?1:0);
+        return Object.assign({}, p, {dead:!p.alive, cardAlpha:p.alive?1:0.4,
+          stripFg:p.alive?'#FFFFFE':'#4A5568', strike:p.alive?'none':'line-through', skullOpacity:p.alive?0:0.9,
+          voteBg: mine?'rgba(229,62,62,.14)':'#1A1825', voteBd: mine?'#E53E3E':'#2E2B3F',
+          tallyText: p.alive ? (n + ' ' + t.votes) : t.dead,
+        fxBadge: p.id === 3 ? ('🐦 ' + t.ravenMark) : (p.you && st.role === 'chief' ? ('🏛️ ' + t.chiefMark) : ''),
+        fxBadgeStyle: 'font-size:9px;font-weight:700;padding:2px 7px;border-radius:9999px;background:rgba(236,201,75,.14);border:1px solid rgba(236,201,75,.4);color:#ECC94B;display:' + ((p.id === 3 || (p.you && st.role === 'chief')) ? 'inline-block' : 'none'),
+          btnBg: mine?'#E53E3E':'transparent', btnBd: mine?'#E53E3E':'#2E2B3F',
+          btnFg: mine?'#FFFFFE':'#94A1B2', btnText: mine?('✓ '+t.voted):t.vote,
+          vote: on(()=>p.alive && this.setState({myVote:p.id}))}); }),
+      voteProgressLabel: voteTotal + '/7 ' + (L==='vi'?'đã bỏ phiếu':'have voted'),
+      votePct: Math.min(100, Math.round((voteTotal/7)*100)) + '%',
+      whiteVote: on(()=>{ this.flash(L==='vi'?'Đã bỏ phiếu trắng':'You abstained'); this.setState({myVote:'white'}); }),
+      outcomeEmoji: tie ? '⚖️' : '🚪', outcomeBd: tie ? '#ECC94B' : '#E53E3E',
+      outcomeBg: tie ? 'linear-gradient(160deg,rgba(236,201,75,.16),rgba(45,43,85,.5))' : 'linear-gradient(160deg,rgba(229,62,62,.22),rgba(59,26,26,.55))',
+      outcomeTitle: tie ? t.tieTitle : 'AN — ' + t.ejected,
+      outcomeSub: tie ? t.tieSub : t.ejectedSub,
+      tallyRows: tallyData.map(([id,n]) => ({initial:iniOf(id), name:nameOf(id), avatarBg:avOf(id), n:n,
+        barWidth: Math.round((n/4)*100) + '%',
+        barColor: (!tie && n===4) ? '#E53E3E' : (tie && n===3 ? '#ECC94B' : '#4A5568')})),
+      finalRoles: P.map(p => { const r = ROLES[p.role], f = FACTION[r.f];
+        return {name:p.name, initial:p.initial, avatarBg:p.avatarBg, roleEmoji:r.e, roleName:r[L],
+          roleBg: f.bg+'66', roleBd: f.bd, cardAlpha: p.alive?1:0.5, strike: p.alive?'none':'line-through'}; }),
+      hostModes: ['Auto','Direct','Hybrid'].map(m => ({label:m,
+        bg: st.hostMode===m?'#A7C5EB':'transparent', fg: st.hostMode===m?'#0F0E17':'#94A1B2',
+        go: on(()=>this.setState({hostMode:m}))})),
+      hostLocked: st.hostMode==='Auto', hostManual: st.hostMode!=='Auto',
+      interveneBtns: [
+        [L==='vi'?'⏭ Bỏ qua vai trò':'⏭ Skip role', L==='vi'?'Đã bỏ qua Phù Thủy':'Skipped the Witch'],
+        [L==='vi'?'⏱ +30 giây':'⏱ +30 seconds', L==='vi'?'Đã cộng 30 giây':'Added 30 seconds'],
+        [L==='vi'?'🗳 Chốt biểu quyết':'🗳 Close the vote', L==='vi'?'Đã chốt biểu quyết':'Vote closed'],
+        [L==='vi'?'♻️ Hồi sinh người chơi':'♻️ Revive a player', L==='vi'?'Đã hồi sinh Chi':'Chi revived']
+      ].map(([label,msg]) => ({label:label, go: on(()=>this.flash(msg))})),
+      phaseBd: st.hostMode==='Auto'?'#2E2B3F':'#A7C5EB', phaseBg: st.hostMode==='Auto'?'#1A1825':'rgba(167,197,235,.14)',
+      phaseFg: st.hostMode==='Auto'?'#4A5568':'#A7C5EB',
+      dangerBd: st.hostMode==='Auto'?'#2E2B3F':'#E53E3E', dangerBg: st.hostMode==='Auto'?'#1A1825':'rgba(229,62,62,.14)',
+      dangerFg: st.hostMode==='Auto'?'#4A5568':'#FF8A8A',
+      hostHint: st.hostMode==='Auto'?t.autoHint:t.manualHint,
+      masterLog: LOG.reduce((acc,blk) => acc.concat(blk.lines.map((ln,i) => ({
+        head: i===0 ? blk[L] : '', headColor:'#A7C5EB',
+        text: ln[0] + ' ' + (L==='vi'?ln[1]:ln[2]), color: ln[3]}))), []),
+      dcCountdown: (L==='vi'?'còn ':'') + st.dcTimer + (L==='vi'?' giây':'s left'),
+      hasToast: !!st.toast, toast: st.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>

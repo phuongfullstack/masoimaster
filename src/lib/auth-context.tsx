@@ -17,7 +17,7 @@ import {
   sendPasswordResetEmail, sendSignInLinkToEmail, isSignInWithEmailLink,
   signInWithEmailLink,
   RecaptchaVerifier, signInWithPhoneNumber,
-  GoogleAuthProvider, signInWithPopup,
+  GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
 } from 'firebase/auth'
 import { auth, emailLinkActionCodeSettings } from '@/lib/firebase'
 import { useGameStore } from '@/store/game-store'
@@ -146,7 +146,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider()
     // Ask for the account picker every time (no silent re-login).
     provider.setCustomParameters({ prompt: 'select_account' })
-    await signInWithPopup(auth, provider)
+    try {
+      // Popup works in regular browsers (desktop).
+      await signInWithPopup(auth, provider)
+    } catch (e: any) {
+      // IAB / mobile webview / strict popup-blocker → fall back to full-page redirect.
+      if (e?.code === 'auth/popup-blocked' || e?.code === 'auth/cancelled-popup-request' || e?.code === 'auth/operation-not-supported-in-this-environment') {
+        await signInWithRedirect(auth, provider)
+        return
+      }
+      throw e
+    }
+  }, [])
+
+  // Complete a redirect-based sign-in when the page loads after the Google bounce-back.
+  useEffect(() => {
+    getRedirectResult(auth).catch((e) => {
+      // Surface redirect errors through the store (non-fatal if none).
+      if (e?.code && e.code !== 'auth/null-user') {
+        useGameStore.getState().setError('Đăng nhập Google thất bại: ' + (e.code))
+      }
+    })
   }, [])
 
   const signOut = useCallback(async () => {
