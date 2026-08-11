@@ -78,6 +78,10 @@ export const secretDoc = (code: string, uid: string) => secretsCol(code).doc(uid
 export const nightActionsCol = (code: string) => roomDoc(code).collection('nightActions')
 export const votesCol = (code: string) => roomDoc(code).collection('votes')
 export const messagesCol = (code: string) => roomDoc(code).collection('messages')
+// Pick cắn hiện tại của TỪNG sói — rules cho phép mọi sói trong phòng đọc
+// (pack board realtime); ghi qua API. Doc id = uid sói.
+export const wolfPicksCol = (code: string) => roomDoc(code).collection('wolfPicks')
+export const wolfPickDoc = (code: string, uid: string) => wolfPicksCol(code).doc(uid)
 
 // ============================================================
 // Domain types (server-internal — full state, includes secrets).
@@ -187,6 +191,17 @@ export async function loadVotes(code: string): Promise<Map<string, string>> {
   snap.docs.forEach((d) => {
     const data = d.data() as { targetId: string }
     map.set(d.id, data.targetId || '')
+  })
+  return map
+}
+
+/** Pick cắn của từng sói đêm nay: Map<wolfUid, targetId>. */
+export async function loadWolfPicks(code: string): Promise<Map<string, string>> {
+  const snap = await wolfPicksCol(code).get()
+  const map = new Map<string, string>()
+  snap.docs.forEach((d) => {
+    const data = d.data() as { targetId: string }
+    if (data.targetId) map.set(d.id, data.targetId)
   })
   return map
 }

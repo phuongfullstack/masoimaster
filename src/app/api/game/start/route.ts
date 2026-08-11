@@ -5,7 +5,7 @@ import {
   roomDoc, secretDoc, loadRoom, loadPlayers, generateRoleList,
   type RoomDoc, type SecretDoc,
 } from '@/lib/firestore-server'
-import { sumSpecial } from '@/lib/roles'
+import { sumSpecial, isWolfRole } from '@/lib/roles'
 import { PHASE_DURATIONS } from '@/lib/game-logic'
 
 export async function POST(req: Request) {
@@ -33,10 +33,17 @@ export async function POST(req: Request) {
   // Assign roles and write each player's secret doc.
   const roles = generateRoleList(config, total)
   const batch = roomDoc(upper).firestore.batch()
+  // Sói thấy bầy ngay từ lúc chia bài (ghi username đồng đội vào secret).
+  const wolfNames = players
+    .map((p, i) => ({ p, role: roles[i]! }))
+    .filter(({ role }) => isWolfRole(role))
   players.forEach((p, i) => {
     const role = roles[i]!
     const secret: SecretDoc = {
       role, witchSaveUsed: false, witchPoisonUsed: false, linkedPartner: null,
+      packmates: isWolfRole(role)
+        ? wolfNames.filter(({ p: w }) => w.userId !== p.userId).map(({ p: w }) => w.username)
+        : [],
     }
     batch.set(secretDoc(upper, p.userId), secret)
   })

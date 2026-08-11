@@ -39,8 +39,8 @@ export const gameApi = {
     post('/api/game/ready', idToken, { code, ready }),
   start: (idToken: string, code: string) =>
     post('/api/game/start', idToken, { code }),
-  nightAction: (idToken: string, code: string, actionType: ActionType, targetId: string | null) =>
-    post('/api/game/night-action', idToken, { code, actionType, targetId }),
+  nightAction: (idToken: string, code: string, actionType: ActionType, targetId: string | null, targetId2?: string | null) =>
+    post('/api/game/night-action', idToken, { code, actionType, targetId, targetId2 }),
   cupidLink: (idToken: string, code: string, targetIds: [string, string]) =>
     post('/api/game/cupid-link', idToken, { code, targetIds }),
   vote: (idToken: string, code: string, targetId: string | null) =>
@@ -88,8 +88,9 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
   const upper = code.toUpperCase()
   let latestRoom: RoomDocClient | null = null
   let latestPlayers: PlayerInfo[] = []
-  let latestSecret: { role: string; linkedPartner: string | null } | null = null
+  let latestSecret: { role: string; linkedPartner: string | null; packmates?: string[] } | null = null
   let latestVotes: Record<string, string> = {}
+  let latestWolfPicks: Record<string, string> = {}
   let messagesCleared = false
 
   const emit = () => {
@@ -111,15 +112,18 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       myRole: latestSecret.role as PlayerInfo['role'],
       isAlive: players.find((p) => p.userId === uid)?.isAlive ?? true,
       isHost: latestRoom.hostId === uid, players,
-      // Wolf partners are revealed at game-over via the reveal map; mid-game
-      // wolf chat works (rules gate it) without surfacing partner names here.
-      wolfPartners: Object.entries(latestRoom.reveal ?? {})
-        .filter(([id, r]) => id !== uid && (r === 'werewolf' || r === 'white_werewolf'))
-        .map(([id]) => latestPlayers.find((p) => p.userId === id)?.username ?? id),
+      // Sói thấy bầy NGAY TỪ ĐẦU VÁN qua secrets.packmates (ghi lúc start);
+      // fallback reveal map cho game_over / phòng cũ chưa có packmates.
+      wolfPartners: latestSecret.packmates?.length
+        ? latestSecret.packmates
+        : Object.entries(latestRoom.reveal ?? {})
+            .filter(([id, r]) => id !== uid && (r === 'werewolf' || r === 'white_werewolf'))
+            .map(([id]) => latestPlayers.find((p) => p.userId === id)?.username ?? id),
       loverPartner: loverPartnerName,
       timerEnd: latestRoom.timerEnd,
       votes: latestRoom.phase === 'voting' ? latestVotes : {},
       ravenMarkedId: latestRoom.ravenMarkedId ?? null,
+      wolfPicks: latestWolfPicks,
     } as RoomState
 
     cb.onRoom(roomState)
@@ -155,6 +159,15 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     emit()
   }, () => { /* permission-denied when not voting — ignore */ })
 
+  // Wolf picks — pack board realtime; rules chỉ cho sói đọc,
+  // non-wolf bị permission-denied → bỏ qua êm.
+  const unsubWolfPicks = onSnapshot(collection(fsDb, 'rooms', upper, 'wolfPicks'), (snap) => {
+    const v: Record<string, string> = {}
+    snap.docs.forEach((d) => { v[d.id] = (d.data() as { targetId: string }).targetId })
+    latestWolfPicks = v
+    emit()
+  }, () => { /* permission-denied for non-wolves — ignore */ })
+
   // Messages (chat).
   const unsubMessages = onSnapshot(
     query(collection(fsDb, 'rooms', upper, 'messages'), orderBy('createdAt')),
@@ -169,5 +182,5 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     () => { /* ignore permission errors */ },
   )
 
-  return () => { unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes(); unsubMessages() }
+  return () => { unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes(); unsubWolfPicks(); unsubMessages() }
 }

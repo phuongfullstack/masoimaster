@@ -57,6 +57,16 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
+      // ---- Wolf pack picks — pack board realtime ----
+      // Chỉ người mang vai sói đọc được pick của bầy (doc id = uid sói).
+      // Ghi qua API (night-action), client không tự ghi.
+      match /wolfPicks/{wolfUid} {
+        allow read: if request.auth != null
+                    && get(/databases/$(database)/documents/rooms/$(code)/secrets/$(request.auth.uid)).data.role
+                       in ['werewolf', 'alpha_wolf', 'wolf_seer', 'cursed_wolf', 'white_werewolf'];
+        allow write: if false;
+      }
+
       // ---- Votes — readable only during voting phase ----
       match /votes/{voterUid} {
         allow read: if request.auth != null

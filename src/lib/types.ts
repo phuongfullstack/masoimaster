@@ -48,6 +48,8 @@ export interface RoomState {
   votes: Record<string, string>
   /** Con Quạ đánh dấu — public khi vote (+2 phiếu sẵn). */
   ravenMarkedId?: string | null
+  /** Pack board: pick cắn hiện tại của từng sói (chỉ sói nhận được data). */
+  wolfPicks?: Record<string, string>
 }
 
 export interface NightActionResult {

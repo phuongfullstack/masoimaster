@@ -100,7 +100,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Dẫn dắt bầy sói. Khi bầy chia phiếu, lựa chọn của bạn quyết định.',
     noteVi: 'Phiếu của bạn thắng khi bầy hoà.',
     promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
-    nightAction: 'wolf_bite', targets: 1, seesPack: true, category: 'offensive', implemented: false,
+    nightAction: 'wolf_bite', targets: 1, seesPack: true, category: 'offensive', implemented: true,
   },
   wolf_seer: {
     key: 'wolf_seer', emoji: '🌘', nameVi: 'Sói Tiên Tri', nameEn: 'Wolf Seer',
@@ -108,7 +108,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Mỗi đêm soi 1 người để biết họ có phải Tiên Tri hay không.',
     noteVi: 'Bạn vẫn cắn cùng bầy như sói thường.',
     promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
-    nightAction: 'wolf_seer_check', targets: 1, seesPack: true, category: 'special', implemented: false,
+    nightAction: 'wolf_seer_check', targets: 1, seesPack: true, category: 'special', implemented: true,
   },
   cursed_wolf: {
     key: 'cursed_wolf', emoji: '🌑', nameVi: 'Sói Nguyền', nameEn: 'Cursed Wolf',
@@ -171,7 +171,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Mỗi đêm so 2 người để biết họ có cùng phe hay không.',
     noteVi: 'Bạn biết họ cùng phe, nhưng không biết là phe nào.',
     promptVi: 'Chọn 2 người:', confirmVi: 'Xác nhận',
-    nightAction: 'detective_compare', targets: 2, category: 'special', implemented: false,
+    nightAction: 'detective_compare', targets: 2, category: 'special', implemented: true,
   },
   medium: {
     key: 'medium', emoji: '🕯️', nameVi: 'Bà Đồng', nameEn: 'Medium',

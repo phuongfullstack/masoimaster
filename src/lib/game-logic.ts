@@ -50,10 +50,43 @@ export function buildNightSequence(
   if (has(['guard'])) seq.push({ roles: ['guard'], action: 'guard_protect', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
   if (has(['doctor'])) seq.push({ roles: ['doctor'], action: 'doctor_heal', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
   if (has(WOLF_ROLES)) seq.push({ roles: WOLF_ROLES, action: 'wolf_bite', duration: PHASE_DURATIONS.night_step_wolves, label: NIGHT_LABEL })
+  if (has(['wolf_seer'])) seq.push({ roles: ['wolf_seer'], action: 'wolf_seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: NIGHT_LABEL })
+  if (has(['detective'])) seq.push({ roles: ['detective'], action: 'detective_compare', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['raven'])) seq.push({ roles: ['raven'], action: 'raven_mark', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   return seq
+}
+
+// ============================================================
+// Wolf pack bite tally — mỗi sói pick riêng (wolfPicks/{uid}),
+// chốt bước bằng đa số; bầy chia phiếu thì pick của Sói Đầu Sỏ
+// quyết định; không có alpha (hoặc alpha không pick) → random
+// trong nhóm dẫn đầu.
+// ============================================================
+export function tallyWolfBite(
+  picks: Map<string, string>,
+  secrets: Map<string, SecretDoc>,
+): string | null {
+  if (picks.size === 0) return null
+  const counts = new Map<string, number>()
+  for (const [, targetId] of picks) counts.set(targetId, (counts.get(targetId) ?? 0) + 1)
+
+  let max = 0
+  const leaders: string[] = []
+  for (const [targetId, n] of counts) {
+    if (n > max) { max = n; leaders.length = 0; leaders.push(targetId) }
+    else if (n === max) leaders.push(targetId)
+  }
+  if (leaders.length === 1) return leaders[0]!
+
+  // Hoà — Sói Đầu Sỏ phá hoà nếu pick của alpha nằm trong nhóm dẫn đầu.
+  for (const [wolfId, targetId] of picks) {
+    if (secrets.get(wolfId)?.role === 'alpha_wolf' && leaders.includes(targetId)) {
+      return targetId
+    }
+  }
+  return leaders[Math.floor(Math.random() * leaders.length)]!
 }
 
 // ============================================================

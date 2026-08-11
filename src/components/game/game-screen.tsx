@@ -345,12 +345,15 @@ function NightScreen() {
   const nightWakeAction = useGameStore(s => s.nightWakeAction)
   const nightWakeLabel = useGameStore(s => s.nightWakeLabel)
   const seerResult = useGameStore(s => s.seerResult)
+  const wolfSeerResult = useGameStore(s => s.wolfSeerResult)
+  const detectiveResult = useGameStore(s => s.detectiveResult)
   const bittenPlayerId = useGameStore(s => s.bittenPlayerId)
   const messages = useGameStore(s => s.messages)
   const { emit } = useSocket()
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
   const [wolfMsg, setWolfMsg] = useState('')
   const [cupidPair, setCupidPair] = useState<string[]>([])
+  const [detectivePair, setDetectivePair] = useState<string[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -434,20 +437,36 @@ function NightScreen() {
             </GameCard>
           </motion.div>
 
-          {/* Target Selection */}
+          {/* Target Selection + pack board: thấy pick của bầy realtime */}
           <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers
               .filter(p => !isWolfRole(p.role) || p.role === 'white_werewolf')
-              .map(p => (
-                <PlayerTarget
-                  key={p.userId}
-                  player={p}
-                  isSelected={selectedTarget === p.userId}
-                  accentColor={NIGHT_ACCENT}
-                  onClick={() => handleNightAction('wolf_bite', p.userId)}
-                />
-              ))}
+              .map(p => {
+                const pickers = Object.entries(room.wolfPicks ?? {})
+                  .filter(([, targetId]) => targetId === p.userId)
+                  .map(([wolfUid]) => wolfUid === userId
+                    ? 'Bạn'
+                    : room.players.find(pl => pl.userId === wolfUid)?.username ?? '?')
+                return (
+                  <div key={p.userId} className="relative">
+                    <PlayerTarget
+                      player={p}
+                      isSelected={selectedTarget === p.userId}
+                      accentColor={NIGHT_ACCENT}
+                      onClick={() => handleNightAction('wolf_bite', p.userId)}
+                    />
+                    {pickers.length > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 max-w-[90%] truncate px-1.5 py-0.5 rounded-lg bg-[rgb(var(--ms-wolf))]/90 text-[10px] font-extrabold text-white">
+                        🐺 {pickers.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
           </motion.div>
+          <p className="text-center text-[rgb(var(--ms-text-muted))] text-xs">
+            Bầy chia phiếu thì lựa chọn của Sói Đầu Sỏ quyết định.
+          </p>
         </motion.div>
       )
     }
@@ -559,6 +578,122 @@ function NightScreen() {
                 onClick={() => handleNightAction('guard_protect', p.userId)}
               />
             ))}
+          </motion.div>
+        </motion.div>
+      )
+    }
+
+    // ---- Wolf Seer Action ----
+    if (myRole === 'wolf_seer' && nightWakeAction === 'wolf_seer_check') {
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Soi 1 người — có phải Tiên Tri không?" />
+
+          {wolfSeerResult && (
+            <motion.div variants={staggerItem}>
+              <PressToReveal
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                hint={
+                  <span className="text-[rgb(var(--ms-text-muted))] text-center">
+                    <Lock className="w-6 h-6 mx-auto mb-2" />
+                    <span className="text-sm font-bold">Nhấn giữ để xem kết quả</span>
+                  </span>
+                }
+              >
+                <div>
+                  <p className="text-3xl mb-2">{wolfSeerResult.isSeer ? '🔮' : '❔'}</p>
+                  <div className="font-extrabold text-lg text-white">
+                    {wolfSeerResult.targetName} {wolfSeerResult.isSeer ? 'CHÍNH LÀ TIÊN TRI' : 'không phải Tiên Tri'}
+                  </div>
+                  <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>
+                </div>
+              </PressToReveal>
+            </motion.div>
+          )}
+
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers
+              .filter(p => !isWolfRole(p.role))
+              .map(p => (
+                <PlayerTarget
+                  key={p.userId}
+                  player={p}
+                  isSelected={selectedTarget === p.userId}
+                  accentColor={NIGHT_ACCENT}
+                  onClick={() => handleNightAction('wolf_seer_check', p.userId)}
+                />
+              ))}
+          </motion.div>
+        </motion.div>
+      )
+    }
+
+    // ---- Detective Action ----
+    if (myRole === 'detective' && nightWakeAction === 'detective_compare') {
+      const togglePick = (uid2: string) => {
+        setDetectivePair(prev =>
+          prev.includes(uid2)
+            ? prev.filter(x => x !== uid2)
+            : prev.length < 2 ? [...prev, uid2] : [prev[1], uid2],
+        )
+      }
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Chọn 2 người để so — họ có cùng phe không?" />
+
+          {detectiveResult && (
+            <motion.div variants={staggerItem}>
+              <PressToReveal
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                hint={
+                  <span className="text-[rgb(var(--ms-text-muted))] text-center">
+                    <Lock className="w-6 h-6 mx-auto mb-2" />
+                    <span className="text-sm font-bold">Nhấn giữ để xem kết quả</span>
+                  </span>
+                }
+              >
+                <div>
+                  <p className="text-3xl mb-2">{detectiveResult.sameFaction ? '🤝' : '⚔️'}</p>
+                  <div className="font-extrabold text-lg text-white">
+                    {detectiveResult.aName} & {detectiveResult.bName}:{' '}
+                    {detectiveResult.sameFaction ? 'CÙNG PHE' : 'KHÁC PHE'}
+                  </div>
+                  <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">
+                    Không biết là phe nào — nhả tay để ẩn
+                  </div>
+                </div>
+              </PressToReveal>
+            </motion.div>
+          )}
+
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers.map(p => (
+              <PlayerTarget
+                key={p.userId}
+                player={p}
+                isSelected={detectivePair.includes(p.userId)}
+                accentColor={NIGHT_ACCENT}
+                onClick={() => togglePick(p.userId)}
+              />
+            ))}
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <GameButton
+              variant="primary"
+              disabled={detectivePair.length !== 2}
+              onClick={() => {
+                if (detectivePair.length !== 2) return
+                emit('night-action', {
+                  code: room.code, userId,
+                  actionType: 'detective_compare',
+                  targetId: detectivePair[0], targetId2: detectivePair[1],
+                })
+              }}
+              className="w-full"
+            >
+              {detectivePair.length === 2 ? 'Xác nhận so phe' : `Chọn ${2 - detectivePair.length} người nữa`}
+            </GameButton>
           </motion.div>
         </motion.div>
       )

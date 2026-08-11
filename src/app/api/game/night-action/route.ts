@@ -1,18 +1,33 @@
-// POST /api/game/night-action — submit a night action (wolf/seer/witch/guard).
-// Writes to nightActions. Seer gets an immediate result back.
+// POST /api/game/night-action — submit a night action (wolf/seer/witch/guard/
+// doctor/raven/wolf_seer/detective). Writes to nightActions (hoặc wolfPicks
+// cho bầy sói). Các vai soi nhận kết quả trả về ngay.
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
-  nightActionsCol, secretDoc, loadRoom, loadPlayers, loadSecrets,
+  nightActionsCol, secretDoc, wolfPickDoc, loadRoom, loadPlayers, loadSecrets,
   WOLF_ROLES, type ActionType, type NightActionDoc,
 } from '@/lib/firestore-server'
+import { isWolfRole } from '@/lib/roles'
+
+// Action nào được nộp trong bước đêm nào (nightWake.actionType của bước).
+const STEP_ALLOWS: Partial<Record<ActionType, ActionType[]>> = {
+  cupid_link: ['cupid_link'],
+  guard_protect: ['guard_protect'],
+  doctor_heal: ['doctor_heal'],
+  wolf_bite: ['wolf_bite'],
+  wolf_seer_check: ['wolf_seer_check'],
+  seer_check: ['seer_check'],
+  witch_save: ['witch_save', 'witch_poison'], // bước phù thủy nộp được cả 2
+  detective_compare: ['detective_compare'],
+  raven_mark: ['raven_mark'],
+}
 
 export async function POST(req: Request) {
   const auth = await authenticate(req)
   if (isAuthError(auth)) return auth
   const { uid } = auth
 
-  const { code, actionType, targetId } = await readBody<{
-    code?: string; actionType?: ActionType; targetId?: string | null
+  const { code, actionType, targetId, targetId2 } = await readBody<{
+    code?: string; actionType?: ActionType; targetId?: string | null; targetId2?: string | null
   }>(req)
   if (!code || !actionType) return error('Thiếu thông tin.')
   const upper = code.toUpperCase()
@@ -20,6 +35,12 @@ export async function POST(req: Request) {
   const { room } = await loadRoom(upper)
   if (!room) return error('Phòng không tồn tại!')
   if (room.phase !== 'night') return error('Không phải giai đoạn đêm.')
+
+  // Chống nộp sai lượt (vd sói cắn trong lượt phù thủy).
+  const stepAction = room.nightWake?.actionType
+  if (!stepAction || !(STEP_ALLOWS[stepAction] ?? []).includes(actionType)) {
+    return error('Chưa đến lượt hành động này.')
+  }
 
   const mySecretSnap = await secretDoc(upper, uid).get()
   if (!mySecretSnap.exists) return error('Bạn không có trong phòng.')
@@ -31,15 +52,13 @@ export async function POST(req: Request) {
   switch (actionType) {
     case 'wolf_bite': {
       if (!WOLF_ROLES.includes(role as never)) return error('Chỉ sói mới cắn được.')
-      // Clear any prior wolf_bite (shared single kill across the pack).
-      const existing = await col.where('actionType', '==', 'wolf_bite').get()
-      const batch = col.firestore.batch()
-      existing.docs.forEach((d) => {
-        // Only clear bites authored by wolves (defensive).
-        batch.delete(d.ref)
-      })
-      if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)
-      await batch.commit()
+      // Mỗi sói pick RIÊNG (pack board realtime); tally + alpha phá hoà
+      // diễn ra khi bước sói kết thúc (tick → finalizeWolfBite).
+      if (targetId) {
+        await wolfPickDoc(upper, uid).set({ targetId, at: Date.now() })
+      } else {
+        await wolfPickDoc(upper, uid).delete()
+      }
       break
     }
     case 'seer_check': {
@@ -108,6 +127,29 @@ export async function POST(req: Request) {
       if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)
       await batch.commit()
       break
+    }
+    case 'wolf_seer_check': {
+      if (role !== 'wolf_seer') return error('Chỉ Sói Tiên Tri mới soi được.')
+      if (!targetId) return error('Thiếu mục tiêu.')
+      const players = await loadPlayers(upper)
+      const secrets = await loadSecrets(upper)
+      const target = players.find((p) => p.userId === targetId)
+      if (!target?.isAlive) return error('Mục tiêu không hợp lệ.')
+      // Kết quả trả ngay: mục tiêu CÓ PHẢI Tiên Tri không.
+      const isSeer = secrets.get(targetId)?.role === 'seer'
+      return ok({ wolfSeerResult: { targetName: target.username, isSeer } })
+    }
+    case 'detective_compare': {
+      if (role !== 'detective') return error('Chỉ Thám Tử mới so phe được.')
+      if (!targetId || !targetId2 || targetId === targetId2) return error('Chọn 2 người khác nhau.')
+      const players = await loadPlayers(upper)
+      const secrets = await loadSecrets(upper)
+      const a = players.find((p) => p.userId === targetId)
+      const b = players.find((p) => p.userId === targetId2)
+      if (!a?.isAlive || !b?.isAlive) return error('Mục tiêu không hợp lệ.')
+      // "Cùng phe": cùng bên sói hoặc cùng bên không-sói. Không lộ phe nào.
+      const sameFaction = isWolfRole(secrets.get(targetId)?.role) === isWolfRole(secrets.get(targetId2)?.role)
+      return ok({ detectiveResult: { aName: a.username, bName: b.username, sameFaction } })
     }
     default:
       return error('Hành động không hợp lệ.')

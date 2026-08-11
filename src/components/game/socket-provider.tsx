@@ -153,6 +153,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         if (res.seerResult !== undefined) {
           store.getState().setSeerResult((res.seerResult as any) ?? null)
         }
+        if (res.wolfSeerResult !== undefined) {
+          store.getState().setWolfSeerResult((res.wolfSeerResult as any) ?? null)
+        }
+        if (res.detectiveResult !== undefined) {
+          store.getState().setDetectiveResult((res.detectiveResult as any) ?? null)
+        }
         // create/join return the canonical code → persist + enter room.
         if (res.code) {
           const c = res.code as string
@@ -185,7 +191,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       case 'host-next-phase':
         run(gameApi.hostNext(token, code)); break
       case 'night-action':
-        run(gameApi.nightAction(token, code, data?.actionType as ActionType, data?.targetId ?? null)); break
+        run(gameApi.nightAction(token, code, data?.actionType as ActionType, data?.targetId ?? null, data?.targetId2 ?? null)); break
       case 'cupid-link':
         run(gameApi.cupidLink(token, code, data?.targetIds)); break
       case 'submit-vote':

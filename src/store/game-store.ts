@@ -27,6 +27,8 @@ interface GameState {
   nightWakeDuration: number
   bittenPlayerId: string | null
   seerResult: { targetName: string; isWolf: boolean } | null
+  wolfSeerResult: { targetName: string; isSeer: boolean } | null
+  detectiveResult: { aName: string; bName: string; sameFaction: boolean } | null
 
   // Day
   dayDeaths: string[]
@@ -58,6 +60,8 @@ interface GameActions {
   setNightWake: (action: string | null, label: string, duration: number) => void
   setBittenPlayer: (id: string | null) => void
   setSeerResult: (result: { targetName: string; isWolf: boolean } | null) => void
+  setWolfSeerResult: (result: { targetName: string; isSeer: boolean } | null) => void
+  setDetectiveResult: (result: { aName: string; bName: string; sameFaction: boolean } | null) => void
   setDayResult: (deaths: string[], saved: boolean) => void
   setVoteResult: (result: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null) => void
   setGameOver: (winner: 'werewolf' | 'villager' | 'lovers' | 'jester', players: { username: string; role: string; isAlive: boolean }[]) => void
@@ -71,6 +75,7 @@ const initialState: GameState = {
   room: null, roomCode: '',
   messages: [], currentPhase: 'lobby', phaseLabel: '', timerEnd: null,
   nightWakeAction: null, nightWakeLabel: '', nightWakeDuration: 0, bittenPlayerId: null, seerResult: null,
+  wolfSeerResult: null, detectiveResult: null,
   dayDeaths: [], daySaved: false,
   voteResult: null,
   gameWinner: null, gameOverPlayers: null,
@@ -91,6 +96,8 @@ export const useGameStore = create<GameState & GameActions>((set) => ({
   setNightWake: (action, label, duration) => set({ nightWakeAction: action, nightWakeLabel: label, nightWakeDuration: duration }),
   setBittenPlayer: (id) => set({ bittenPlayerId: id }),
   setSeerResult: (result) => set({ seerResult: result }),
+  setWolfSeerResult: (result) => set({ wolfSeerResult: result }),
+  setDetectiveResult: (result) => set({ detectiveResult: result }),
   setDayResult: (deaths, saved) => set({ dayDeaths: deaths, daySaved: saved }),
   setVoteResult: (result) => set({ voteResult: result }),
   setGameOver: (winner, players) => set({ gameWinner: winner, gameOverPlayers: players, currentPhase: 'game_over' }),
