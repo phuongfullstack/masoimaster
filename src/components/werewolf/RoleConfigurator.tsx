@@ -19,6 +19,7 @@ import {
   type BalanceWarning,
 } from '@/lib/werewolf-config';
 import { Minus, Plus, RotateCcw, AlertTriangle, Info, XCircle, CheckCircle2, Lightbulb, Users, Zap } from 'lucide-react';
+import { RoleCrest } from '@/components/characters/RoleCrest';
 
 // ---- Warning Item ----
 function WarningItem({ warning }: { warning: BalanceWarning }) {
@@ -128,14 +129,23 @@ function RoleRow({
     neutral: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
   };
 
+  // Tile keeps bg-card so the crest's knocked-out details line up with `cutout`.
+  const factionTile = {
+    wolf: 'bg-card border-red-300 text-red-600 dark:border-red-900 dark:text-red-400',
+    village: 'bg-card border-emerald-300 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400',
+    neutral: 'bg-card border-violet-300 text-violet-600 dark:border-violet-900 dark:text-violet-400',
+  };
+
   const factionLabel = { wolf: 'Phe Sói', village: 'Phe Dân', neutral: 'Trung lập' };
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-2xl shrink-0" role="img" aria-label={role.name}>
-            {role.emoji}
+          <span
+            className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg border ${factionTile[role.faction]}`}
+          >
+            <RoleCrest role={role.id} size={20} cutout="var(--card)" title={role.name} />
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -242,8 +252,9 @@ export default function RoleConfigurator() {
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="mb-8 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            🐺 Cấu hình Ma Sói
+          <h1 className="flex items-center justify-center gap-2.5 text-3xl sm:text-4xl font-bold tracking-tight">
+            <RoleCrest role="werewolf" size={32} cutout="var(--background)" className="text-red-600 dark:text-red-500" />
+            Cấu hình Ma Sói
           </h1>
           <p className="mt-2 text-muted-foreground text-sm sm:text-base">
             Chọn số người chơi, điều chỉnh vai trò — hệ thống sẽ phân tích cân bằng theo thời gian thực.

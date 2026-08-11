@@ -33,10 +33,10 @@ interface GameState {
   daySaved: boolean
 
   // Vote
-  voteResult: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean } | null
+  voteResult: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null
 
   // Game Over
-  gameWinner: 'werewolf' | 'villager' | null
+  gameWinner: 'werewolf' | 'villager' | 'lovers' | null
   gameOverPlayers: { username: string; role: string; isAlive: boolean }[] | null
 
   // Hunter
@@ -50,6 +50,7 @@ interface GameActions {
   setAuth: (userId: string, username: string) => void
   setScreen: (screen: Screen) => void
   setRoom: (room: RoomState | null) => void
+  setRoomCode: (roomCode: string) => void
   addMessage: (msg: ChatMsg) => void
   clearMessages: () => void
   setPhaseInfo: (phase: Phase, label: string) => void
@@ -58,8 +59,8 @@ interface GameActions {
   setBittenPlayer: (id: string | null) => void
   setSeerResult: (result: { targetName: string; isWolf: boolean } | null) => void
   setDayResult: (deaths: string[], saved: boolean) => void
-  setVoteResult: (result: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean } | null) => void
-  setGameOver: (winner: 'werewolf' | 'villager', players: { username: string; role: string; isAlive: boolean }[]) => void
+  setVoteResult: (result: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null) => void
+  setGameOver: (winner: 'werewolf' | 'villager' | 'lovers', players: { username: string; role: string; isAlive: boolean }[]) => void
   setHunterTriggered: (v: boolean) => void
   setError: (error: string | null) => void
   resetGame: () => void
@@ -82,6 +83,7 @@ export const useGameStore = create<GameState & GameActions>((set) => ({
   setAuth: (userId, username) => set({ userId, username, screen: 'home' }),
   setScreen: (screen) => set({ screen }),
   setRoom: (room) => set({ room, roomCode: room?.code || '' }),
+  setRoomCode: (roomCode) => set({ roomCode }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   clearMessages: () => set({ messages: [] }),
   setPhaseInfo: (phase, label) => set({ currentPhase: phase, phaseLabel: label }),

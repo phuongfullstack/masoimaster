@@ -5,6 +5,8 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { nanoid, customAlphabet } from 'nanoid'
+import { initializeApp, getApps, cert, type App as AdminApp } from 'firebase-admin/app'
+import { getAuth, type Auth as AdminAuth, type DecodedIdToken } from 'firebase-admin/auth'
 
 const httpServer = createServer()
 const io = new Server(httpServer, {
@@ -18,7 +20,7 @@ const io = new Server(httpServer, {
 // Types
 // ============================================================
 type Role = 'werewolf' | 'white_werewolf' | 'villager' | 'seer' | 'witch' | 'guard' | 'hunter' | 'cupid'
-type Phase = 'lobby' | 'role_reveal' | 'night' | 'day' | 'voting' | 'game_over'
+type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'
 type RoomStatus = 'waiting' | 'playing' | 'finished'
 type HostMode = 'auto' | 'direct' | 'hybrid'
 type ActionType = 'wolf_bite' | 'seer_check' | 'witch_save' | 'witch_poison' | 'guard_protect' | 'cupid_link'
@@ -52,7 +54,9 @@ interface RoomData {
   votes: Map<string, string>
   timer: ReturnType<typeof setTimeout> | null
   timerEnd: number | null
+  nightTimeouts: ReturnType<typeof setTimeout>[]
   cupidDone: boolean
+  cupidPair: [string, string] | null
   lastGuardTarget: string | null
 }
 
@@ -82,6 +86,49 @@ const socketUserMap = new Map<string, string>() // socketId -> userId
 
 const generateRoomCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6)
 const WOLF_ROLES: Role[] = ['werewolf', 'white_werewolf']
+
+// ============================================================
+// Firebase Admin — verify client ID tokens to establish identity.
+// Falls back gracefully: if env is missing, the server refuses auth.
+// ============================================================
+let _adminAuth: AdminAuth | null = null
+function adminAuth(): AdminAuth {
+  if (_adminAuth) return _adminAuth
+  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('Firebase Admin chưa cấu hình (FIREBASE_PROJECT_ID / FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY).')
+  }
+  const app: AdminApp = getApps()[0] ?? initializeApp({
+    credential: cert({ projectId, clientEmail, privateKey }),
+  })
+  _adminAuth = getAuth(app)
+  return _adminAuth
+}
+
+/** Verify a Firebase ID token. Returns the decoded claims, or null on failure. */
+async function verifyIdToken(token: string | null | undefined): Promise<DecodedIdToken | null> {
+  if (!token) return null
+  try {
+    return await adminAuth().verifyIdToken(token)
+  } catch (err) {
+    console.error('[AUTH] token verify failed:', (err as Error)?.message)
+    return null
+  }
+}
+
+function normalizeRoomCode(code: string): string {
+  return code.trim().toUpperCase()
+}
+
+function getRoom(code: string): RoomData | undefined {
+  return rooms.get(normalizeRoomCode(code))
+}
+
+function deleteRoom(code: string) {
+  rooms.delete(normalizeRoomCode(code))
+}
 
 // ============================================================
 // Helpers
@@ -120,6 +167,10 @@ function generateRoleList(config: RoleConfig, totalPlayers: number): Role[] {
 
 function clearRoomTimer(room: RoomData) {
   if (room.timer) { clearTimeout(room.timer); room.timer = null; room.timerEnd = null }
+  if (room.nightTimeouts?.length) {
+    room.nightTimeouts.forEach(t => clearTimeout(t))
+    room.nightTimeouts = []
+  }
 }
 
 function startPhaseTimer(room: RoomData, durationMs: number, callback: () => void) {
@@ -171,6 +222,7 @@ function buildRoomStateForPlayer(room: RoomData, userId: string) {
     myRole: player?.role || '', isAlive: player?.isAlive ?? true,
     players: Array.from(room.players.values()).map(p => buildPublicPlayerInfo(p, userId)),
     wolfPartners: isWolf ? wolves.filter(w => w.userId !== userId).map(w => w.username) : [],
+    loverPartner: player?.linkedPartner ? getPlayerByUserId(room, player.linkedPartner)?.username ?? null : null,
     timerEnd: room.timerEnd,
     votes: room.phase === 'voting' ? Object.fromEntries(room.votes) : {},
   }
@@ -186,13 +238,58 @@ function getPlayerByUserId(room: RoomData, userId: string): PlayerData | undefin
   return room.players.get(userId)
 }
 
-function checkWinCondition(room: RoomData): 'werewolf' | 'villager' | null {
+function checkWinCondition(room: RoomData): 'werewolf' | 'villager' | 'lovers' | null {
   const alive = getAlivePlayers(room)
+  // Lovers (classic Cupid): both alive AND everyone else dead
+  if (room.cupidPair) {
+    const [a, b] = room.cupidPair
+    const bothAlive = alive.some(p => p.userId === a) && alive.some(p => p.userId === b)
+    if (bothAlive && alive.length === 2) return 'lovers'
+  }
   const wolves = alive.filter(p => WOLF_ROLES.includes(p.role as Role))
   const villagers = alive.filter(p => !WOLF_ROLES.includes(p.role as Role))
   if (wolves.length === 0) return 'villager'
   if (wolves.length >= villagers.length) return 'werewolf'
   return null
+}
+
+// ============================================================
+// Lover chain-death (Cupid): when one linked player dies, the partner dies too.
+// Returns the usernames additionally killed by the chain.
+// ============================================================
+function applyLoverChainDeaths(room: RoomData, justDiedIds: string[]): string[] {
+  const chained: string[] = []
+  for (const deadId of justDiedIds) {
+    const dead = getPlayerByUserId(room, deadId)
+    const partnerId = dead?.linkedPartner
+    if (!partnerId) continue
+    const partner = getPlayerByUserId(room, partnerId)
+    if (partner?.isAlive) {
+      partner.isAlive = false
+      chained.push(partner.username)
+    }
+  }
+  return chained
+}
+
+// ============================================================
+// Cupid auto-pair (fires on night-1 timeout if cupid didn't pick)
+// Links 2 random alive non-cupid players bidirectionally.
+// ============================================================
+function autoPairLovers(room: RoomData): boolean {
+  if (room.cupidDone) return false
+  const cupid = Array.from(room.players.values()).find(p => p.role === 'cupid')
+  if (!cupid) return false
+  const candidates = getAlivePlayers(room).filter(p => p.userId !== cupid.userId)
+  if (candidates.length < 2) return false
+  // pick 2 random distinct players
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5)
+  const [a, b] = shuffled
+  a.linkedPartner = b.userId
+  b.linkedPartner = a.userId
+  room.cupidPair = [a.userId, b.userId]
+  room.cupidDone = true
+  return true
 }
 
 // ============================================================
@@ -226,7 +323,10 @@ function resolveNight(room: RoomData) {
     const witchPoison = actions.find(a => a.actionType === 'witch_poison')
     if (witchPoison?.targetId) poisoned.add(witchPoison.targetId)
 
-    // 5. Deaths
+    // 5. Cupid auto-pair (night 1 only, if cupid never acted)
+    if (room.dayCount === 0 && !room.cupidDone) autoPairLovers(room)
+
+    // 6. Deaths
     const deaths: string[] = []
     for (const pid of bitten) { if (!protected_.has(pid)) deaths.push(pid) }
     for (const pid of poisoned) deaths.push(pid)
@@ -235,6 +335,16 @@ function resolveNight(room: RoomData) {
     for (const userId of deaths) {
       const player = getPlayerByUserId(room, userId)
       if (player?.isAlive) { player.isAlive = false; deadPlayers.push(player.username) }
+    }
+
+    // 7. Lover chain-death: a linked player dying drags the partner down
+    if (deaths.length > 0) {
+      const chained = applyLoverChainDeaths(room, deaths)
+      deadPlayers.push(...chained)
+      // chained deaths can themselves be a hunter → recheck below
+      deaths.push(...chained
+        .map(name => Array.from(room.players.values()).find(p => p.username === name)?.userId)
+        .filter((u): u is string => !!u))
     }
 
     // Hunter check
@@ -303,12 +413,17 @@ function resolveVotes(room: RoomData) {
   }
 
   let eliminated: string | null = null
+  let chainedNames: string[] = []
   if (candidates.length === 1 && maxVotes > 0) {
     eliminated = candidates[0]
     const player = getPlayerByUserId(room, eliminated)
     if (player) {
       player.isAlive = false
-      emitToRoom(room, 'vote-result', { eliminated: player.username, voteCounts: Object.fromEntries(voteCounts), isTie: false })
+      chainedNames = applyLoverChainDeaths(room, [eliminated])
+      emitToRoom(room, 'vote-result', {
+        eliminated: player.username, chainedDeaths: chainedNames,
+        voteCounts: Object.fromEntries(voteCounts), isTie: false,
+      })
     }
   } else {
     emitToRoom(room, 'vote-result', { eliminated: null, voteCounts: Object.fromEntries(voteCounts), isTie: true })
@@ -344,6 +459,8 @@ function startNight(room: RoomData) {
 }
 
 function runNightSequence(room: RoomData) {
+  clearRoomTimer(room)
+  if (!room.nightTimeouts) room.nightTimeouts = []
   const alive = getAlivePlayers(room)
   const hasCupid = room.dayCount === 0 && alive.some(p => p.role === 'cupid') && !room.cupidDone
   const hasGuard = alive.some(p => p.role === 'guard')
@@ -360,7 +477,7 @@ function runNightSequence(room: RoomData) {
 
   let delay = 1500
   for (const step of sequence) {
- setTimeout(() => {
+    const t = setTimeout(() => {
       if (room.status !== 'playing') return
       const bittenTarget = step.action === 'witch_save'
         ? room.nightActions.find(a => a.actionType === 'wolf_bite')?.targetId
@@ -372,13 +489,15 @@ function runNightSequence(room: RoomData) {
       })
       emitToRoom(room, 'phase-announce', { phase: 'night', label: step.label })
     }, delay)
+    room.nightTimeouts.push(t)
     delay += step.duration
   }
 
-  setTimeout(() => {
+  const resolveT = setTimeout(() => {
     if (room.status !== 'playing') return
     resolveNight(room)
   }, delay + 2000)
+  room.nightTimeouts.push(resolveT)
 }
 
 // ============================================================
@@ -401,7 +520,7 @@ function startGame(room: RoomData) {
   })
 
   room.status = 'playing'; room.phase = 'role_reveal'; room.dayCount = 0
-  room.nightActions = []; room.votes = new Map(); room.cupidDone = false; room.lastGuardTarget = null
+  room.nightActions = []; room.votes = new Map(); room.cupidDone = false; room.cupidPair = null; room.lastGuardTarget = null; room.nightTimeouts = []
 
   sendRoomStateToAll(room)
   emitToRoom(room, 'phase-announce', { phase: 'role_reveal', label: 'Lật Bài Nhận Vai' })
@@ -409,7 +528,7 @@ function startGame(room: RoomData) {
   startPhaseTimer(room, 10000, () => startNight(room))
 }
 
-function endGame(room: RoomData, winner: 'werewolf' | 'villager') {
+function endGame(room: RoomData, winner: 'werewolf' | 'villager' | 'lovers') {
   room.phase = 'game_over'; room.status = 'finished'
   clearRoomTimer(room)
   sendRoomStateToAll(room)
@@ -424,23 +543,41 @@ function endGame(room: RoomData, winner: 'werewolf' | 'villager') {
 // ============================================================
 // Socket Handler
 // ============================================================
+// Every handler asserts that the claimed userId matches the socket's
+// verified identity (set during `auth`), so a client cannot impersonate
+// another player by spoofing the userId field.
+function socketUserId(socket: any): string | undefined {
+  return socketUserMap.get(socket.id)
+}
+
 io.on('connection', (socket) => {
   console.log(`[CONNECT] ${socket.id}`)
 
-  socket.on('auth', (data: { userId: string; username: string }) => {
-    const { userId, username } = data
+  socket.on('auth', async (data: { idToken: string; displayName: string }) => {
+    const { idToken, displayName } = data
+    // Establish identity from the verified Firebase token, never from client input.
+    const decoded = await verifyIdToken(idToken)
+    if (!decoded) {
+      socket.emit('auth-error', { message: 'Token không hợp lệ hoặc đã hết hạn.' })
+      return
+    }
+    const userId = decoded.uid
+    const username = (displayName && displayName.trim())
+      || decoded.email?.split('@')[0]
+      || 'Người chơi'
     socketUserMap.set(socket.id, userId)
 
-    // Reconnect check
+    // Reconnect check — restore the player's previous room, if any.
     const existingCode = userRoomMap.get(userId)
     if (existingCode) {
-      const room = rooms.get(existingCode)
+      const room = getRoom(existingCode)
       if (room) {
         const player = room.players.get(userId)
         if (player) {
           player.socketId = socket.id
           emitToPlayer(player, 'room-state', buildRoomStateForPlayer(room, userId))
           emitToRoom(room, 'system-message', { content: `${username} đã kết nối lại`, msgType: 'system' })
+          socket.emit('auth-ok', { userId, username })
           return
         }
       }
@@ -450,6 +587,7 @@ io.on('connection', (socket) => {
 
   socket.on('create-room', (data: { userId: string; username: string; config?: RoleConfig; hostMode?: HostMode }) => {
     const { userId, username, config, hostMode } = data
+    if (userId !== socketUserId(socket)) return
     let code = generateRoomCode()
     while (rooms.has(code)) code = generateRoomCode()
 
@@ -464,7 +602,7 @@ io.on('connection', (socket) => {
       players: new Map([[userId, player]]),
       config: config || { werewolf: 2, white_werewolf: 0, seer: 1, witch: 1, guard: 1, hunter: 0, cupid: 0, villager: 0 },
       nightActions: [], votes: new Map(), timer: null, timerEnd: null,
-      cupidDone: false, lastGuardTarget: null,
+      cupidDone: false, cupidPair: null, lastGuardTarget: null, nightTimeouts: [],
     }
 
     rooms.set(code, room)
@@ -475,7 +613,10 @@ io.on('connection', (socket) => {
 
   socket.on('join-room', (data: { code: string; userId: string; username: string }) => {
     const { code, userId, username } = data
-    const room = rooms.get(code.toUpperCase())
+    if (userId !== socketUserId(socket)) return
+    const roomCode = normalizeRoomCode(code)
+    console.log(`[JOIN-ROOM] code=${roomCode} userId=${userId} username=${username}`)
+    const room = getRoom(roomCode)
 
     if (!room) { socket.emit('error', { message: 'Phòng không tồn tại!' }); return }
 
@@ -498,28 +639,32 @@ io.on('connection', (socket) => {
     }
 
     room.players.set(userId, player)
-    userRoomMap.set(userId, code)
+    userRoomMap.set(userId, room.code)
     socketUserMap.set(socket.id, userId)
     sendRoomStateToAll(room)
     emitToRoom(room, 'system-message', { content: `${username} đã tham gia phòng`, msgType: 'system' })
+    emitToPlayer(player, 'room-joined', { room: buildRoomStateForPlayer(room, userId) })
   })
 
   socket.on('player-ready', (data: { code: string; userId: string; ready: boolean }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room) return
     const player = room.players.get(data.userId)
     if (player) { player.isReady = data.ready; sendRoomStateToAll(room) }
   })
 
   socket.on('start-game', (data: { code: string; userId: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.hostId !== data.userId) return
     if (room.players.size < 4) { emitToRoom(room, 'error', { message: 'Cần ít nhất 4 người!' }); return }
     startGame(room)
   })
 
   socket.on('host-next-phase', (data: { code: string; userId: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.hostId !== data.userId) return
     clearRoomTimer(room)
     switch (room.phase) {
@@ -531,8 +676,31 @@ io.on('connection', (socket) => {
     }
   })
 
+  socket.on('cupid-link', (data: { code: string; userId: string; targetIds: [string, string] }) => {
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
+    if (!room || room.phase !== 'night') return
+    if (room.cupidDone) return
+    const cupid = getPlayerByUserId(room, data.userId)
+    if (!cupid || cupid.role !== 'cupid' || !cupid.isAlive) return
+    const [idA, idB] = data.targetIds
+    if (!idA || !idB || idA === idB) return
+    const a = getPlayerByUserId(room, idA)
+    const b = getPlayerByUserId(room, idB)
+    if (!a || !b || !a.isAlive || !b.isAlive) return
+    // Cupid cannot link themselves
+    if (a.userId === cupid.userId || b.userId === cupid.userId) return
+    a.linkedPartner = b.userId
+    b.linkedPartner = a.userId
+    room.cupidPair = [a.userId, b.userId]
+    room.cupidDone = true
+    emitToPlayer(cupid, 'cupid-linked', { pair: [a.username, b.username] })
+    sendRoomStateToAll(room)
+  })
+
   socket.on('night-action', (data: { code: string; userId: string; actionType: ActionType; targetId: string | null }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.phase !== 'night') return
     const player = getPlayerByUserId(room, data.userId)
     if (!player || !player.isAlive) return
@@ -578,7 +746,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('submit-vote', (data: { code: string; userId: string; targetId: string | null }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.phase !== 'voting') return
     const player = getPlayerByUserId(room, data.userId)
     if (!player || !player.isAlive) return
@@ -587,14 +756,16 @@ io.on('connection', (socket) => {
   })
 
   socket.on('hunter-shoot', (data: { code: string; userId: string; targetId: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room) return
     const player = getPlayerByUserId(room, data.userId)
     if (!player || player.role !== 'hunter') return
     const target = getPlayerByUserId(room, data.targetId)
     if (target?.isAlive) {
       target.isAlive = false
-      emitToRoom(room, 'hunter-shot', { hunterName: player.username, targetName: target.username })
+      const chained = applyLoverChainDeaths(room, [target.userId])
+      emitToRoom(room, 'hunter-shot', { hunterName: player.username, targetName: target.username, chainedDeaths: chained })
       sendRoomStateToAll(room)
       const win = checkWinCondition(room)
       if (win) endGame(room, win)
@@ -604,7 +775,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('send-message', (data: { code: string; userId: string; content: string; msgType?: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room) return
     const player = getPlayerByUserId(room, data.userId)
     if (!player) return
@@ -619,7 +791,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('kick-player', (data: { code: string; userId: string; targetUserId: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.hostId !== data.userId || data.targetUserId === data.userId) return
     const target = room.players.get(data.targetUserId)
     if (target) {
@@ -632,20 +805,22 @@ io.on('connection', (socket) => {
   })
 
   socket.on('update-config', (data: { code: string; userId: string; config: Partial<RoleConfig> }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room || room.hostId !== data.userId || room.status !== 'waiting') return
     Object.assign(room.config, data.config)
     sendRoomStateToAll(room)
   })
 
   socket.on('leave-room', (data: { code: string; userId: string }) => {
-    const room = rooms.get(data.code)
+    if (data.userId !== socketUserId(socket)) return
+    const room = getRoom(data.code)
     if (!room) return
     const player = room.players.get(data.userId)
     if (player) {
       room.players.delete(data.userId)
       userRoomMap.delete(data.userId)
-      if (room.players.size === 0) { rooms.delete(data.code); clearRoomTimer(room) }
+      if (room.players.size === 0) { deleteRoom(data.code); clearRoomTimer(room) }
       else {
         if (room.hostId === data.userId) {
           const newHost = Array.from(room.players.values())[0]

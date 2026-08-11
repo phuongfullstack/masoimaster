@@ -1,23 +1,32 @@
 'use client'
 
-import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Input } from '@/components/ui/input'
+import { useCallback, useEffect, useState, useRef, useSyncExternalStore } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { GameButton } from '@/components/ui/game/GameButton'
+import { GameCard, GameCardHeader, GameCardTitle, GameCardContent } from '@/components/ui/game/GameCard'
+import { GameBadge } from '@/components/ui/game/GameBadge'
+import { GameInput } from '@/components/ui/game/GameInput'
+import { GameTimerCircle } from '@/components/ui/game/GameProgress'
+import { GameAvatar } from '@/components/ui/game/GameAvatar'
+import { CharacterIcon } from '@/components/characters/CharacterIcon'
 import { useGameStore } from '@/store/game-store'
 import { useSocket } from '@/components/game/socket-provider'
-import { ROLE_INFO, PHASE_CONFIG } from '@/lib/types'
-import type { PlayerInfo, Role, ChatMsg, Phase } from '@/lib/types'
+import { ROLE_INFO } from '@/lib/types'
+import type { Role } from '@/lib/types'
 import {
-  Moon, Sun, Vote, Crown, Skull, Shield, Eye, FlaskConical, Crosshair,
-  Send, SkipForward, Clock, Ghost, Heart, Target, Swords, Trophy,
-  AlertTriangle, MessageCircle, Lock,
+  Moon, Sun, Vote, Skull, Eye,
+  Send, SkipForward, Heart, Target, Trophy,
+  AlertTriangle, Lock, Sparkles, Zap,
 } from 'lucide-react'
+import {
+  springBouncy, springSnappy, springGentle, staggerContainer, staggerItem,
+  characterBounce, characterFloat, buttonPress, selectBounce,
+  timerPulse, deathFade, winBounce, chatMessage,
+} from '@/styles/animations'
+import { cn } from '@/lib/utils'
 
 // ============================================================
-// Timer Component
+// Timer Hook
 // ============================================================
 function useCountdown(timerEnd: number | null) {
   const subscribe = useCallback((onStoreChange: () => void) => {
@@ -29,41 +38,147 @@ function useCountdown(timerEnd: number | null) {
     if (!timerEnd) return 0
     return Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000))
   }, [timerEnd])
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  return useSyncExternalStore(subscribe, getSnapshot, () => 0)
 }
 
-function Timer({ timerEnd }: { timerEnd: number | null }) {
+// ============================================================
+// Phase Header (shared across Night/Day/Voting)
+// ============================================================
+function PhaseHeader({
+  icon,
+  iconColor,
+  label,
+  timerEnd,
+  totalTime = 30,
+}: {
+  icon: React.ReactNode
+  iconColor: string
+  label: string
+  timerEnd: number | null
+  totalTime?: number
+}) {
   const timeLeft = useCountdown(timerEnd)
-
-  if (!timerEnd || timeLeft <= 0) return null
-
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-  const isUrgent = timeLeft <= 10
+  const isUrgent = timeLeft <= 10 && timeLeft > 0
 
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${
-      isUrgent ? 'bg-red-900/50 text-red-300 animate-pulse' : 'bg-gray-700/50 text-gray-300'
-    }`}>
-      <Clock className="w-4 h-4" />
-      <span className="font-mono font-bold text-lg">{minutes > 0 ? `${minutes}:` : ''}{seconds.toString().padStart(2, '0')}</span>
+    <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-2.5">
+        <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', iconColor)}>
+          {icon}
+        </div>
+        <span className="text-white font-bold text-lg font-[family-name:var(--font-nunito)]">
+          {label}
+        </span>
+      </div>
+      {timerEnd && timeLeft > 0 && (
+        <motion.div animate={isUrgent ? 'animate' : undefined} variants={timerPulse}>
+          <GameTimerCircle
+            timeLeft={timeLeft}
+            totalTime={totalTime}
+            size={52}
+            strokeWidth={4}
+            urgent={isUrgent}
+          />
+        </motion.div>
+      )}
     </div>
   )
 }
 
 // ============================================================
-// Role Badge
+// Player Target Button (reusable for wolf/seer/witch/guard/voting)
 // ============================================================
-function RoleBadge({ role, reveal = false }: { role: string; reveal?: boolean }) {
-  if (!role || (!reveal && role !== 'villager')) {
-    return <Badge variant="outline" className="border-gray-600 text-gray-400">???</Badge>
-  }
-  const info = ROLE_INFO[role]
-  if (!info) return null
+function PlayerTarget({
+  player,
+  isSelected,
+  accentColor,
+  disabled,
+  voteCount,
+  onClick,
+}: {
+  player: { userId: string; username: string; seatIndex: number; role?: string }
+  isSelected: boolean
+  accentColor: string
+  disabled?: boolean
+  voteCount?: number
+  onClick: () => void
+}) {
   return (
-    <Badge className="text-white" style={{ backgroundColor: info.color }}>
-      {info.emoji} {info.name}
-    </Badge>
+    <motion.button
+      whileTap={selectBounce.tap}
+      whileHover={!disabled ? selectBounce.hover : undefined}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all duration-150 w-full',
+        isSelected
+          ? `${accentColor} border-transparent`
+          : 'bg-[rgb(var(--ms-card))] border-white/[0.06] hover:border-white/20',
+        disabled && 'opacity-40 cursor-not-allowed',
+      )}
+    >
+      <GameAvatar
+        index={player.seatIndex}
+        username={player.username}
+        role={player.role}
+        size="sm"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-sm text-[rgb(var(--ms-text-primary))] truncate">
+          {player.username}
+        </div>
+        <div className="text-xs text-[rgb(var(--ms-text-muted))]">#{player.seatIndex + 1}</div>
+      </div>
+      {isSelected ? (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={springSnappy}
+          className="w-5 h-5 rounded-full bg-[rgb(var(--ms-brand))] flex items-center justify-center flex-shrink-0"
+        >
+          <Zap className="w-3 h-3 text-white" />
+        </motion.div>
+      ) : voteCount && voteCount > 0 ? (
+        <motion.span
+          key={voteCount}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={springSnappy}
+          className="shrink-0 min-w-[22px] h-[22px] px-1.5 rounded-full bg-[rgb(var(--ms-wolf))] text-white text-[11px] font-extrabold flex items-center justify-center"
+        >
+          {voteCount}
+        </motion.span>
+      ) : null}
+    </motion.button>
+  )
+}
+
+// ============================================================
+// Alive Players Bar
+// ============================================================
+function AlivePlayersBar({ players }: { players: { userId: string; username: string; seatIndex: number; isAlive: boolean; role?: string }[] }) {
+  const alive = players.filter(p => p.isAlive)
+  return (
+    <GameCard className="mt-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Sparkles className="w-3.5 h-3.5 text-[rgb(var(--ms-brand))]" />
+        <span className="text-xs font-bold text-[rgb(var(--ms-text-secondary))] uppercase tracking-wider">
+          Còn sống ({alive.length}/{players.length})
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {players.map(p => (
+          <GameAvatar
+            key={p.userId}
+            index={p.seatIndex}
+            username={p.username}
+            role={p.role}
+            isAlive={p.isAlive}
+            size="sm"
+          />
+        ))}
+      </div>
+    </GameCard>
   )
 }
 
@@ -73,35 +188,93 @@ function RoleBadge({ role, reveal = false }: { role: string; reveal?: boolean })
 function RoleReveal() {
   const myRole = useGameStore(s => s.room?.myRole)
   const wolfPartners = useGameStore(s => s.room?.wolfPartners || [])
+  const loverPartner = useGameStore(s => s.room?.loverPartner)
   const info = myRole ? ROLE_INFO[myRole] : null
 
   if (!info) return null
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-purple-900/30 to-gray-900 p-4">
-      <Card className="w-full max-w-sm bg-gray-800/90 border-gray-600 text-center">
-        <CardContent className="pt-8 pb-8 space-y-4">
-          <div className="text-7xl animate-bounce">{info.emoji}</div>
-          <div>
-            <h2 className="text-2xl font-bold text-white">{info.name}</h2>
-            <p className="text-gray-400 mt-2">{info.desc}</p>
-          </div>
-          <Badge className="text-white text-sm" style={{ backgroundColor: info.color }}>
-            Phe: {info.team}
-          </Badge>
+    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={springBouncy}
+        className="w-full max-w-sm"
+      >
+        <GameCard className="text-center overflow-hidden" glow={info.glowKey}>
+          {/* Character */}
+          <motion.div
+            variants={characterBounce}
+            initial="initial"
+            animate="animate"
+            className="flex justify-center my-4"
+          >
+            <CharacterIcon role={myRole || 'villager'} size="hero" state="happy" glow />
+          </motion.div>
+
+          {/* Role Info */}
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, ...springGentle }}
+            className="space-y-3"
+          >
+            <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+              {info.name}
+            </h2>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">{info.desc}</p>
+            <GameBadge color={info.color} className="mx-auto">
+              Phe: {info.team}
+            </GameBadge>
+          </motion.div>
+
+          {/* Wolf Partners */}
           {wolfPartners.length > 0 && (
-            <div className="bg-red-900/30 border border-red-800 rounded-lg p-3">
-              <p className="text-red-300 text-sm">Đồng đội bầy sói: {wolfPartners.join(', ')}</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 p-3 rounded-xl bg-[rgb(var(--ms-wolf)/0.15)] border border-[rgb(var(--ms-wolf)/0.3)]"
+            >
+              <p className="text-[rgb(var(--ms-wolf))] text-sm font-bold">
+                Đồng đội bầy sói: {wolfPartners.join(', ')}
+              </p>
+            </motion.div>
           )}
-          <p className="text-gray-500 text-xs">Ghi nhớ vai trò của bạn! Đang chuyển sang đêm...</p>
-        </CardContent>
-      </Card>
+
+          {/* Lover Partner (Cupid) */}
+          {loverPartner && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 p-3 rounded-xl bg-[rgb(var(--ms-cupid)/0.15)] border border-[rgb(var(--ms-cupid)/0.3)]"
+            >
+              <p className="text-[rgb(var(--ms-cupid))] text-sm font-bold flex items-center gap-1.5 justify-center">
+                <Heart className="w-3.5 h-3.5" /> Đôi tình nhân: {loverPartner}
+              </p>
+            </motion.div>
+          )}
+
+          {/* Hint */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="mt-5"
+          >
+            <p className="text-[rgb(var(--ms-text-muted))] text-xs">
+              Ghi nhớ vai trò của bạn! Đang chuyển sang đêm...
+            </p>
+          </motion.div>
+        </GameCard>
+      </motion.div>
     </div>
   )
 }
 
 // ============================================================
-// Night Screen (for each role)
+// Night Screen (per role)
 // ============================================================
 function NightScreen() {
   const room = useGameStore(s => s.room)
@@ -117,7 +290,12 @@ function NightScreen() {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
   const [wolfMsg, setWolfMsg] = useState('')
   const [seerRevealed, setSeerRevealed] = useState(false)
+  const [cupidPair, setCupidPair] = useState<string[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages.length])
 
   if (!room) return null
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
@@ -135,277 +313,373 @@ function NightScreen() {
     setWolfMsg('')
   }
 
-  // Seer: press-to-reveal
   const handleSeerReveal = () => {
     if (!seerResult) return
     setSeerRevealed(true)
     setTimeout(() => setSeerRevealed(false), 3000)
   }
 
-  // Render different UI based on role
+  // ---- Render role-specific action ----
   const renderRoleAction = () => {
-    // Dead players see decoy
+    // Dead players
     if (!isAlive) {
       return (
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <Ghost className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg">Bạn đã chết...</p>
-            <p className="text-sm mt-1">Đợi đến ngày để xem kết quả</p>
-          </div>
+        <div className="min-h-[50vh] flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center"
+          >
+            <motion.div
+              animate={{ y: [0, 4, 0], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="mb-4"
+            >
+              <CharacterIcon role="villager" size="xl" state="sad" glow />
+            </motion.div>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Bạn đã chết...</p>
+            <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đợi đến ngày để xem kết quả</p>
+          </motion.div>
         </div>
       )
     }
 
-    // No wake action = decoy screen (villager or waiting)
+    // Waiting / no wake action
     if (!nightWakeAction) {
       return (
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4 animate-pulse">🌙</div>
-            <p className="text-gray-400 text-lg">Đang là đêm...</p>
-            <p className="text-gray-500 text-sm mt-1">Đừng mở mắt!</p>
-            {/* Decoy mini-game area */}
-            <div className="mt-8 bg-gray-800/50 rounded-xl p-6 max-w-xs mx-auto">
-              <p className="text-gray-600 text-xs uppercase tracking-wider mb-3">Ghi chú riêng</p>
-              <textarea
-                className="w-full bg-transparent text-gray-500 text-sm resize-none h-20 outline-none"
-                placeholder="Viết ghi chú..."
-                disabled
-              />
+        <div className="min-h-[50vh] flex items-center justify-center">
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-center"
+          >
+            <div className="relative mb-6">
+              <Moon className="w-16 h-16 text-[rgb(var(--ms-seer))]/60 mx-auto" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-[rgb(var(--ms-seer))]/10 animate-glow-pulse" />
+              </div>
             </div>
-          </div>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Đang là đêm...</p>
+            <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đừng mở mắt!</p>
+            <div className="mt-8 max-w-xs mx-auto p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
+              <p className="text-[rgb(var(--ms-text-muted))] text-xs uppercase tracking-wider mb-2 font-bold">
+                Ghi chú riêng
+              </p>
+              <div className="w-full h-16 rounded-xl bg-[rgb(var(--ms-bg-primary))] border border-white/[0.04]" />
+            </div>
+          </motion.div>
         </div>
       )
     }
 
-    // Wolf action
-    if (isWolf && (nightWakeAction === 'wolf_bite')) {
+    // ---- Wolf Action ----
+    if (isWolf && nightWakeAction === 'wolf_bite') {
       return (
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🐺</div>
-            <h3 className="text-red-400 font-bold text-lg">Bầy Sói Tỉnh Dậy</h3>
-            <p className="text-gray-400 text-sm">Chọn người để cắn</p>
-          </div>
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          {/* Header */}
+          <motion.div variants={staggerItem} className="text-center">
+            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
+              <CharacterIcon role={myRole} size="lg" state="action" glow />
+            </motion.div>
+            <h3 className="text-[rgb(var(--ms-wolf))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
+              Bầy Sói Tỉnh Dậy
+            </h3>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn người để cắn</p>
+          </motion.div>
 
           {/* Wolf Chat */}
-          <div className="bg-gray-800/50 rounded-lg p-3 max-h-32 overflow-y-auto">
-            {messages.filter(m => m.msgType === 'wolf').map(m => (
-              <div key={m.id} className="text-sm text-red-300 mb-1">
-                <span className="text-red-500 font-medium">{m.senderName}:</span> {m.content}
+          <motion.div variants={staggerItem}>
+            <GameCard className="bg-[rgb(var(--ms-card))]">
+              <div className="max-h-28 overflow-y-auto space-y-1 mb-3">
+                {messages.filter(m => m.msgType === 'wolf').map(m => (
+                  <motion.div key={m.id} variants={chatMessage} initial="initial" animate="animate">
+                    <span className="text-[rgb(var(--ms-wolf))] font-bold text-sm">{m.senderName}:</span>{' '}
+                    <span className="text-[rgb(var(--ms-wolf))]/80 text-sm">{m.content}</span>
+                  </motion.div>
+                ))}
+                <div ref={chatEndRef} />
               </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-          <div className="flex gap-2">
-            <Input
-              value={wolfMsg}
-              onChange={e => setWolfMsg(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleWolfChat()}
-              placeholder="Chat bầy sói..."
-              className="bg-gray-700 border-gray-600 text-white text-sm h-9"
-            />
-            <Button size="sm" onClick={handleWolfChat} className="bg-red-700 hover:bg-red-800 h-9 px-3">
-              <Send className="w-3 h-3" />
-            </Button>
-          </div>
+              <div className="flex gap-2">
+                <GameInput
+                  value={wolfMsg}
+                  onChange={e => setWolfMsg(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleWolfChat()}
+                  placeholder="Chat bầy sói..."
+                  className="text-sm h-9"
+                />
+                <GameButton size="sm" variant="danger" onClick={handleWolfChat}>
+                  <Send className="w-3.5 h-3.5" />
+                </GameButton>
+              </div>
+            </GameCard>
+          </motion.div>
 
           {/* Target Selection */}
-          <div className="grid grid-cols-2 gap-2">
-            {alivePlayers.filter(p => !WOLF_ROLES.includes(p.role || 'villager') || p.role === 'white_werewolf').map(p => (
-              <button
-                key={p.userId}
-                onClick={() => handleNightAction('wolf_bite', p.userId)}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  selectedTarget === p.userId
-                    ? 'bg-red-600/30 border-red-500 text-white'
-                    : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:border-red-400'
-                }`}
-              >
-                <div className="font-medium text-sm">{p.username}</div>
-                <div className="text-xs opacity-60">#{p.seatIndex + 1}</div>
-              </button>
-            ))}
-          </div>
-        </div>
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers
+              .filter(p => !WOLF_ROLES.includes(p.role || 'villager') || p.role === 'white_werewolf')
+              .map(p => (
+                <PlayerTarget
+                  key={p.userId}
+                  player={p}
+                  isSelected={selectedTarget === p.userId}
+                  accentColor="bg-[rgb(var(--ms-wolf)/0.2)] border-[rgb(var(--ms-wolf))]"
+                  onClick={() => handleNightAction('wolf_bite', p.userId)}
+                />
+              ))}
+          </motion.div>
+        </motion.div>
       )
     }
 
-    // Seer action
+    // ---- Seer Action ----
     if (myRole === 'seer' && nightWakeAction === 'seer_check') {
       return (
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🔮</div>
-            <h3 className="text-purple-400 font-bold text-lg">Tiên Tri Tỉnh Dậy</h3>
-            <p className="text-gray-400 text-sm">Chọn 1 người để soi phe</p>
-          </div>
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <motion.div variants={staggerItem} className="text-center">
+            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
+              <CharacterIcon role="seer" size="lg" state="action" glow />
+            </motion.div>
+            <h3 className="text-[rgb(var(--ms-seer))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
+              Tiên Tri Tỉnh Dậy
+            </h3>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn 1 người để soi phe</p>
+          </motion.div>
 
-          {/* Seer Result - Press to reveal */}
+          {/* Seer Result */}
           {seerResult && (
-            <div
-              className="p-4 rounded-lg border text-center cursor-pointer select-none"
-              style={{
-                backgroundColor: seerRevealed
-                  ? (seerResult.isWolf ? 'rgba(220,38,38,0.2)' : 'rgba(34,197,94,0.2)')
-                  : 'rgba(55,65,81,0.5)',
-                borderColor: seerRevealed
-                  ? (seerResult.isWolf ? '#dc2626' : '#22c55e')
-                  : '#4b5563',
-              }}
-              onTouchStart={handleSeerReveal}
-              onMouseDown={handleSeerReveal}
-            >
-              {seerRevealed ? (
-                <>
-                  <div className="text-2xl mb-1">{seerResult.isWolf ? '🐺' : '👤'}</div>
-                  <div className={`font-bold text-lg ${seerResult.isWolf ? 'text-red-400' : 'text-green-400'}`}>
-                    {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN Làng'}
+            <motion.div variants={staggerItem}>
+              <motion.div
+                whileTap={{ scale: 0.97 }}
+                onTouchStart={handleSeerReveal}
+                onMouseDown={handleSeerReveal}
+                className={cn(
+                  'p-5 rounded-2xl border-2 text-center cursor-pointer select-none transition-all duration-200',
+                  seerRevealed
+                    ? seerResult.isWolf
+                      ? 'bg-[rgb(var(--ms-wolf)/0.15)] border-[rgb(var(--ms-wolf))]'
+                      : 'bg-[rgb(var(--ms-brand)/0.15)] border-[rgb(var(--ms-brand))]'
+                    : 'bg-[rgb(var(--ms-card))] border-white/[0.06]'
+                )}
+              >
+                {seerRevealed ? (
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key="revealed"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={springSnappy}
+                    >
+                      <CharacterIcon
+                        role={seerResult.isWolf ? 'werewolf' : 'villager'}
+                        size="xl"
+                        state={seerResult.isWolf ? 'action' : 'happy'}
+                        glow
+                      />
+                      <div className={cn(
+                        'font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)]',
+                        seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]',
+                      )}>
+                        {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN LÀNG'}
+                      </div>
+                      <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>
+                    </motion.div>
+                  </AnimatePresence>
+                ) : (
+                  <div className="text-[rgb(var(--ms-text-muted))]">
+                    <Lock className="w-6 h-6 mx-auto mb-2" />
+                    <p className="text-sm font-bold">Nhấn giữ để xem kết quả</p>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">Nhả tay để ẩn</div>
-                </>
-              ) : (
-                <div className="text-gray-400">
-                  <Lock className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-sm">Nhấn giữ để xem kết quả</p>
-                </div>
-              )}
-            </div>
+                )}
+              </motion.div>
+            </motion.div>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers.map(p => (
-              <button
+              <PlayerTarget
                 key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor="bg-[rgb(var(--ms-seer)/0.2)] border-[rgb(var(--ms-seer))]"
                 onClick={() => handleNightAction('seer_check', p.userId)}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  selectedTarget === p.userId
-                    ? 'bg-purple-600/30 border-purple-500 text-white'
-                    : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:border-purple-400'
-                }`}
-              >
-                <div className="font-medium text-sm">{p.username}</div>
-                <div className="text-xs opacity-60">#{p.seatIndex + 1}</div>
-              </button>
+              />
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )
     }
 
-    // Witch action
+    // ---- Witch Action ----
     if (myRole === 'witch' && nightWakeAction === 'witch_save') {
       const bittenPlayer = bittenPlayerId ? room.players.find(p => p.userId === bittenPlayerId) : null
       return (
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🧪</div>
-            <h3 className="text-emerald-400 font-bold text-lg">Phù Thủy Tỉnh Dậy</h3>
-          </div>
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <motion.div variants={staggerItem} className="text-center">
+            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
+              <CharacterIcon role="witch" size="lg" state="action" glow />
+            </motion.div>
+            <h3 className="text-[rgb(var(--ms-witch))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
+              Phù Thủy Tỉnh Dậy
+            </h3>
+          </motion.div>
 
+          {/* Save potion */}
           {bittenPlayer && (
-            <div className="bg-red-900/30 border border-red-800 rounded-lg p-4">
-              <p className="text-red-300 text-sm mb-3">${bittenPlayer.username} bị sói cắn đêm nay!</p>
-              <Button
-                onClick={() => handleNightAction('witch_save', bittenPlayerId)}
-                className="bg-green-600 hover:bg-green-700 w-full"
-              >
-                <Heart className="w-4 h-4 mr-2" /> Dùng Thuốc Cứu
-              </Button>
-            </div>
+            <motion.div variants={staggerItem}>
+              <GameCard className="border-[rgb(var(--ms-wolf)/0.3)]">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 text-[rgb(var(--ms-wolf))] font-bold text-sm">
+                    <Skull className="w-4 h-4" />
+                    <span>{bittenPlayer.username} bị sói cắn đêm nay!</span>
+                  </div>
+                  <GameButton variant="primary" onClick={() => handleNightAction('witch_save', bittenPlayerId)} className="w-full">
+                    <Heart className="w-4 h-4" /> Dùng Thuốc Cứu
+                  </GameButton>
+                </div>
+              </GameCard>
+            </motion.div>
           )}
 
-          <div className="text-center text-gray-400 text-sm mb-2">Hoặc dùng thuốc độc:</div>
-          <div className="grid grid-cols-2 gap-2">
+          {/* Poison */}
+          <motion.div variants={staggerItem}>
+            <div className="text-center text-[rgb(var(--ms-text-secondary))] text-sm mb-3 font-bold">
+              Hoặc dùng thuốc độc:
+            </div>
+          </motion.div>
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers.map(p => (
-              <button
+              <PlayerTarget
                 key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor="bg-[rgb(var(--ms-witch)/0.2)] border-[rgb(var(--ms-witch))]"
                 onClick={() => handleNightAction('witch_poison', p.userId)}
-                className="p-3 rounded-lg border bg-gray-700/50 border-gray-600 text-gray-300 hover:border-purple-400 text-left transition-all"
-              >
-                <div className="font-medium text-sm">{p.username}</div>
-                <div className="text-xs opacity-60">#${p.seatIndex + 1}</div>
-              </button>
+              />
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )
     }
 
-    // Guard action
+    // ---- Guard Action ----
     if (myRole === 'guard' && nightWakeAction === 'guard_protect') {
       return (
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-4xl mb-2">🛡️</div>
-            <h3 className="text-amber-400 font-bold text-lg">Bảo Vệ Tỉnh Dậy</h3>
-            <p className="text-gray-400 text-sm">Chọn 1 người để bảo vệ</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <motion.div variants={staggerItem} className="text-center">
+            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
+              <CharacterIcon role="guard" size="lg" state="action" glow />
+            </motion.div>
+            <h3 className="text-[rgb(var(--ms-guard))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
+              Bảo Vệ Tỉnh Dậy
+            </h3>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn 1 người để bảo vệ</p>
+          </motion.div>
+
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers.map(p => (
-              <button
+              <PlayerTarget
                 key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor="bg-[rgb(var(--ms-guard)/0.2)] border-[rgb(var(--ms-guard))]"
                 onClick={() => handleNightAction('guard_protect', p.userId)}
-                className={`p-3 rounded-lg border text-left transition-all ${
-                  selectedTarget === p.userId
-                    ? 'bg-amber-600/30 border-amber-500 text-white'
-                    : 'bg-gray-700/50 border-gray-600 text-gray-300 hover:border-amber-400'
-                }`}
-              >
-                <div className="font-medium text-sm">{p.username}</div>
-                <div className="text-xs opacity-60">#{p.seatIndex + 1}</div>
-              </button>
+              />
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )
     }
 
-    // Default: waiting
+    // ---- Cupid Action ----
+    if (myRole === 'cupid' && nightWakeAction === 'cupid_link') {
+      const togglePair = (uid: string) => {
+        setCupidPair(prev =>
+          prev.includes(uid)
+            ? prev.filter(x => x !== uid)
+            : prev.length < 2 ? [...prev, uid] : [prev[1], uid],
+        )
+      }
+      const confirmPair = () => {
+        if (cupidPair.length !== 2) return
+        emit('cupid-link', { code: room.code, userId, targetIds: [cupidPair[0], cupidPair[1]] })
+      }
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <motion.div variants={staggerItem} className="text-center">
+            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
+              <CharacterIcon role="cupid" size="lg" state="action" glow />
+            </motion.div>
+            <h3 className="text-[rgb(var(--ms-cupid))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
+              Cúp Đôi Tỉnh Dậy
+            </h3>
+            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">
+              Chọn 2 người để ghép đôi tình nhân
+            </p>
+          </motion.div>
+
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers.map(p => (
+              <PlayerTarget
+                key={p.userId}
+                player={p}
+                isSelected={cupidPair.includes(p.userId)}
+                accentColor="bg-[rgb(var(--ms-cupid)/0.2)] border-[rgb(var(--ms-cupid))]"
+                onClick={() => togglePair(p.userId)}
+              />
+            ))}
+          </motion.div>
+
+          <motion.div variants={staggerItem}>
+            <GameButton
+              variant="primary"
+              disabled={cupidPair.length !== 2}
+              onClick={confirmPair}
+              className="w-full"
+            >
+              <Heart className="w-4 h-4" />
+              {cupidPair.length === 2 ? 'Ghép Đôi!' : `Chọn ${2 - cupidPair.length} người nữa`}
+            </GameButton>
+            <p className="text-center text-[rgb(var(--ms-text-muted))] text-xs mt-2">
+              Nếu hết giờ, hệ thống sẽ ghép ngẫu nhiên.
+            </p>
+          </motion.div>
+        </motion.div>
+      )
+    }
+
+    // Default waiting
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-pulse">🌙</div>
-          <p className="text-gray-400">Đêm {room.dayCount + 1}...</p>
-          <p className="text-gray-500 text-sm mt-1">{nightWakeLabel || 'Đợi đến lượt'}</p>
-        </div>
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          className="text-center"
+        >
+          <CharacterIcon role="villager" size="xl" state="idle" animated />
+          <p className="text-[rgb(var(--ms-text-secondary))] mt-4">Đêm {room.dayCount + 1}...</p>
+          <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">{nightWakeLabel || 'Đợi đến lượt'}</p>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-indigo-950/20 to-gray-950 p-4">
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Phase Banner */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Moon className="w-5 h-5 text-indigo-400" />
-            <span className="text-white font-semibold">Đêm {room.dayCount + 1}</span>
-          </div>
-          <Timer timerEnd={room.timerEnd} />
-        </div>
+    <div className="min-h-screen bg-game-night p-4">
+      <div className="max-w-2xl mx-auto">
+        <PhaseHeader
+          icon={<Moon className="w-5 h-5 text-[rgb(var(--ms-seer))]" />}
+          iconColor="bg-[rgb(var(--ms-seer)/0.15)]"
+          label={`Đêm ${room.dayCount + 1}`}
+          timerEnd={room.timerEnd}
+          totalTime={30}
+        />
 
-        {/* Role Action */}
-        <Card className="bg-gray-800/60 border-gray-700">
-          <CardContent className="pt-4">
-            {renderRoleAction()}
-          </CardContent>
-        </Card>
+        <GameCard>
+          <GameCardContent>{renderRoleAction()}</GameCardContent>
+        </GameCard>
 
-        {/* Alive Players Summary */}
-        <Card className="bg-gray-800/60 border-gray-700">
-          <CardContent className="pt-3 pb-3">
-            <div className="text-xs text-gray-500 mb-2">Người còn sống ({room.players.filter(p => p.isAlive).length})</div>
-            <div className="flex flex-wrap gap-1.5">
-              {room.players.filter(p => p.isAlive).map(p => (
-                <Badge key={p.userId} variant="outline" className="text-gray-300 border-gray-600 text-xs">
-                  {p.isAlive ? '' : '💀 '}{p.username}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <AlivePlayersBar players={room.players} />
       </div>
     </div>
   )
@@ -441,107 +715,133 @@ function DayScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-950/20 via-gray-900 to-gray-900 p-4 flex flex-col">
-      <div className="max-w-2xl mx-auto w-full space-y-4 flex-1 flex flex-col">
-        {/* Phase Banner */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sun className="w-5 h-5 text-amber-400" />
-            <span className="text-white font-semibold">Ngày {room.dayCount}</span>
-          </div>
-          <Timer timerEnd={room.timerEnd} />
-        </div>
+    <div className="min-h-screen bg-game-day p-4 flex flex-col">
+      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-4">
+        <PhaseHeader
+          icon={<Sun className="w-5 h-5 text-[rgb(var(--ms-guard))]" />}
+          iconColor="bg-[rgb(var(--ms-guard)/0.15)]"
+          label={`Ngày ${room.dayCount}`}
+          timerEnd={room.timerEnd}
+          totalTime={90}
+        />
 
         {/* Death Announcement */}
-        {dayDeaths.length > 0 && (
-          <Card className="bg-red-900/30 border-red-800">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-red-400 mb-1">
-                <Skull className="w-5 h-5" />
-                <span className="font-semibold">Người chết đêm qua:</span>
-              </div>
-              <div className="text-red-300 font-medium">{dayDeaths.join(', ')}</div>
-              {daySaved && <div className="text-green-400 text-sm mt-1"> 有人 được phù thủy cứu sống!</div>}
-            </CardContent>
-          </Card>
-        )}
+        <AnimatePresence>
+          {dayDeaths.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={springBouncy}
+            >
+              <GameCard className="border-[rgb(var(--ms-wolf)/0.3)] bg-[rgb(var(--ms-wolf)/0.08)]">
+                <div className="flex items-center gap-2 text-[rgb(var(--ms-wolf))] font-bold mb-1">
+                  <Skull className="w-4 h-4" />
+                  <span className="text-sm">Người chết đêm qua:</span>
+                </div>
+                <div className="text-[rgb(var(--ms-wolf))] font-extrabold">
+                  {dayDeaths.join(', ')}
+                </div>
+              </GameCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {dayDeaths.length === 0 && daySaved && (
-          <Card className="bg-green-900/20 border-green-800">
-            <CardContent className="pt-4">
-              <div className="text-green-400">  Đêm qua hòa bình, không ai chết.</div>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={springBouncy}>
+            <GameCard className="border-[rgb(var(--ms-brand)/0.3)] bg-[rgb(var(--ms-brand)/0.08)]">
+              <div className="flex items-center gap-2 text-[rgb(var(--ms-brand))] text-sm font-bold">
+                <Moon className="w-4 h-4 shrink-0" />
+                Đêm qua hòa bình, không ai chết.
+              </div>
+            </GameCard>
+          </motion.div>
         )}
 
         {/* Host Controls */}
         {isHost && hostMode !== 'auto' && (
-          <div className="flex gap-2">
-            <Button
-              onClick={() => emit('host-next-phase', { code: room.code, userId })}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
-              size="sm"
-            >
-              <SkipForward className="w-4 h-4 mr-1" /> Chuyển sang Bỏ Phiếu
-            </Button>
-          </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <GameButton variant="secondary" size="sm" onClick={() => emit('host-next-phase', { code: room.code, userId })}>
+              <SkipForward className="w-4 h-4" /> Chuyển sang Bỏ Phiếu
+            </GameButton>
+          </motion.div>
         )}
 
         {/* Chat */}
-        <Card className="bg-gray-800/60 border-gray-700 flex-1 flex flex-col min-h-0">
-          <CardContent className="pt-4 pb-2 flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1 h-64">
-              <div className="space-y-2 pr-4">
-                {messages.filter(m => m.msgType === 'public' || m.msgType === 'system').map(m => (
-                  <div key={m.id} className={m.msgType === 'system' ? 'text-center' : ''}>
-                    {m.msgType === 'system' ? (
-                      <span className="text-gray-500 text-xs italic">{m.content}</span>
-                    ) : (
-                      <div className="text-sm">
-                        <span className={`font-medium ${m.senderId === userId ? 'text-blue-400' : 'text-gray-300'}`}>
-                          {m.senderName}:
-                        </span>{' '}
-                        <span className="text-gray-200">{m.content}</span>
-                      </div>
-                    )}
+        <GameCard className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto max-h-72 space-y-2 pr-2">
+            {messages.filter(m => m.msgType === 'public' || m.msgType === 'system').map(m => (
+              <motion.div
+                key={m.id}
+                variants={chatMessage}
+                initial="initial"
+                animate="animate"
+                className={m.msgType === 'system' ? 'text-center' : ''}
+              >
+                {m.msgType === 'system' ? (
+                  <span className="text-[rgb(var(--ms-text-muted))] text-xs italic">{m.content}</span>
+                ) : (
+                  <div className="flex gap-2 items-start">
+                    <div className={cn(
+                      'w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white',
+                      m.senderId === userId
+                        ? 'bg-[rgb(var(--ms-info))]'
+                        : 'bg-[rgb(var(--ms-card-hover))]',
+                    )}>
+                      {(m.senderName || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <span className={cn(
+                        'text-xs font-bold',
+                        m.senderId === userId
+                          ? 'text-[rgb(var(--ms-info))]'
+                          : 'text-[rgb(var(--ms-text-secondary))]',
+                      )}>
+                        {m.senderName}
+                      </span>
+                      <p className={cn(
+                        'text-sm leading-relaxed',
+                        m.senderId === userId
+                          ? 'text-[rgb(var(--ms-text-primary))]'
+                          : 'text-[rgb(var(--ms-text-secondary))]',
+                      )}>
+                        {m.content}
+                      </p>
+                    </div>
                   </div>
-                ))}
-                <div ref={chatEndRef} />
-              </div>
-            </ScrollArea>
+                )}
+              </motion.div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
 
-            {/* Chat Input */}
-            <div className="flex gap-2 mt-2 pb-1">
-              <Input
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder={isAlive ? 'Nhập tin nhắn...' : 'Chat Âm Ty...'}
-                className="bg-gray-700 border-gray-600 text-white text-sm h-10"
-                disabled={room.phase !== 'day'}
-              />
-              <Button onClick={handleSend} size="sm" className="bg-blue-600 hover:bg-blue-700 h-10 px-4">
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Chat Input */}
+          <div className="flex gap-2 mt-3 pt-3 border-t border-white/[0.06]">
+            <GameInput
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder={isAlive ? 'Nhập tin nhắn...' : 'Chat Âm Ty...'}
+              className="text-sm h-10"
+              disabled={room.phase !== 'day'}
+            />
+            <GameButton size="sm" variant="secondary" onClick={handleSend} disabled={room.phase !== 'day'}>
+              <Send className="w-4 h-4" />
+            </GameButton>
+          </div>
+        </GameCard>
 
         {/* Player Status */}
-        <Card className="bg-gray-800/60 border-gray-700">
-          <CardContent className="pt-3 pb-3">
-            <div className="flex flex-wrap gap-1.5">
-              {room.players.map(p => (
-                <Badge key={p.userId}
-                  variant="outline"
-                  className={`text-xs ${p.isAlive ? 'text-gray-300 border-gray-600' : 'text-gray-600 border-gray-800 bg-gray-900/50 line-through'}`}
-                >
-                  {p.isAlive ? '' : '💀 '}{p.username}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap gap-2">
+          {room.players.map(p => (
+            <GameAvatar
+              key={p.userId}
+              index={p.seatIndex}
+              username={p.username}
+              isAlive={p.isAlive}
+              size="sm"
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -563,100 +863,129 @@ function VotingScreen() {
   const myVote = (room.votes as Record<string, string>)[userId]
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
 
-  // Count votes for display
   const voteCounts: Record<string, number> = {}
   Object.values(room.votes as Record<string, string>).forEach(targetId => {
     if (targetId) voteCounts[targetId] = (voteCounts[targetId] || 0) + 1
   })
 
+  // ---- Vote Result ----
   if (voteResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-4">
-        <Card className="w-full max-w-md bg-gray-800/90 border-gray-600 text-center">
-          <CardContent className="pt-8 pb-8 space-y-4">
+      <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={springBouncy}
+          className="w-full max-w-md"
+        >
+          <GameCard className="text-center">
             {voteResult.isTie ? (
-              <>
-                <AlertTriangle className="w-16 h-16 mx-auto text-amber-400" />
-                <h2 className="text-2xl font-bold text-white">Hoà Phiếu!</h2>
-                <p className="text-gray-400">Không ai bị loại. Đang chuyển sang đêm...</p>
-              </>
+              <div className="py-4 space-y-4">
+                <motion.div variants={characterBounce} initial="initial" animate="animate" className="flex justify-center">
+                  <AlertTriangle className="w-16 h-16 text-[rgb(var(--ms-warning))]" />
+                </motion.div>
+                <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">Hoà Phiếu!</h2>
+                <p className="text-[rgb(var(--ms-text-secondary))]">Không ai bị loại. Đang chuyển sang đêm...</p>
+              </div>
             ) : voteResult.eliminated ? (
-              <>
-                <Skull className="w-16 h-16 mx-auto text-red-400" />
-                <h2 className="text-2xl font-bold text-white">{voteResult.eliminated}</h2>
-                <p className="text-red-400">Đã bị loại bỏ!</p>
-                <div className="text-sm text-gray-400 mt-4">
+              <div className="py-4 space-y-4">
+                <motion.div variants={deathFade} initial="initial" animate="animate" className="flex justify-center">
+                  <CharacterIcon role="villager" size="xl" state="sad" glow />
+                </motion.div>
+                <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+                  {voteResult.eliminated}
+                </h2>
+                <p className="text-[rgb(var(--ms-wolf))] font-bold">Đã bị loại bỏ!</p>
+                {voteResult.chainedDeaths && voteResult.chainedDeaths.length > 0 && (
+                  <p className="text-[rgb(var(--ms-cupid))] font-bold text-sm mt-2 flex items-center justify-center gap-1.5">
+                    <Heart className="w-3.5 h-3.5" />
+                    Theo tình nhân: {voteResult.chainedDeaths.join(', ')}
+                  </p>
+                )}
+                <div className="text-sm text-[rgb(var(--ms-text-secondary))] mt-4 space-y-1">
                   {Object.entries(voteResult.voteCounts).map(([uid, count]) => {
                     const p = room.players.find(pl => pl.userId === uid)
-                    return p ? <div key={uid}>{p.username}: {count} phiếu</div> : null
+                    return p ? (
+                      <div key={uid} className="flex justify-between px-3 py-1.5 rounded-xl bg-[rgb(var(--ms-card-hover))]">
+                        <span>{p.username}</span>
+                        <span className="font-bold">{count} phiếu</span>
+                      </div>
+                    ) : null
                   })}
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="text-6xl">🤝</div>
-                <h2 className="text-xl font-bold text-white">Không có ai bị loại</h2>
-              </>
+              <div className="py-4 space-y-4">
+                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 1, repeat: Infinity }}>
+                  <div className="w-16 h-16 rounded-full bg-[rgb(var(--ms-brand)/0.2)] flex items-center justify-center mx-auto">
+                    <Target className="w-8 h-8 text-[rgb(var(--ms-brand))]" />
+                  </div>
+                </motion.div>
+                <h2 className="text-xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+                  Không có ai bị loại
+                </h2>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </GameCard>
+        </motion.div>
       </div>
     )
   }
 
+  // ---- Voting UI ----
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-950/20 via-gray-900 to-gray-900 p-4">
+    <div className="min-h-screen bg-game-primary p-4">
       <div className="max-w-2xl mx-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Vote className="w-5 h-5 text-red-400" />
-            <span className="text-white font-semibold">Bỏ Phiếu</span>
-          </div>
-          <Timer timerEnd={room.timerEnd} />
-        </div>
+        <PhaseHeader
+          icon={<Vote className="w-5 h-5 text-[rgb(var(--ms-wolf))]" />}
+          iconColor="bg-[rgb(var(--ms-wolf)/0.15)]"
+          label="Bỏ Phiếu"
+          timerEnd={room.timerEnd}
+          totalTime={30}
+        />
 
         {isHost && hostMode !== 'auto' && (
-          <Button onClick={() => emit('host-next-phase', { code: room.code, userId })} className="bg-red-600 hover:bg-red-700 w-full" size="sm">
-            <SkipForward className="w-4 h-4 mr-1" /> Kết Quả Phiếu
-          </Button>
+          <GameButton
+            variant="danger"
+            size="sm"
+            onClick={() => emit('host-next-phase', { code: room.code, userId })}
+            className="w-full"
+          >
+            <SkipForward className="w-4 h-4" /> Kết Quả Phiếu
+          </GameButton>
         )}
 
         {/* Vote grid */}
-        <div className="grid grid-cols-2 gap-2">
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 gap-2">
           {alivePlayers.map(p => (
-            <button
-              key={p.userId}
-              onClick={() => isAlive && emit('submit-vote', { code: room.code, userId, targetId: p.userId })}
-              disabled={!isAlive}
-              className={`p-4 rounded-lg border text-left transition-all ${
-                myVote === p.userId
-                  ? 'bg-red-600/30 border-red-500 text-white'
-                  : 'bg-gray-800/80 border-gray-700 text-gray-300 hover:border-red-400'
-              } ${!isAlive ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-semibold">{p.username}</div>
-                  <div className="text-xs opacity-60">#{p.seatIndex + 1}</div>
-                </div>
-                {voteCounts[p.userId] ? (
-                  <Badge className="bg-red-600 text-white">{voteCounts[p.userId]}</Badge>
-                ) : null}
-              </div>
-            </button>
+            <motion.div key={p.userId} variants={staggerItem}>
+              <PlayerTarget
+                player={p}
+                isSelected={myVote === p.userId}
+                accentColor="bg-[rgb(var(--ms-wolf)/0.2)] border-[rgb(var(--ms-wolf))]"
+                disabled={!isAlive}
+                voteCount={voteCounts[p.userId]}
+                onClick={() => isAlive && emit('submit-vote', { code: room.code, userId, targetId: p.userId })}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Skip vote option */}
+        {/* Skip vote */}
         {isAlive && (
-          <button
+          <motion.button
+            whileTap={buttonPress.tap}
+            whileHover={buttonPress.hover}
             onClick={() => emit('submit-vote', { code: room.code, userId, targetId: null })}
-            className={`w-full p-3 rounded-lg border text-center transition-all ${
-              !myVote ? 'bg-gray-600/30 border-gray-500 text-gray-300' : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-500'
-            }`}
+            className={cn(
+              'w-full p-3 rounded-2xl border-2 text-center transition-all duration-150 font-bold text-sm',
+              !myVote
+                ? 'bg-[rgb(var(--ms-card-hover))] border-white/20 text-[rgb(var(--ms-text-primary))]'
+                : 'bg-[rgb(var(--ms-card))] border-white/[0.06] text-[rgb(var(--ms-text-muted))] hover:border-white/20',
+            )}
           >
             Bỏ phiếu trắng (Không chọn ai)
-          </button>
+          </motion.button>
         )}
       </div>
     </div>
@@ -675,26 +1004,38 @@ function HunterShoot() {
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-red-950 via-gray-900 to-gray-900 p-4">
-      <div className="max-w-md w-full space-y-4">
-        <div className="text-center">
-          <Crosshair className="w-16 h-16 mx-auto text-red-400 mb-4" />
-          <h2 className="text-2xl font-bold text-white">Thợ Săn Bắn!</h2>
-          <p className="text-gray-400 mt-2">Bạn đã chết. Chọn 1 người để bắn cùng!</p>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
+    <div className="min-h-screen flex items-center justify-center bg-game-sunset p-4">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={springBouncy}
+        className="max-w-md w-full space-y-4"
+      >
+        <GameCard className="text-center">
+          <motion.div variants={characterBounce} initial="initial" animate="animate" className="flex justify-center mb-4">
+            <CharacterIcon role="hunter" size="xl" state="action" glow />
+          </motion.div>
+          <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+            Thợ Săn Bắn!
+          </h2>
+          <p className="text-[rgb(var(--ms-text-secondary))] mt-2 text-sm">
+            Bạn đã chết. Chọn 1 người để bắn cùng!
+          </p>
+        </GameCard>
+
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 gap-2">
           {alivePlayers.map(p => (
-            <button
-              key={p.userId}
-              onClick={() => emit('hunter-shoot', { code: room.code, userId, targetId: p.userId })}
-              className="p-4 rounded-lg border bg-gray-800/80 border-gray-700 text-gray-300 hover:border-red-400 hover:bg-red-600/20 transition-all text-left"
-            >
-              <div className="font-semibold">{p.username}</div>
-              <div className="text-xs opacity-60">#{p.seatIndex + 1}</div>
-            </button>
+            <motion.div key={p.userId} variants={staggerItem}>
+              <PlayerTarget
+                player={p}
+                isSelected={false}
+                accentColor="bg-[rgb(var(--ms-hunter)/0.2)] border-[rgb(var(--ms-hunter))]"
+                onClick={() => emit('hunter-shoot', { code: room.code, userId, targetId: p.userId })}
+              />
+            </motion.div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
@@ -716,53 +1057,97 @@ function GameOverScreen() {
 
   if (!gameWinner || !gameOverPlayers) return null
 
-  const isWolfWin = gameWinner === 'werewolf'
+  const winMeta = {
+    werewolf: { accent: 'rgb(var(--ms-wolf))', char: 'werewolf', heading: 'Bầy Sói Thắng!', sub: 'Sói đã thống trị bản làng...' },
+    villager: { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
+    lovers: { accent: 'rgb(var(--ms-cupid))', char: 'cupid', heading: 'Cặp Đôi Thắng!', sub: 'Tình yêu đã chinh phục tất cả!' },
+  }[gameWinner]
+  const accent = winMeta.accent
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-4">
-      <div className="max-w-md w-full space-y-6">
-        <div className="text-center">
-          <Trophy className={`w-20 h-20 mx-auto ${isWolfWin ? 'text-red-400' : 'text-blue-400'}`} />
-          <h1 className="text-3xl font-bold text-white mt-4">
-            {isWolfWin ? '🐺 Bầy Sói Thắng!' : '👤 Dân Làng Thắng!'}
+    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={springBouncy}
+        className="max-w-md w-full space-y-5"
+      >
+        {/* Winner Announcement */}
+        <div className="text-center py-6">
+          <motion.div variants={winBounce} initial="initial" animate="animate" className="mb-4">
+            <div className="w-24 h-24 rounded-3xl mx-auto flex items-center justify-center" style={{ backgroundColor: `color-mix(in srgb, ${accent} 20%, transparent)` }}>
+              <Trophy className="w-14 h-14" style={{ color: accent }} />
+            </div>
+          </motion.div>
+          <motion.div
+            variants={characterBounce}
+            initial="initial"
+            animate="animate"
+            className="flex justify-center mb-4"
+          >
+            <CharacterIcon
+              role={winMeta.char}
+              size="xl"
+              state="happy"
+              glow
+            />
+          </motion.div>
+          <h1 className="text-3xl font-extrabold font-[family-name:var(--font-nunito)]" style={{ color: accent }}>
+            {winMeta.heading}
           </h1>
-          <p className="text-gray-400 mt-2">
-            {isWolfWin ? 'Sói đã thống trị bản làng...' : 'Dân làng đã diệt trừ toàn bộ sói!'}
+          <p className="text-[rgb(var(--ms-text-secondary))] mt-2 text-sm">
+            {winMeta.sub}
           </p>
         </div>
 
-        {/* Reveal all roles */}
-        <Card className="bg-gray-800/80 border-gray-700">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-white text-lg">Lộ Diện Vai Trò</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+        {/* Reveal All Roles */}
+        <GameCard>
+          <GameCardHeader>
+            <GameCardTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-[rgb(var(--ms-seer))]" />
+              Lộ Diện Vai Trò
+            </GameCardTitle>
+          </GameCardHeader>
+          <GameCardContent>
+            <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-2">
               {gameOverPlayers.map(p => {
                 const info = ROLE_INFO[p.role]
                 return (
-                  <div key={p.username} className={`flex items-center justify-between p-2 rounded-lg ${
-                    p.isAlive ? 'bg-gray-700/50' : 'bg-gray-800/50 opacity-60'
-                  }`}>
-                    <span className={p.isAlive ? 'text-white' : 'text-gray-500 line-through'}>
-                      {p.isAlive ? '' : '💀 '}{p.username}
-                    </span>
-                    {info && (
-                      <Badge className="text-white text-xs" style={{ backgroundColor: info.color }}>
-                        {info.emoji} {info.name}
-                      </Badge>
+                  <motion.div
+                    key={p.username}
+                    variants={staggerItem}
+                    className={cn(
+                      'flex items-center justify-between p-2.5 rounded-xl transition-all',
+                      p.isAlive
+                        ? 'bg-[rgb(var(--ms-card-hover))]'
+                        : 'bg-[rgb(var(--ms-card))] opacity-50',
                     )}
-                  </div>
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <CharacterIcon role={p.role} size="sm" state={p.isAlive ? 'happy' : 'sad'} />
+                      <span className={cn(
+                        'font-bold text-sm',
+                        p.isAlive ? 'text-white' : 'text-[rgb(var(--ms-text-muted))] line-through',
+                      )}>
+                        {p.username}
+                      </span>
+                    </div>
+                    {info && (
+                      <GameBadge color={info.color} size="sm">
+                        {info.name}
+                      </GameBadge>
+                    )}
+                  </motion.div>
                 )
               })}
-            </div>
-          </CardContent>
-        </Card>
+            </motion.div>
+          </GameCardContent>
+        </GameCard>
 
-        <Button onClick={handleLeave} className="w-full h-12 text-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold">
+        <GameButton variant="primary" size="lg" onClick={handleLeave} className="w-full font-extrabold">
           Về Trang Chính
-        </Button>
-      </div>
+        </GameButton>
+      </motion.div>
     </div>
   )
 }

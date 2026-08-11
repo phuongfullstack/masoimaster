@@ -1,0 +1,193 @@
+/* ============================================================
+   Ma Sói Design Tokens
+   Inspired by playful gamification UI — rounded shapes,
+   chunky shadows, bouncy feel, dark-adapted palette.
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* ---- Brand ---- */
+    --ms-brand: 88 204 2;           /* #58cc02 — playful green */
+    --ms-brand-dark: 76 175 0;     /* #4caf00 — green shadow */
+    --ms-brand-rgb: 88, 204, 2;
+
+    /* ---- Role Accent Colors ---- */
+    --ms-wolf: 255 75 75;           /* #ff4b4b */
+    --ms-wolf-dark: 220 38 38;      /* #dc2626 */
+    --ms-white-wolf: 255 200 0;    /* #ffc800 */
+    --ms-white-wolf-dark: 245 158 11; /* #f59e0b */
+    --ms-seer: 206 130 255;        /* #ce82ff */
+    --ms-seer-dark: 139 92 246;    /* #8b5cf6 */
+    --ms-witch: 0 201 183;          /* #00c9b7 */
+    --ms-witch-dark: 16 185 129;    /* #10b981 */
+    --ms-guard: 255 200 0;          /* #ffc800 */
+    --ms-guard-dark: 245 158 11;    /* #f59e0b */
+    --ms-hunter: 239 68 68;         /* #ef4444 */
+    --ms-hunter-dark: 185 28 28;    /* #b91c1c */
+    --ms-cupid: 255 134 208;        /* #ff86d0 */
+    --ms-cupid-dark: 236 72 153;    /* #ec4899 */
+    --ms-villager: 59 130 246;      /* #3b82f6 */
+    --ms-villager-dark: 37 99 235; /* #2563eb */
+    --ms-alpha-wolf: 255 176 32;    /* #ffb020 */
+    --ms-alpha-wolf-dark: 91 31 46; /* #5b1f2e */
+    --ms-elder: 203 213 225;        /* #cbd5e1 */
+    --ms-elder-dark: 100 116 139;   /* #64748b */
+    --ms-doctor: 52 211 153;        /* #34d399 */
+    --ms-doctor-dark: 4 120 87;     /* #047857 */
+
+    /* ---- UI Accents ---- */
+    --ms-info: 28 176 246;          /* #1cb0f6 */
+    --ms-info-dark: 14 165 233;    /* #0ea5e9 */
+    --ms-danger: 255 75 75;
+    --ms-danger-dark: 220 38 38;
+    --ms-success: 88 204 2;
+    --ms-success-dark: 76 175 0;
+    --ms-warning: 255 200 0;
+    --ms-warning-dark: 245 158 11;
+
+    /* ---- Surfaces (dark theme) ---- */
+    --ms-bg-primary: 26 26 46;      /* #1a1a2e */
+    --ms-bg-secondary: 22 33 62;    /* #16213e */
+    --ms-card: 35 41 70;            /* #232946 */
+    --ms-card-hover: 42 45 74;      /* #2a2d4a */
+    --ms-surface: 35 41 70;
+    --ms-surface-hover: 55 60 95;
+
+    /* ---- Text ---- */
+    --ms-text-primary: 255 255 255;
+    --ms-text-secondary: 160 163 189; /* #a0a3bd */
+    --ms-text-muted: 107 111 141;    /* #6b6f8d */
+
+    /* ---- Shadows ---- */
+    --ms-shadow-color: 0 0 0;
+    --ms-shadow-sm: 0 2px 0 0 rgb(var(--ms-shadow-color) / 0.15);
+    --ms-shadow-md: 0 4px 0 0 rgb(var(--ms-shadow-color) / 0.25);
+    --ms-shadow-lg: 0 6px 0 0 rgb(var(--ms-shadow-color) / 0.3);
+
+    /* ---- Radius ---- */
+    --ms-radius-sm: 0.75rem;   /* 12px */
+    --ms-radius-md: 1rem;     /* 16px */
+    --ms-radius-lg: 1.5rem;   /* 24px */
+    --ms-radius-xl: 2rem;     /* 32px */
+    --ms-radius-full: 9999px;
+  }
+}
+
+/* ---- Utility Classes ---- */
+
+/* Chunky bottom shadow — playful press effect */
+.shadow-game {
+  box-shadow: var(--ms-shadow-md);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.shadow-game-sm {
+  box-shadow: var(--ms-shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.shadow-game-lg {
+  box-shadow: var(--ms-shadow-lg);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Press-down effect: combine with whileTap in Framer Motion or :active */
+.shadow-game:active,
+.shadow-game-sm:active,
+.shadow-game-lg:active {
+  transform: translateY(2px);
+  box-shadow: var(--ms-shadow-sm);
+}
+
+/* Green shadow variant */
+.shadow-game-green {
+  box-shadow: 0 4px 0 0 rgb(76 175 0);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.shadow-game-green:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 rgb(76 175 0);
+}
+
+/* Red shadow variant */
+.shadow-game-red {
+  box-shadow: 0 4px 0 0 rgb(220 38 38);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.shadow-game-red:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 rgb(220 38 38);
+}
+
+/* Blue shadow variant */
+.shadow-game-blue {
+  box-shadow: 0 4px 0 0 rgb(14 165 233);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.shadow-game-blue:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 rgb(14 165 233);
+}
+
+/* Background gradient */
+.bg-game-primary {
+  background: linear-gradient(180deg, rgb(var(--ms-bg-primary)) 0%, rgb(var(--ms-bg-secondary)) 100%);
+}
+.bg-game-night {
+  background: linear-gradient(180deg, rgb(var(--ms-bg-primary)) 0%, rgb(15 20 40) 50%, rgb(var(--ms-bg-primary)) 100%);
+}
+.bg-game-day {
+  background: linear-gradient(180deg, rgb(40 35 20) 0%, rgb(var(--ms-bg-primary)) 30%);
+}
+.bg-game-sunset {
+  background: linear-gradient(180deg, rgb(60 20 30) 0%, rgb(var(--ms-bg-primary)) 40%);
+}
+
+/* Glow effect per role */
+.glow-wolf { filter: drop-shadow(0 0 12px rgb(var(--ms-wolf) / 0.5)); }
+.glow-white-wolf { filter: drop-shadow(0 0 12px rgb(var(--ms-white-wolf) / 0.5)); }
+.glow-seer { filter: drop-shadow(0 0 12px rgb(var(--ms-seer) / 0.5)); }
+.glow-witch { filter: drop-shadow(0 0 12px rgb(var(--ms-witch) / 0.5)); }
+.glow-guard { filter: drop-shadow(0 0 12px rgb(var(--ms-guard) / 0.5)); }
+.glow-hunter { filter: drop-shadow(0 0 12px rgb(var(--ms-hunter) / 0.5)); }
+.glow-cupid { filter: drop-shadow(0 0 12px rgb(var(--ms-cupid) / 0.5)); }
+.glow-villager { filter: drop-shadow(0 0 12px rgb(var(--ms-villager) / 0.5)); }
+.glow-alpha-wolf { filter: drop-shadow(0 0 12px rgb(var(--ms-alpha-wolf) / 0.5)); }
+.glow-elder { filter: drop-shadow(0 0 12px rgb(var(--ms-elder) / 0.5)); }
+.glow-doctor { filter: drop-shadow(0 0 12px rgb(var(--ms-doctor) / 0.5)); }
+
+/* Pulse glow animation */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Floating animation (for characters) */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Bounce-in entrance */
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-bounce-in {
+  animation: bounce-in 0.6s ease-out;
+}
+
+/* Slide up entrance */
+@keyframes slide-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}

@@ -12,7 +12,7 @@ export type Role =
   | 'hunter'
   | 'cupid'
 
-export type Phase = 'lobby' | 'role_reveal' | 'night' | 'day' | 'voting' | 'game_over'
+export type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'
 export type RoomStatus = 'waiting' | 'playing' | 'finished'
 export type HostMode = 'auto' | 'direct' | 'hybrid'
 export type MsgType = 'public' | 'dead' | 'wolf' | 'system'
@@ -44,7 +44,15 @@ export interface RoomState {
   hostMode: HostMode
   hostIsPlayer: boolean
   players: PlayerInfo[]
- config: RoleConfig
+  config: RoleConfig
+  // Fields added by buildRoomStateForPlayer (per-player personalization)
+  myRole: Role | ''
+  isAlive: boolean
+  isHost: boolean
+  wolfPartners: string[]
+  loverPartner: string | null
+  timerEnd: number | null
+  votes: Record<string, string>
 }
 
 export interface RoleConfig {
@@ -100,63 +108,63 @@ export interface PhaseTimer {
 // Role metadata for UI
 export const ROLE_INFO: Record<
   string,
-  { name: string; team: string; emoji: string; color: string; desc: string }
+  { name: string; team: string; color: string; desc: string; glowKey: string }
 > = {
   werewolf: {
     name: 'Ma Sói',
     team: 'Sói',
-    emoji: '🐺',
     color: '#dc2626',
     desc: 'Mỗi đêm chọn 1 người để cắn.',
+    glowKey: 'wolf',
   },
   white_werewolf: {
     name: 'Sói Trắng',
     team: 'Sói',
-    emoji: '👻',
     color: '#f59e0b',
     desc: 'Cắn đồng đội Sói để phá hoại.',
+    glowKey: 'white-wolf',
   },
   villager: {
     name: 'Dân Thường',
     team: 'Dân',
-    emoji: '👤',
     color: '#3b82f6',
     desc: 'Không có kỹ năng đặc biệt.',
+    glowKey: 'villager',
   },
   seer: {
     name: 'Tiên Tri',
     team: 'Dân',
-    emoji: '🔮',
     color: '#8b5cf6',
     desc: 'Mỗi đêm soi 1 người để biết phe.',
+    glowKey: 'seer',
   },
   witch: {
     name: 'Phù Thủy',
     team: 'Dân',
-    emoji: '🧪',
     color: '#10b981',
     desc: 'Có thuốc cứu và thuốc độc.',
+    glowKey: 'witch',
   },
   guard: {
     name: 'Bảo Vệ',
     team: 'Dân',
-    emoji: '🛡️',
     color: '#f59e0b',
     desc: 'Mỗi đêm che chắn 1 người khỏi Sói.',
+    glowKey: 'guard',
   },
   hunter: {
     name: 'Thợ Săn',
     team: 'Độc lập',
-    emoji: '🔫',
     color: '#ef4444',
     desc: 'Khi chết có thể bắn 1 người.',
+    glowKey: 'hunter',
   },
   cupid: {
     name: 'Cúp Đôi',
     team: 'Độc lập',
-    emoji: '💘',
     color: '#ec4899',
     desc: 'Đêm đầu ghép đôi 2 người.',
+    glowKey: 'cupid',
   },
 }
 

@@ -1,13 +1,7 @@
-import { PrismaClient } from '@prisma/client'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ['query'],
-  })
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+// ============================================================
+// [ĐÃ NGỪNG DÙNG] Prisma/SQLite đã được thay bằng Firestore.
+// Toàn bộ dữ liệu (users, rooms, players, secrets, votes, messages)
+// nằm trong Firestore — xem src/lib/firestore-server.ts.
+// File này chỉ còn là placeholder, có thể xoá an toàn.
+// ============================================================
+export {}

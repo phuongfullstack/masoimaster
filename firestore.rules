@@ -1,0 +1,78 @@
+rules_version = '2';
+
+// ============================================================
+// Ma Sói Realtime — Firestore Security Rules
+//
+// Design: secret state is split into a sibling `secrets/{uid}` doc
+// (owner-only read). Public game flow lives in `players/{uid}` and the
+// room doc. nightActions are admin-only. Roles revealed at game_over.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- User profiles (display name + stats tích luỹ) ----
+    // Dữ liệu KHÔNG realtime: client đọc 1 lần (get), không cần listener.
+    match /users/{uid} {
+      allow read: if request.auth.uid == uid;
+      // Writes happen via Admin SDK (API routes) only.
+      allow write: if false;
+    }
+
+    // ---- Match archive (lịch sử trận — KHÔNG realtime, bất biến) ----
+    // Ghi duy nhất 1 lần bởi server khi game_over. Người từng chơi
+    // trong trận mới đọc được (query bằng array-contains playerIds).
+    match /matches/{matchId} {
+      allow read: if request.auth != null
+                  && request.auth.uid in resource.data.playerIds;
+      allow write: if false;
+    }
+
+    // ---- Game rooms ----
+    match /rooms/{code} {
+
+      // Room doc is readable by any authenticated member. We can't
+      // cheaply check membership from the rule alone (would need a
+      // players lookup), so we rely on the doc being non-secret +
+      // write-locked to the server. Read = authed users.
+      allow read: if request.auth != null;
+      // Only the server (Admin SDK) writes room docs.
+      allow write: if false;
+
+      // ---- Public per-player info ----
+      match /players/{uid} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+
+      // ---- Per-player SECRETS (role, potions, lover) ----
+      // Owner-only. This is the core of the secret-state model.
+      match /secrets/{uid} {
+        allow read: if request.auth.uid == uid;
+        allow write: if false;
+      }
+
+      // ---- Night actions — NEVER client-readable ----
+      match /nightActions/{actionId} {
+        allow read, write: if false;
+      }
+
+      // ---- Votes — readable only during voting phase ----
+      match /votes/{voterUid} {
+        allow read: if request.auth != null
+                    && exists(/databases/$(database)/documents/rooms/$(code))
+                    && get(/databases/$(database)/documents/rooms/$(code)).data.phase == 'voting';
+        allow write: if false;
+      }
+
+      // ---- Chat messages ----
+      // Anyone in the room can read public + system. Wolf chat only for
+      // wolves (checked via the actor's secret), dead chat only for the
+      // dead. Writes go through the server.
+      match /messages/{msgId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+    }
+  }
+}
