@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Nunito } from "next/font/google";
+import { Geist, Geist_Mono, Nunito, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
@@ -20,6 +20,13 @@ const nunito = Nunito({
   weight: ["400", "600", "700", "800", "900"],
 });
 
+// Font chính theo design canvas — dấu tiếng Việt đẹp, đủ độ đậm.
+const beVietnam = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
   title: "Ma Sói Realtime - Chơi Ma Sói Trực Tuyến",
   description: "Ứng dụng chơi Ma Sói trực tuyến realtime với nhiều vai trò đặc biệt.",
@@ -36,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} ${beVietnam.variable} antialiased bg-background text-foreground`}
       >
         <AuthProvider>
           {children}

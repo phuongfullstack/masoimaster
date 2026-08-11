@@ -192,9 +192,61 @@ function RoleReveal() {
   const myRole = useGameStore(s => s.room?.myRole)
   const wolfPartners = useGameStore(s => s.room?.wolfPartners || [])
   const loverPartner = useGameStore(s => s.room?.loverPartner)
+  const players = useGameStore(s => s.room?.players || [])
+  const userId = useGameStore(s => s.userId)
+  // Màn phát thẻ (S05): thẻ úp bay vào bàn, thẻ của mình sáng lên,
+  // bấm "Lật thẻ của tôi" mới sang thẻ nhấn-giữ.
+  const [dealt, setDealt] = useState(false)
   const info = myRole ? ROLE_INFO[myRole] : null
 
   if (!info) return null
+
+  if (!dealt) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-game-primary p-6 font-game">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-white/40 mb-6">
+          Phát thẻ bài
+        </p>
+        <div className="grid grid-cols-4 gap-3 mb-8">
+          {players.map((p, i) => {
+            const mine = p.userId === userId
+            return (
+              <motion.div
+                key={p.userId}
+                initial={{ y: -140, opacity: 0, rotate: -12 }}
+                animate={{ y: 0, opacity: 1, rotate: 0 }}
+                transition={{ delay: i * 0.09, type: 'spring', stiffness: 260, damping: 20 }}
+                className={cn(
+                  'w-16 h-24 rounded-xl border flex flex-col items-center justify-center gap-1',
+                  mine
+                    ? 'border-[rgb(var(--ms-moon))] shadow-[0_0_18px_rgba(167,197,235,0.35)]'
+                    : 'border-white/10',
+                )}
+                style={{ background: 'linear-gradient(155deg,#16141F,#211E30)' }}
+              >
+                <span className="text-xl">🎴</span>
+                <span className={cn('text-[9px] font-bold truncate max-w-[56px]', mine ? 'text-[rgb(var(--ms-moon))]' : 'text-white/40')}>
+                  {mine ? 'Bạn' : p.username}
+                </span>
+              </motion.div>
+            )
+          })}
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: players.length * 0.09 + 0.4 }}
+        >
+          <GameButton size="lg" onClick={() => setDealt(true)}>
+            🎴 Lật thẻ của tôi
+          </GameButton>
+          <p className="text-white/35 text-xs mt-3 text-center">
+            Thẻ được chia úp — không ai thấy bài của ai.
+          </p>
+        </motion.div>
+      </div>
+    )
+  }
 
   // ANTI-PEEK (design 17-vai): mọi người ngồi chung bàn nên thẻ vai
   // KHÔNG hiển thị sẵn. Khung thẻ trung tính duy nhất (không glow,
