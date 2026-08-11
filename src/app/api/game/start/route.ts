@@ -2,7 +2,7 @@
 // secrets), transitions to role_reveal, sets the first timer.
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
-  roomDoc, secretDoc, loadRoom, loadPlayers, generateRoleList,
+  roomDoc, secretDoc, loadRoom, loadPlayers, generateRoleList, writeLog,
   type RoomDoc, type SecretDoc,
 } from '@/lib/firestore-server'
 import { sumSpecial, isWolfRole } from '@/lib/roles'
@@ -71,6 +71,12 @@ export async function POST(req: Request) {
   }
   batch.update(roomDoc(upper), updates as Record<string, unknown>)
   await batch.commit()
+
+  // Master log (host-only): bài đã chia — quản trò cần biết để điều hành.
+  await writeLog(upper, 0, 'start', [
+    { icon: '🎲', text: `Ván bắt đầu — ${total} người, chế độ đêm: ${room.nightMode === 'sim' ? 'Đồng thời' : 'Tuần tự'}` },
+    ...players.map((p, i) => ({ icon: '🎴', text: `${p.username}: ${roles[i]}` })),
+  ])
 
   return ok({ phase: 'role_reveal' })
 }

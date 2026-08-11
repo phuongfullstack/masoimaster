@@ -2,7 +2,7 @@
 // Kills target (+ chain deaths), checks win, advances flow.
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
-  roomDoc, playerDoc, secretDoc, loadRoom, loadPlayers, loadSecrets,
+  roomDoc, playerDoc, secretDoc, loadRoom, loadPlayers, loadSecrets, writeLog,
   type Phase,
 } from '@/lib/firestore-server'
 import { applyHunterShot, PHASE_DURATIONS } from '@/lib/game-logic'
@@ -67,6 +67,11 @@ export async function POST(req: Request) {
     } as Record<string, unknown>)
   }
   await batch.commit()
+
+  await writeLog(upper, room.dayCount, room.phase, [{
+    icon: '🏹',
+    text: `Săn Thủ bắn ${result.targetName}${result.chainedDeaths.length ? ` (kéo theo: ${result.chainedDeaths.join(', ')})` : ''}`,
+  }])
 
   return ok({ targetName: result.targetName, chainedDeaths: result.chainedDeaths, winner: result.winner })
 }

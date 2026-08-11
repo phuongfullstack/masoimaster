@@ -12,7 +12,7 @@
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
   roomDoc, playerDoc, secretDoc, nightActionsCol, votesCol, wolfPicksCol, deadChatCol,
-  loadRoom, loadPlayers, loadSecrets, loadNightActions, loadVotes, loadWolfPicks,
+  loadRoom, loadPlayers, loadSecrets, loadNightActions, loadVotes, loadWolfPicks, writeLog,
   type RoomDoc, type Phase, type SecretDoc, type NightActionDoc, type PlayerDoc,
 } from '@/lib/firestore-server'
 import {
@@ -68,6 +68,41 @@ export async function POST(req: Request) {
 // ============================================================
 // Phase transitions
 // ============================================================
+
+/** Dựng các dòng master log từ hành động đêm (chỉ host đọc — rules). */
+function nightLogLines(
+  actions: NightActionDoc[],
+  players: PlayerDoc[],
+  extra: { deaths: string[]; cupidAutoPair: [string, string] | null; winner: string | null },
+): Array<{ icon: string; text: string }> {
+  const nameOf = (id: string | null | undefined) =>
+    players.find((p) => p.userId === id)?.username ?? '?'
+  const lines: Array<{ icon: string; text: string }> = []
+  for (const a of actions) {
+    switch (a.actionType) {
+      case 'guard_protect': lines.push({ icon: '🛡️', text: `Bảo Vệ che ${nameOf(a.targetId)}` }); break
+      case 'doctor_heal': lines.push({ icon: '💊', text: `Bác Sĩ chữa ${nameOf(a.targetId)}` }); break
+      case 'wolf_bite': lines.push({ icon: '🐺', text: `Bầy sói cắn ${nameOf(a.targetId)}` }); break
+      case 'witch_save': lines.push({ icon: '🧪', text: `Phù Thủy dùng thuốc cứu${a.targetId ? ` cho ${nameOf(a.targetId)}` : ''}` }); break
+      case 'witch_poison': lines.push({ icon: '☠️', text: `Phù Thủy đầu độc ${nameOf(a.targetId)}` }); break
+      case 'curse': lines.push({ icon: '🌑', text: `Sói Nguyền nguyền ${nameOf(a.targetId)}` }); break
+      case 'seer_check': lines.push({ icon: '🔮', text: `Tiên Tri soi ${nameOf(a.targetId)}` }); break
+      case 'wolf_seer_check': lines.push({ icon: '🌘', text: `Sói Tiên Tri soi ${nameOf(a.targetId)}` }); break
+      case 'detective_compare': lines.push({ icon: '🕵️', text: `Thám Tử so ${nameOf(a.targetId)} & ${nameOf(a.targetId2)}` }); break
+      case 'raven_mark': lines.push({ icon: '🐦', text: `Con Quạ đánh dấu ${nameOf(a.targetId)}` }); break
+      default: break
+    }
+  }
+  if (extra.cupidAutoPair) {
+    lines.push({ icon: '💘', text: `Ghép đôi (tự động): ${nameOf(extra.cupidAutoPair[0])} & ${nameOf(extra.cupidAutoPair[1])}` })
+  }
+  lines.push({
+    icon: '💀',
+    text: extra.deaths.length ? `Chết đêm nay: ${extra.deaths.join(', ')}` : 'Không ai chết đêm nay',
+  })
+  if (extra.winner) lines.push({ icon: '🏁', text: `Ván kết thúc — phe thắng: ${extra.winner}` })
+  return lines
+}
 
 /**
  * Bà Đồng: khi bước medium_listen BẮT ĐẦU, copy tối đa 5 tin mới nhất
@@ -241,6 +276,7 @@ async function runNightResolution(code: string, room: RoomDoc) {
     } catch (e) {
       console.error('[tick] archiveMatch failed:', (e as Error).message)
     }
+    await writeLog(code, dayCount, 'night', nightLogLines(actions, players, res))
     return ok({ phase: 'game_over', deaths: res.deaths, winner: res.winner })
   } else if (res.deadHunterId) {
     // Give the hunter a window to shoot.
@@ -263,6 +299,7 @@ async function runNightResolution(code: string, room: RoomDoc) {
     } as Record<string, unknown>)
   }
   await batch.commit()
+  await writeLog(code, dayCount, 'night', nightLogLines(actions, players, res))
   return ok({ phase: 'day', deaths: res.deaths, winner: res.winner })
 }
 
@@ -285,6 +322,21 @@ async function runVoteResolution(code: string, room: RoomDoc) {
   const players = await loadPlayers(code)
   const secrets = await loadSecrets(code)
   const res = resolveVotes(votes, players, secrets, room.cupidPair, room.ravenMarkedId ?? null)
+
+  // Master log (host-only): phân bố phiếu + kết quả.
+  const nameOf = (id: string | null | undefined) => players.find((p) => p.userId === id)?.username ?? '?'
+  const voteLines: Array<{ icon: string; text: string }> = [
+    {
+      icon: '🗳️',
+      text: Object.keys(res.voteCounts).length
+        ? `Phiếu: ${Object.entries(res.voteCounts).map(([id, n]) => `${nameOf(id)}=${n}`).join(', ')}`
+        : 'Không ai bỏ phiếu',
+    },
+    res.isTie
+      ? { icon: '⚖️', text: 'Hoà phiếu — không ai bị loại' }
+      : { icon: '⚖️', text: `${res.eliminatedName} bị loại${res.chainedDeaths.length ? ` (kéo theo: ${res.chainedDeaths.join(', ')})` : ''}` },
+  ]
+  if (res.winner) voteLines.push({ icon: '🏁', text: `Ván kết thúc — phe thắng: ${res.winner}` })
 
   const batch = roomDoc(code).firestore.batch()
   // Write mutated player/secret state.
@@ -312,6 +364,7 @@ async function runVoteResolution(code: string, room: RoomDoc) {
     } catch (e) {
       console.error('[tick] archiveMatch failed:', (e as Error).message)
     }
+    await writeLog(code, room.dayCount, 'voting', voteLines)
     return ok({ phase: 'game_over', eliminated: res.eliminatedName, winner: res.winner })
   } else if (res.deadHunterId) {
     batch.update(roomDoc(code), {
@@ -325,5 +378,6 @@ async function runVoteResolution(code: string, room: RoomDoc) {
     } as Record<string, unknown>)
   }
   await batch.commit()
+  await writeLog(code, room.dayCount, 'voting', voteLines)
   return ok({ phase: 'vote_result', eliminated: res.eliminatedName, winner: res.winner })
 }

@@ -86,6 +86,29 @@ export const wolfPickDoc = (code: string, uid: string) => wolfPicksCol(code).doc
 // wolfChat chỉ sói đọc; deadChat chỉ người chết đọc.
 export const wolfChatCol = (code: string) => roomDoc(code).collection('wolfChat')
 export const deadChatCol = (code: string) => roomDoc(code).collection('deadChat')
+// Master log — nhật ký ai-làm-gì-với-ai, CHỈ HOST đọc được (rules).
+export const logCol = (code: string) => roomDoc(code).collection('log')
+
+export interface LogEntry {
+  at: number
+  day: number
+  phase: string
+  icon: string
+  text: string
+}
+
+/** Ghi một loạt dòng master log (best-effort — không làm hỏng game flow). */
+export async function writeLog(code: string, day: number, phase: string, lines: Array<{ icon: string; text: string }>) {
+  if (lines.length === 0) return
+  try {
+    const batch = db().batch()
+    const base = Date.now()
+    lines.forEach((l, i) => {
+      batch.set(logCol(code).doc(), { at: base + i, day, phase, icon: l.icon, text: l.text } satisfies LogEntry)
+    })
+    await batch.commit()
+  } catch { /* log là phụ trợ */ }
+}
 
 // ============================================================
 // Domain types (server-internal — full state, includes secrets).

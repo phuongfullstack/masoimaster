@@ -15,6 +15,7 @@ import { ROLE_INFO, ROLE_REGISTRY, isWolfRole } from '@/lib/types'
 import type { Role } from '@/lib/types'
 import { PressToReveal } from '@/components/game/ui/PressToReveal'
 import { CardFab } from '@/components/game/ui/CardFab'
+import { HostPanel } from '@/components/game/ui/HostPanel'
 import {
   Moon, Sun, Vote, Skull, Eye,
   Send, SkipForward, Heart, Target, Trophy,
@@ -1357,14 +1358,17 @@ function GameOverScreen() {
     useGameStore.getState().resetGame()
   }
 
-  if (!gameWinner || !gameOverPlayers) return null
+  if (!gameOverPlayers) return null
 
-  const winMeta = {
-    werewolf: { accent: 'rgb(var(--ms-wolf))', char: 'werewolf', heading: 'Bầy Sói Thắng!', sub: 'Sói đã thống trị bản làng...' },
-    villager: { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
-    lovers: { accent: 'rgb(var(--ms-cupid))', char: 'cupid', heading: 'Cặp Đôi Thắng!', sub: 'Tình yêu đã chinh phục tất cả!' },
-    jester: { accent: 'rgb(var(--ms-jester))', char: 'jester', heading: 'Thằng Ngố Thắng!', sub: 'Cả làng đã trúng kế — xử đúng người muốn bị xử!' },
-  }[gameWinner]
+  // winner null = Host kết thúc ván (không phe nào thắng).
+  const winMeta = gameWinner
+    ? {
+        werewolf: { accent: 'rgb(var(--ms-wolf))', char: 'werewolf', heading: 'Bầy Sói Thắng!', sub: 'Sói đã thống trị bản làng...' },
+        villager: { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
+        lovers: { accent: 'rgb(var(--ms-cupid))', char: 'cupid', heading: 'Cặp Đôi Thắng!', sub: 'Tình yêu đã chinh phục tất cả!' },
+        jester: { accent: 'rgb(var(--ms-jester))', char: 'jester', heading: 'Thằng Ngố Thắng!', sub: 'Cả làng đã trúng kế — xử đúng người muốn bị xử!' },
+      }[gameWinner]
+    : { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Ván Đấu Kết Thúc', sub: 'Quản trò đã kết thúc ván đấu.' }
   const accent = winMeta.accent
 
   return (
@@ -1466,6 +1470,7 @@ export function GameScreen() {
   const hunterTriggered = useGameStore(s => s.hunterTriggered)
   const wolfPartners = useGameStore(s => s.room?.wolfPartners || [])
   const loverPartner = useGameStore(s => s.room?.loverPartner)
+  const { emit } = useSocket()
 
   if (!room) return null
 
@@ -1476,13 +1481,19 @@ export function GameScreen() {
   if (phase === 'role_reveal' && myRole) return <RoleReveal />
 
   // Nút 🎴 xem lại thẻ (đè giữ) — hiện ở mọi màn trong ván.
-  const fab = myRole ? (
-    <CardFab
-      role={myRole}
-      packmates={wolfPartners}
-      extraNote={loverPartner ? `💘 Người yêu: ${loverPartner}` : null}
-    />
-  ) : null
+  // Host có thêm bảng điều khiển quản trò ⚙️ (góc trái).
+  const fab = (
+    <>
+      {myRole && (
+        <CardFab
+          role={myRole}
+          packmates={wolfPartners}
+          extraNote={loverPartner ? `💘 Người yêu: ${loverPartner}` : null}
+        />
+      )}
+      {room.isHost && room.status === 'playing' && <HostPanel room={room} emit={emit} />}
+    </>
+  )
 
   // Hunter Shoot
   if (hunterTriggered && myRole === 'hunter') return <>{fab}<HunterShoot /></>

@@ -64,7 +64,8 @@ interface GameActions {
   setDetectiveResult: (result: { aName: string; bName: string; sameFaction: boolean } | null) => void
   setDayResult: (deaths: string[], saved: boolean) => void
   setVoteResult: (result: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null) => void
-  setGameOver: (winner: 'werewolf' | 'villager' | 'lovers' | 'jester', players: { username: string; role: string; isAlive: boolean }[]) => void
+  /** winner null = host kết thúc ván (không phe nào thắng). */
+  setGameOver: (winner: 'werewolf' | 'villager' | 'lovers' | 'jester' | null, players: { username: string; role: string; isAlive: boolean }[]) => void
   setHunterTriggered: (v: boolean) => void
   setError: (error: string | null) => void
   resetGame: () => void

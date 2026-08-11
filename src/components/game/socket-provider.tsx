@@ -117,7 +117,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             username: p.username, role: reveal[p.userId] ?? '', isAlive: p.isAlive,
           }))
           const winner = (room as any).gameWinner
-          s.setGameOver(winner, players)
+          s.setGameOver(winner ?? null, players)
           if (typeof window !== 'undefined') localStorage.removeItem('ma-soi-room-code')
         }
       },
@@ -190,6 +190,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         run(gameApi.start(token, code)); break
       case 'host-next-phase':
         run(gameApi.hostNext(token, code)); break
+      case 'host-action':
+        run(gameApi.hostAction(token, code, data?.action, data?.value, data?.targetUid)); break
       case 'night-action':
         run(gameApi.nightAction(token, code, data?.actionType as ActionType, data?.targetId ?? null, data?.targetId2 ?? null)); break
       case 'cupid-link':
