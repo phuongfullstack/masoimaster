@@ -1,22 +1,42 @@
-# CODING AGENTS: READ THIS FIRST
+# Ma Sói Realtime — Design Documentation
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+> Thư mục chứa tài liệu thiết kế UI/UX cho Ma Sói Realtime.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## Cấu trúc
 
-## What you should do — IMPORTANT
+```
+design/
+├── README.md                          ← file này
+└── project/
+    ├── uploads/
+    │   └── ma-soi-ui-design-spec.md   ← ⭐ SPEC CHÍNH THỨC v2.0 (phản ánh production)
+    ├── design_handoff_ma_soi_realtime/ ← TARGET VISION (17 vai, archived reference)
+    │   ├── README.md                  ← handoff doc (có banner target-vision)
+    │   ├── ma-soi-ui-design-spec.md   ← spec v1.0 (archived)
+    │   ├── Ma Soi Realtime.dc.html    ← design canvas chính
+    │   ├── MaSoiApp.dc.html           ← 52 trạng thái màn hình (124KB)
+    │   ├── ios-frame.jsx              ← iOS device frame
+    │   └── support.js                 ← canvas support script
+    ├── Ma Soi Realtime.dc.html        ← canvas copy
+    ├── MaSoiApp.dc.html               ← canvas copy
+    ├── ios-frame.jsx                  ← frame copy
+    └── support.js                     ← support copy
+```
 
-**Read `masoimaster-mobile-app-design/project/Ma Soi Realtime.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Đọc theo thứ tự
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+1. **`project/uploads/ma-soi-ui-design-spec.md`** (v2.0) — spec chính thức, phản ánh
+   đúng production hiện tại (8 vai, hybrid palette, Firebase auth).
+2. **Docs implementation**:
+   - `docs/FEATURES.md` — feature catalog đầy đủ
+   - `docs/SCENARIOS.md` — kịch bản chơi + 18-role catalog
+   - `docs/ANTI-PEEK.md` — anti-peek patterns + status
+3. **`project/design_handoff_ma_soi_realtime/`** — chỉ khi cần tham khảo target
+   vision dài hạn (17 vai, design canvas high-fidelity).
 
-## About the design files
+## Lưu ý
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
-
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
-
-## Bundle contents
-
-- `masoimaster-mobile-app-design/README.md` — this file
-- `masoimaster-mobile-app-design/project/` — the `Masoimaster mobile app design` project files (HTML prototypes, assets, components)
+- ❌ **KHÔNG dùng** `project/design_handoff_ma_soi_realtime/ma-soi-ui-design-spec.md`
+  (v1.0) làm spec chính — nó đã lỗi thời (đề cập Supabase, Discord, nickname-only).
+- ❌ **KHÔNG sửa** `MaSoiApp.dc.html` (124KB canvas) — giữ nguyên làm reference.
+- ✅ Spec chính là `uploads/ma-soi-ui-design-spec.md` v2.0.

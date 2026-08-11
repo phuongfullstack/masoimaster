@@ -1,5 +1,16 @@
 # Ma Sói Realtime — UI/UX Design Specification
 
+> ⚠️ **TARGET VISION (v1.0, archived)** — Tài liệu này mô tả design goal đầy đủ
+> (17 vai, moonlight-only palette, Be Vietnam Pro, Discord SSO). **Không phản ánh
+> hiện trạng production.**
+>
+> **Hiện trạng thực tế** (8 vai implemented, hybrid palette, Firebase auth, Nunito):
+> xem `docs/FEATURES.md` + `design/project/uploads/ma-soi-ui-design-spec.md` (v2.0).
+>
+> Tài liệu này giữ làm reference cho roadmap thiết kế dài hạn.
+
+---
+
 > Tài liệu mô tả giao diện, các màn hình, nhân vật để đưa cho AI thiết kế UI.
 > Version 1.0 | Game Ma Sói (Werewolf) nhiều người chơi realtime trên Web.
 

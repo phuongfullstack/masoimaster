@@ -1,5 +1,15 @@
 # Handoff: Ma Sói Realtime — mobile app
 
+> ⚠️ **TARGET VISION (high-fidelity design canvas, archived)** — Bộ thiết kế này
+> mô tả 52 trạng thái màn hình, 17 vai trò, hệ thống anti-peek đầy đủ.
+> **Không phản ánh hiện trạng production** (8 vai implemented, hybrid palette).
+>
+> **Hiện trạng thực tế**: `docs/FEATURES.md` + `docs/SCENARIOS.md` + `docs/ANTI-PEEK.md`.
+> **Spec v2.0 (canonical)**: `design/project/uploads/ma-soi-ui-design-spec.md`.
+>
+> Bộ này giữ làm **reference target** cho việc implement 10 vai planned + hoàn thiện
+> anti-peek patterns.
+
 ## Overview
 Bản thiết kế giao diện di động cho **Ma Sói Realtime**, một ứng dụng chơi Ma Sói dành cho nhóm người **ngồi cạnh nhau ngoài đời**, mỗi người một điện thoại. Ứng dụng thay thế bộ bài giấy và người quản trò: nó chia thẻ, chạy lượt đêm, tính phiếu, và giữ bí mật vai trò.
 
