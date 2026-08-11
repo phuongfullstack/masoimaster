@@ -263,6 +263,56 @@ function RoleReveal() {
 }
 
 // ============================================================
+// Night — shared anti-reveal pieces
+// ============================================================
+/** Header ẩn danh cho lượt hành động: KHÔNG icon vai, KHÔNG tên vai, KHÔNG màu phe. */
+function NightTurnHeader({ prompt }: { prompt: string }) {
+  return (
+    <motion.div variants={staggerItem} className="text-center">
+      <p className="text-2xl mb-2">🌙</p>
+      <h3 className="text-[#A7C5EB] font-extrabold text-lg tracking-[0.14em] uppercase">
+        Đến lượt bạn
+      </h3>
+      <p className="text-[rgb(var(--ms-text-secondary))] text-sm mt-1">{prompt}</p>
+    </motion.div>
+  )
+}
+
+/** Màu chọn mục tiêu trung tính — mọi vai dùng CHUNG (chống suy vai từ màu). */
+const NIGHT_ACCENT = 'bg-[#A7C5EB]/15 border-[#A7C5EB]'
+
+/**
+ * Màn chờ đêm — DECOY: vai không hành động, vai đã xong lượt, và người
+ * chờ lượt đều thấy CHÍNH XÁC màn này (khác một pixel là lộ vai).
+ */
+function NightWaiting() {
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center">
+      <motion.div
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        className="text-center"
+      >
+        <div className="relative mb-6">
+          <Moon className="w-16 h-16 text-[#A7C5EB]/60 mx-auto" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full bg-[#A7C5EB]/10 animate-glow-pulse" />
+          </div>
+        </div>
+        <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Đang là đêm...</p>
+        <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đừng mở mắt!</p>
+        <div className="mt-8 max-w-xs mx-auto p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
+          <p className="text-[rgb(var(--ms-text-muted))] text-xs uppercase tracking-wider mb-2 font-bold">
+            Ghi chú riêng
+          </p>
+          <div className="w-full h-16 rounded-xl bg-[rgb(var(--ms-bg-primary))] border border-white/[0.04]" />
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// ============================================================
 // Night Screen (per role)
 // ============================================================
 function NightScreen() {
@@ -326,48 +376,14 @@ function NightScreen() {
       )
     }
 
-    // Waiting / no wake action
-    if (!nightWakeAction) {
-      return (
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="text-center"
-          >
-            <div className="relative mb-6">
-              <Moon className="w-16 h-16 text-[rgb(var(--ms-seer))]/60 mx-auto" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full bg-[rgb(var(--ms-seer))]/10 animate-glow-pulse" />
-              </div>
-            </div>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Đang là đêm...</p>
-            <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đừng mở mắt!</p>
-            <div className="mt-8 max-w-xs mx-auto p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
-              <p className="text-[rgb(var(--ms-text-muted))] text-xs uppercase tracking-wider mb-2 font-bold">
-                Ghi chú riêng
-              </p>
-              <div className="w-full h-16 rounded-xl bg-[rgb(var(--ms-bg-primary))] border border-white/[0.04]" />
-            </div>
-          </motion.div>
-        </div>
-      )
-    }
+    // Waiting / no wake action — decoy thống nhất
+    if (!nightWakeAction) return <NightWaiting />
 
     // ---- Wolf Action ----
     if (isWolf && nightWakeAction === 'wolf_bite') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-          {/* Header */}
-          <motion.div variants={staggerItem} className="text-center">
-            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
-              <CharacterIcon role={myRole} size="lg" state="action" glow />
-            </motion.div>
-            <h3 className="text-[rgb(var(--ms-wolf))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
-              Bầy Sói Tỉnh Dậy
-            </h3>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn người để cắn</p>
-          </motion.div>
+          <NightTurnHeader prompt="Chọn người để cắn đêm nay" />
 
           {/* Wolf Chat */}
           <motion.div variants={staggerItem}>
@@ -405,7 +421,7 @@ function NightScreen() {
                   key={p.userId}
                   player={p}
                   isSelected={selectedTarget === p.userId}
-                  accentColor="bg-[rgb(var(--ms-wolf)/0.2)] border-[rgb(var(--ms-wolf))]"
+                  accentColor={NIGHT_ACCENT}
                   onClick={() => handleNightAction('wolf_bite', p.userId)}
                 />
               ))}
@@ -418,15 +434,7 @@ function NightScreen() {
     if (myRole === 'seer' && nightWakeAction === 'seer_check') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-          <motion.div variants={staggerItem} className="text-center">
-            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
-              <CharacterIcon role="seer" size="lg" state="action" glow />
-            </motion.div>
-            <h3 className="text-[rgb(var(--ms-seer))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
-              Tiên Tri Tỉnh Dậy
-            </h3>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn 1 người để soi phe</p>
-          </motion.div>
+          <NightTurnHeader prompt="Chọn 1 người để soi phe" />
 
           {/* Seer Result — anti-peek: chỉ rõ trong lúc đè, nhả tay là che ngay */}
           {seerResult && (
@@ -464,7 +472,7 @@ function NightScreen() {
                 key={p.userId}
                 player={p}
                 isSelected={selectedTarget === p.userId}
-                accentColor="bg-[rgb(var(--ms-seer)/0.2)] border-[rgb(var(--ms-seer))]"
+                accentColor={NIGHT_ACCENT}
                 onClick={() => handleNightAction('seer_check', p.userId)}
               />
             ))}
@@ -478,14 +486,7 @@ function NightScreen() {
       const bittenPlayer = bittenPlayerId ? room.players.find(p => p.userId === bittenPlayerId) : null
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-          <motion.div variants={staggerItem} className="text-center">
-            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
-              <CharacterIcon role="witch" size="lg" state="action" glow />
-            </motion.div>
-            <h3 className="text-[rgb(var(--ms-witch))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
-              Phù Thủy Tỉnh Dậy
-            </h3>
-          </motion.div>
+          <NightTurnHeader prompt="Dùng thuốc của bạn — hoặc không" />
 
           {/* Save potion */}
           {bittenPlayer && (
@@ -516,7 +517,7 @@ function NightScreen() {
                 key={p.userId}
                 player={p}
                 isSelected={selectedTarget === p.userId}
-                accentColor="bg-[rgb(var(--ms-witch)/0.2)] border-[rgb(var(--ms-witch))]"
+                accentColor={NIGHT_ACCENT}
                 onClick={() => handleNightAction('witch_poison', p.userId)}
               />
             ))}
@@ -529,15 +530,7 @@ function NightScreen() {
     if (myRole === 'guard' && nightWakeAction === 'guard_protect') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-          <motion.div variants={staggerItem} className="text-center">
-            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
-              <CharacterIcon role="guard" size="lg" state="action" glow />
-            </motion.div>
-            <h3 className="text-[rgb(var(--ms-guard))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
-              Bảo Vệ Tỉnh Dậy
-            </h3>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn 1 người để bảo vệ</p>
-          </motion.div>
+          <NightTurnHeader prompt="Chọn 1 người để bảo vệ" />
 
           <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers.map(p => (
@@ -545,7 +538,7 @@ function NightScreen() {
                 key={p.userId}
                 player={p}
                 isSelected={selectedTarget === p.userId}
-                accentColor="bg-[rgb(var(--ms-guard)/0.2)] border-[rgb(var(--ms-guard))]"
+                accentColor={NIGHT_ACCENT}
                 onClick={() => handleNightAction('guard_protect', p.userId)}
               />
             ))}
@@ -569,17 +562,7 @@ function NightScreen() {
       }
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-          <motion.div variants={staggerItem} className="text-center">
-            <motion.div variants={characterFloat} animate="animate" className="flex justify-center mb-3">
-              <CharacterIcon role="cupid" size="lg" state="action" glow />
-            </motion.div>
-            <h3 className="text-[rgb(var(--ms-cupid))] font-extrabold text-lg font-[family-name:var(--font-nunito)]">
-              Cúp Đôi Tỉnh Dậy
-            </h3>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">
-              Chọn 2 người để ghép đôi tình nhân
-            </p>
-          </motion.div>
+          <NightTurnHeader prompt="Chọn 2 người để ghép đôi" />
 
           <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers.map(p => (
@@ -587,7 +570,7 @@ function NightScreen() {
                 key={p.userId}
                 player={p}
                 isSelected={cupidPair.includes(p.userId)}
-                accentColor="bg-[rgb(var(--ms-cupid)/0.2)] border-[rgb(var(--ms-cupid))]"
+                accentColor={NIGHT_ACCENT}
                 onClick={() => togglePair(p.userId)}
               />
             ))}
@@ -611,20 +594,9 @@ function NightScreen() {
       )
     }
 
-    // Default waiting
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <motion.div
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          className="text-center"
-        >
-          <CharacterIcon role="villager" size="xl" state="idle" animated />
-          <p className="text-[rgb(var(--ms-text-secondary))] mt-4">Đêm {room.dayCount + 1}...</p>
-          <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">{nightWakeLabel || 'Đợi đến lượt'}</p>
-        </motion.div>
-      </div>
-    )
+    // Default waiting — decoy thống nhất (KHÔNG hiện nightWakeLabel:
+    // biết vai nào đang dậy = lộ thứ tự đêm)
+    return <NightWaiting />
   }
 
   return (
@@ -709,7 +681,9 @@ function DayScreen() {
           )}
         </AnimatePresence>
 
-        {dayDeaths.length === 0 && daySaved && (
+        {/* ANTI-REVEAL: hiện khi không ai chết BẤT KỂ lý do — sự có mặt của
+            hộp này không được tiết lộ chuyện Phù Thủy đã cứu hay sói cắn hụt */}
+        {dayDeaths.length === 0 && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={springBouncy}>
             <GameCard className="border-[rgb(var(--ms-brand)/0.3)] bg-[rgb(var(--ms-brand)/0.08)]">
               <div className="flex items-center gap-2 text-[rgb(var(--ms-brand))] text-sm font-bold">

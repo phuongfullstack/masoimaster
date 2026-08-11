@@ -70,7 +70,7 @@ interface RoomDocClient {
   status: 'waiting' | 'playing' | 'finished'; phase: Phase; dayCount: number
   config: RoleConfig; timerEnd: number | null
   nightWake: { actionType: ActionType; label: string; duration: number; bittenPlayer?: string | null } | null
-  dayResult: { deaths: string[]; saved: boolean } | null
+  dayResult: { deaths: string[]; saved?: boolean } | null
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
   reveal: Record<string, string> | null
   gameWinner: 'werewolf' | 'villager' | 'lovers' | null

@@ -168,7 +168,8 @@ async function runNightResolution(code: string, room: RoomDoc) {
     res.updatedSecrets.forEach((s, sid) => { reveal[sid] = s.role })
     batch.set(roomDoc(code), {
       status: 'finished', phase: 'game_over', gameWinner: res.winner,
-      reveal, dayResult: { deaths: res.deaths, saved: res.saved },
+      // ANTI-REVEAL: không phát tán `saved` — nguyên nhân/nguồn hiệu ứng là bí mật.
+      reveal, dayResult: { deaths: res.deaths },
       timerEnd: null, timerPhase: null, phaseLabel: 'Kết Thúc',
       nightWake: null,
       expiresAt: new Date(Date.now() + FINISHED_ROOM_TTL_MS),
@@ -180,13 +181,13 @@ async function runNightResolution(code: string, room: RoomDoc) {
     } catch (e) {
       console.error('[tick] archiveMatch failed:', (e as Error).message)
     }
-    return ok({ phase: 'game_over', deaths: res.deaths, saved: res.saved, winner: res.winner })
+    return ok({ phase: 'game_over', deaths: res.deaths, winner: res.winner })
   } else if (res.deadHunterId) {
     // Give the hunter a window to shoot.
     batch.update(roomDoc(code), {
       phase: 'day', phaseLabel: 'Thợ Săn Bắn',
       timerPhase: 'day', timerEnd: Date.now() + PHASE_DURATIONS.hunter_shoot,
-      dayResult: { deaths: res.deaths, saved: res.saved },
+      dayResult: { deaths: res.deaths },
       lastGuardTarget: res.lastGuardTarget, dayCount,
       nightWake: null,
     } as Record<string, unknown>)
@@ -194,13 +195,13 @@ async function runNightResolution(code: string, room: RoomDoc) {
     batch.update(roomDoc(code), {
       phase: 'day', phaseLabel: 'Thảo Luận',
       timerPhase: 'day', timerEnd: Date.now() + PHASE_DURATIONS.day,
-      dayResult: { deaths: res.deaths, saved: res.saved },
+      dayResult: { deaths: res.deaths },
       lastGuardTarget: res.lastGuardTarget, dayCount,
       nightWake: null,
     } as Record<string, unknown>)
   }
   await batch.commit()
-  return ok({ phase: 'day', deaths: res.deaths, saved: res.saved, winner: res.winner })
+  return ok({ phase: 'day', deaths: res.deaths, winner: res.winner })
 }
 
 /** Start voting: clear votes, set voting timer. */

@@ -114,7 +114,8 @@ export interface RoomDoc {
   nightStep: number            // current index into the night wake ladder
   bittenTarget: string | null  // wolf bite target this night (for witch UI)
   // Broadcast result payloads
-  dayResult: { deaths: string[]; saved: boolean } | null
+  // `saved` không còn được ghi công khai (anti-reveal) — optional cho doc cũ.
+  dayResult: { deaths: string[]; saved?: boolean } | null
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
   nightWake: { actionType: ActionType; label: string; duration: number; bittenPlayer?: string | null } | null
   reveal: Record<string, Role> | null  // { uid: role } — populated at game_over

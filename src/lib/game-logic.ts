@@ -39,14 +39,17 @@ export function buildNightSequence(
 ): NightStep[] {
   const alive = players.filter((p) => p.isAlive)
   const has = (r: Role[]) => alive.some((p) => r.includes(secrets.get(p.userId)?.role as Role))
+  // ANTI-REVEAL: label là PUBLIC (phaseLabel/nightWake trên room doc) — tuyệt
+  // đối không nêu tên vai đang dậy, thứ tự đêm phải ẩn danh với người ngoài.
+  const NIGHT_LABEL = 'Đang là đêm'
   const seq: NightStep[] = []
   if (dayCount === 0 && has(['cupid']) && !cupidDone) {
-    seq.push({ roles: ['cupid'], action: 'cupid_link', duration: PHASE_DURATIONS.night_step_cupid, label: 'Cúp Đôi Tỉnh Dậy' })
+    seq.push({ roles: ['cupid'], action: 'cupid_link', duration: PHASE_DURATIONS.night_step_cupid, label: NIGHT_LABEL })
   }
-  if (has(['guard'])) seq.push({ roles: ['guard'], action: 'guard_protect', duration: PHASE_DURATIONS.night_step_guard, label: 'Bảo Vệ Tỉnh Dậy' })
-  if (has(WOLF_ROLES)) seq.push({ roles: WOLF_ROLES, action: 'wolf_bite', duration: PHASE_DURATIONS.night_step_wolves, label: 'Sói Tỉnh Dậy' })
-  if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: 'Tiên Tri Tỉnh Dậy' })
-  if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: 'Phù Thủy Tỉnh Dậy' })
+  if (has(['guard'])) seq.push({ roles: ['guard'], action: 'guard_protect', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
+  if (has(WOLF_ROLES)) seq.push({ roles: WOLF_ROLES, action: 'wolf_bite', duration: PHASE_DURATIONS.night_step_wolves, label: NIGHT_LABEL })
+  if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
+  if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: NIGHT_LABEL })
   return seq
 }
 

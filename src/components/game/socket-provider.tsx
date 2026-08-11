@@ -100,7 +100,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         // Day announce.
         const dr = (room as any).dayResult
         if (dr && (room.phase === 'day' || room.phase === 'voting' || room.phase === 'vote_result')) {
-          s.setDayResult(dr.deaths ?? [], !!dr.saved)
+          // `saved` không còn được server phát tán (anti-reveal) — luôn false.
+          s.setDayResult(dr.deaths ?? [], false)
         }
 
         // Vote result.
