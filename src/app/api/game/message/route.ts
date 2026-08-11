@@ -1,8 +1,13 @@
 // POST /api/game/message — send a chat message.
-// Routing (wolf/dead/public) is enforced by Firestore rules on read,
-// but we also validate role/alive here to keep the messages collection clean.
+// Mỗi loại tin vào ĐÚNG collection có rules riêng:
+//   public/system → messages (mọi người đọc)
+//   wolf          → wolfChat  (rules: chỉ vai sói đọc)
+//   dead          → deadChat  (rules: chỉ người chết đọc)
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
-import { messagesCol, loadRoom, loadSecrets, playerDoc, type MsgType } from '@/lib/firestore-server'
+import {
+  messagesCol, wolfChatCol, deadChatCol, loadRoom, loadSecrets, playerDoc,
+  WOLF_ROLES, type MsgType,
+} from '@/lib/firestore-server'
 
 export async function POST(req: Request) {
   const auth = await authenticate(req)
@@ -23,15 +28,22 @@ export async function POST(req: Request) {
   if (!meSnap.exists) return error('Bạn không có trong phòng.')
   const me = meSnap.data()!
 
-  // Enforce who may send which message type.
+  // Enforce who may send which message type + chọn collection đích.
+  let target = messagesCol(upper)
   if (type === 'wolf') {
     const secrets = await loadSecrets(upper)
     const role = secrets.get(uid)?.role
-    if (role !== 'werewolf' && role !== 'white_werewolf') return error('Chỉ sói mới chat được.')
+    if (!WOLF_ROLES.includes(role as never)) return error('Chỉ sói mới chat được.')
+    if (!me.isAlive) return error('Sói đã chết không chat bầy được.')
+    target = wolfChatCol(upper)
+  } else if (type === 'dead') {
+    if (me.isAlive) return error('Chỉ người chết mới chat được.')
+    target = deadChatCol(upper)
+  } else if (type === 'public') {
+    if (!me.isAlive) return error('Người chết không nói được với làng.')
   }
-  if (type === 'dead' && me.isAlive) return error('Chỉ người chết mới chat được.')
 
-  await messagesCol(upper).add({
+  await target.add({
     senderId: uid, senderName: me.username, content: content.trim(),
     msgType: type, phase: room.phase, createdAt: Date.now(),
   })

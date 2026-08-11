@@ -82,6 +82,10 @@ export const messagesCol = (code: string) => roomDoc(code).collection('messages'
 // (pack board realtime); ghi qua API. Doc id = uid sói.
 export const wolfPicksCol = (code: string) => roomDoc(code).collection('wolfPicks')
 export const wolfPickDoc = (code: string, uid: string) => wolfPicksCol(code).doc(uid)
+// Kênh chat tách riêng — rules gate thật (không lọc UI):
+// wolfChat chỉ sói đọc; deadChat chỉ người chết đọc.
+export const wolfChatCol = (code: string) => roomDoc(code).collection('wolfChat')
+export const deadChatCol = (code: string) => roomDoc(code).collection('deadChat')
 
 // ============================================================
 // Domain types (server-internal — full state, includes secrets).

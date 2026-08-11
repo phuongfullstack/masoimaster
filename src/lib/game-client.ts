@@ -92,6 +92,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
   let latestSecret: {
     role: string; linkedPartner: string | null; packmates?: string[]
     lastNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
+    seance?: string[]
   } | null = null
   let latestVotes: Record<string, string> = {}
   let latestWolfPicks: Record<string, string> = {}
@@ -129,6 +130,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       ravenMarkedId: latestRoom.ravenMarkedId ?? null,
       wolfPicks: latestWolfPicks,
       myNightFx: latestSecret.lastNightFx ?? 'none',
+      mySeance: latestSecret.seance ?? [],
     } as RoomState
 
     cb.onRoom(roomState)
@@ -145,6 +147,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
   // Players subcollection (public)
   const unsubPlayers = onSnapshot(query(collection(fsDb, 'rooms', upper, 'players'), orderBy('seatIndex')), (snap) => {
     latestPlayers = snap.docs.map((d) => d.data() as PlayerInfo)
+    ensureDeadChatSub() // mình vừa chết → mở kênh người chết
     emit()
   }, (err) => cb.onError(err))
 
@@ -154,6 +157,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       ? (snap.data() as { role: string; linkedPartner: string | null })
       : { role: '', linkedPartner: null }
     ensureWolfPicksSub() // role là sói (kể cả vừa bị nguyền) → bật pack board
+    ensureWolfChatSub()
     emit()
   }, (err) => cb.onError(err))
 
@@ -180,7 +184,46 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     }, () => { unsubWolfPicks = null /* permission-denied (race đổi role) — thử lại lần sau */ })
   }
 
-  // Messages (chat).
+  // Wolf chat — collection riêng, rules chỉ cho sói đọc. Lazy theo role
+  // (giống wolfPicks) để listener không chết vì permission-denied.
+  let unsubWolfChat: Unsubscribe | null = null
+  const ensureWolfChatSub = () => {
+    if (unsubWolfChat || !isWolfRole(latestSecret?.role)) return
+    unsubWolfChat = onSnapshot(
+      query(collection(fsDb, 'rooms', upper, 'wolfChat'), orderBy('createdAt')),
+      (snap) => {
+        snap.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const d = change.doc.data() as { senderId: string; senderName: string; content: string; msgType: MsgType; phase: string; createdAt: number }
+            cb.onMessage({ id: change.doc.id, ...d })
+          }
+        })
+      },
+      () => { unsubWolfChat = null },
+    )
+  }
+
+  // Dead chat — collection riêng, rules chỉ cho NGƯỜI CHẾT đọc.
+  // Lazy: bật khi player doc của mình chuyển isAlive=false.
+  let unsubDeadChat: Unsubscribe | null = null
+  const ensureDeadChatSub = () => {
+    const me = latestPlayers.find((p) => p.userId === uid)
+    if (unsubDeadChat || !me || me.isAlive) return
+    unsubDeadChat = onSnapshot(
+      query(collection(fsDb, 'rooms', upper, 'deadChat'), orderBy('createdAt')),
+      (snap) => {
+        snap.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const d = change.doc.data() as { senderId: string; senderName: string; content: string; msgType: MsgType; phase: string; createdAt: number }
+            cb.onMessage({ id: change.doc.id, ...d })
+          }
+        })
+      },
+      () => { unsubDeadChat = null },
+    )
+  }
+
+  // Messages (chat công khai + system).
   const unsubMessages = onSnapshot(
     query(collection(fsDb, 'rooms', upper, 'messages'), orderBy('createdAt')),
     (snap) => {
@@ -194,5 +237,8 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     () => { /* ignore permission errors */ },
   )
 
-  return () => { unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes(); unsubWolfPicks?.(); unsubMessages() }
+  return () => {
+    unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes()
+    unsubWolfPicks?.(); unsubWolfChat?.(); unsubDeadChat?.(); unsubMessages()
+  }
 }

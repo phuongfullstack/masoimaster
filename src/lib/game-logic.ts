@@ -59,6 +59,7 @@ export function buildNightSequence(
   if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: NIGHT_LABEL })
   if (has(['detective'])) seq.push({ roles: ['detective'], action: 'detective_compare', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
+  if (has(['medium'])) seq.push({ roles: ['medium'], action: 'medium_listen', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['raven'])) seq.push({ roles: ['raven'], action: 'raven_mark', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   return seq
 }

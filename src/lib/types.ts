@@ -52,6 +52,8 @@ export interface RoomState {
   wolfPicks?: Record<string, string>
   /** Báo cáo rạng sáng RIÊNG TƯ của chính mình (không bao giờ nêu nguồn). */
   myNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
+  /** Bà Đồng: tin ẩn danh từ cõi chết (server copy mỗi đêm, một chiều). */
+  mySeance?: string[]
 }
 
 export interface NightActionResult {

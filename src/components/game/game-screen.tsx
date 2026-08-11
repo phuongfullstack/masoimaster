@@ -583,6 +583,37 @@ function NightScreen() {
       )
     }
 
+    // ---- Medium Action ----
+    if (myRole === 'medium' && nightWakeAction === 'medium_listen') {
+      const seance = room.mySeance ?? []
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Đêm nay cõi chết lên tiếng" />
+          <motion.div variants={staggerItem}>
+            <div
+              className="rounded-2xl border p-4 space-y-2"
+              style={{ background: 'linear-gradient(155deg,#16141F,#211E30)', borderColor: '#35325180' }}
+            >
+              {seance.length === 0 ? (
+                <p className="text-sm text-white/50 text-center py-4">
+                  🕯️ Cõi chết im lặng đêm nay...
+                </p>
+              ) : (
+                seance.map((line, i) => (
+                  <p key={i} className="text-sm text-white/85 italic border-l-2 border-white/15 pl-3">
+                    “{line}”
+                  </p>
+                ))
+              )}
+              <p className="text-[11px] text-white/40 pt-2">
+                Bạn không biết ai đang nói, và không thể nhắn lại. Nghe, rồi tự suy luận.
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )
+    }
+
     // ---- Cursed Wolf Action ----
     if (myRole === 'cursed_wolf' && nightWakeAction === 'curse') {
       return (
@@ -857,6 +888,8 @@ function DayScreen() {
   const hostMode = useGameStore(s => s.room?.hostMode)
   const { emit } = useSocket()
   const [chatInput, setChatInput] = useState('')
+  // Ghost mode: người chết có 2 tab — Làng (chỉ đọc) / Người chết (đọc+viết).
+  const [ghostTab, setGhostTab] = useState<'village' | 'dead'>('dead')
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -865,8 +898,15 @@ function DayScreen() {
 
   if (!room) return null
 
+  const deadView = !isAlive && ghostTab === 'dead'
+  const shownMessages = deadView
+    ? messages.filter(m => m.msgType === 'dead')
+    : messages.filter(m => m.msgType === 'public' || m.msgType === 'system')
+  // Người chết chỉ gửi được vào kênh người chết; người sống gửi kênh làng.
+  const canSend = isAlive ? room.phase === 'day' : deadView
+
   const handleSend = () => {
-    if (!chatInput.trim()) return
+    if (!chatInput.trim() || !canSend) return
     const msgType = isAlive ? 'public' : 'dead'
     emit('send-message', { code: room.code, userId, content: chatInput, msgType })
     setChatInput('')
@@ -946,8 +986,32 @@ function DayScreen() {
 
         {/* Chat */}
         <GameCard className="flex-1 flex flex-col min-h-0">
+          {/* Ghost mode: 2 tab cho người chết */}
+          {!isAlive && (
+            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[rgb(var(--ms-bg-primary))]/60 mb-3">
+              {([['village', '🏘️ Làng (chỉ đọc)'], ['dead', '👻 Người chết']] as const).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  onClick={() => setGhostTab(tab)}
+                  className={cn(
+                    'py-2 rounded-lg text-xs font-bold transition-all',
+                    ghostTab === tab
+                      ? 'bg-[rgb(var(--ms-card-hover))] text-white'
+                      : 'text-[rgb(var(--ms-text-muted))]',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+          {deadView && (
+            <p className="text-[11px] text-white/40 mb-2">
+              Kênh riêng của người chết — người sống không bao giờ đọc được.
+            </p>
+          )}
           <div className="flex-1 overflow-y-auto max-h-72 space-y-2 pr-2">
-            {messages.filter(m => m.msgType === 'public' || m.msgType === 'system').map(m => (
+            {shownMessages.map(m => (
               <motion.div
                 key={m.id}
                 variants={chatMessage}
@@ -998,11 +1062,11 @@ function DayScreen() {
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder={isAlive ? 'Nhập tin nhắn...' : 'Chat Âm Ty...'}
+              placeholder={isAlive ? 'Nhập tin nhắn...' : deadView ? 'Nhắn với người chết...' : 'Bạn chỉ đọc được kênh làng'}
               className="text-sm h-10"
-              disabled={room.phase !== 'day'}
+              disabled={!canSend}
             />
-            <GameButton size="sm" variant="secondary" onClick={handleSend} disabled={room.phase !== 'day'}>
+            <GameButton size="sm" variant="secondary" onClick={handleSend} disabled={!canSend}>
               <Send className="w-4 h-4" />
             </GameButton>
           </div>

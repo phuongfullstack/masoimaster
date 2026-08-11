@@ -11,9 +11,9 @@
 //  vote_result            → next night (or hunter already handled)
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
-  roomDoc, playerDoc, secretDoc, nightActionsCol, votesCol, wolfPicksCol,
+  roomDoc, playerDoc, secretDoc, nightActionsCol, votesCol, wolfPicksCol, deadChatCol,
   loadRoom, loadPlayers, loadSecrets, loadNightActions, loadVotes, loadWolfPicks,
-  type RoomDoc, type Phase, type SecretDoc, type NightActionDoc,
+  type RoomDoc, type Phase, type SecretDoc, type NightActionDoc, type PlayerDoc,
 } from '@/lib/firestore-server'
 import {
   buildNightSequence, resolveNight, resolveVotes, tallyWolfBite, PHASE_DURATIONS,
@@ -70,6 +70,27 @@ export async function POST(req: Request) {
 // ============================================================
 
 /**
+ * Bà Đồng: khi bước medium_listen BẮT ĐẦU, copy tối đa 5 tin mới nhất
+ * của kênh người chết vào secrets/{medium}.seance dưới dạng ẨN DANH
+ * (chỉ nội dung — không tên người gửi, đúng design "không biết ai nói").
+ * Medium không bao giờ đọc deadChat trực tiếp (rules chặn người sống).
+ */
+async function prepareMediumSeance(
+  code: string, step: NightStep | undefined,
+  players: PlayerDoc[], secrets: Map<string, SecretDoc>,
+) {
+  if (step?.action !== 'medium_listen') return
+  const snap = await deadChatCol(code).orderBy('createdAt', 'desc').limit(5).get()
+  const lines = snap.docs
+    .map((d) => (d.data() as { content: string }).content)
+    .reverse()
+  const mediums = players.filter((p) => p.isAlive && secrets.get(p.userId)?.role === 'medium')
+  await Promise.all(
+    mediums.map((m) => secretDoc(code, m.userId).update({ seance: lines })),
+  )
+}
+
+/**
  * Chốt bước cắn của bầy: tally wolfPicks (Sói Đầu Sỏ phá hoà) rồi ghi
  * 1 nightAction wolf_bite chuẩn (doc id cố định — idempotent khi nhiều
  * client tick trùng). Gọi khi RỜI bước wolf_bite để bước Phù Thủy sau
@@ -123,6 +144,8 @@ async function startNightLadder(code: string, room: RoomDoc) {
     } as Record<string, unknown>)
   }
   await batch.commit()
+  // Nếu bước đầu tiên là Bà Đồng → nạp seance ẩn danh.
+  await prepareMediumSeance(code, seq[0], players, secrets)
   return ok({ phase: 'night' })
 }
 
@@ -140,6 +163,8 @@ async function advanceNightStep(code: string, room: RoomDoc) {
 
   if (nextIndex < seq.length) {
     const step = seq[nextIndex]!
+    // Bước Bà Đồng bắt đầu → nạp seance ẩn danh từ kênh người chết.
+    await prepareMediumSeance(code, step, players, secrets)
     // The witch step reveals the bitten player.
     let bittenPlayer: string | null = null
     if (step.action === 'witch_save') {

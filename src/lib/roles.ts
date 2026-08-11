@@ -179,7 +179,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Ban đêm bạn nghe được tiếng của những người đã chết.',
     noteVi: 'Bạn không biết ai đang nói, và không nhắn lại được. Nghe, rồi tự suy luận.',
     promptVi: 'Lắng nghe:', confirmVi: 'Xác nhận',
-    nightAction: 'medium_listen', targets: 0, category: 'special', implemented: false,
+    nightAction: 'medium_listen', targets: 0, category: 'special', implemented: true,
   },
   raven: {
     key: 'raven', emoji: '🐦', nameVi: 'Con Quạ', nameEn: 'Raven',

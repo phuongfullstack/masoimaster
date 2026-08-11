@@ -75,12 +75,30 @@ service cloud.firestore {
         allow write: if false;
       }
 
-      // ---- Chat messages ----
-      // Anyone in the room can read public + system. Wolf chat only for
-      // wolves (checked via the actor's secret), dead chat only for the
-      // dead. Writes go through the server.
+      // ---- Chat messages (public + system ONLY) ----
+      // Wolf chat và dead chat nằm ở collection RIÊNG bên dưới —
+      // Firestore rules không lọc được từng doc trong 1 query nên
+      // bắt buộc tách collection để gate thật sự.
       match /messages/{msgId} {
         allow read: if request.auth != null;
+        allow write: if false;
+      }
+
+      // ---- Wolf chat — chỉ vai sói đọc được ----
+      match /wolfChat/{msgId} {
+        allow read: if request.auth != null
+                    && get(/databases/$(database)/documents/rooms/$(code)/secrets/$(request.auth.uid)).data.role
+                       in ['werewolf', 'alpha_wolf', 'wolf_seer', 'cursed_wolf', 'white_werewolf'];
+        allow write: if false;
+      }
+
+      // ---- Dead chat — chỉ người ĐÃ CHẾT đọc được ----
+      // "Tin nhắn của người chết không bao giờ đến người sống."
+      // (Bà Đồng không đọc trực tiếp — server copy bản ẩn danh vào
+      // secrets/{medium}.seance mỗi đêm.)
+      match /deadChat/{msgId} {
+        allow read: if request.auth != null
+                    && get(/databases/$(database)/documents/rooms/$(code)/players/$(request.auth.uid)).data.isAlive == false;
         allow write: if false;
       }
     }
