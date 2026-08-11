@@ -1,7 +1,8 @@
 # 📋 BÀN GIAO SESSION — Ma Sói Realtime (masoimaster)
 
-> Tài liệu bàn giao cho AI/developer tiếp theo. Cập nhật: 2026-08-11.
+> Tài liệu bàn giao cho AI/developer tiếp theo. Cập nhật: 2026-08-12.
 > Đọc file này TRƯỚC KHI làm bất cứ điều gì với dự án.
+> **Docs chính thức**: `docs/FEATURES.md`, `docs/SCENARIOS.md`, `docs/ANTI-PEEK.md`.
 
 ---
 
@@ -25,6 +26,14 @@ phù thủy, bảo vệ, thợ săn, cupid, dân).
 
 Đã verify end-to-end trên production: trang chủ, auth 401, profile API với token
 thật, tạo/join phòng, security rules (13/13 + 3/3 + smoke tests PASS).
+
+**Session 2026-08-12 đã làm:**
+- ✅ 3 docs mới: `docs/FEATURES.md`, `docs/SCENARIOS.md`, `docs/ANTI-PEEK.md`
+- ✅ Design spec v2.0 (`design/project/uploads/ma-soi-ui-design-spec.md`)
+- ✅ Anti-peek: fix 3 vi phạm (seer color, button labels, decoy fake-busy) → **11/11 compliant**
+- ✅ Google login fix (signInWithRedirect fallback)
+- ✅ Deploy Vercel mới (commit `30b6009`)
+- ✅ Commit `51029bf` (docs) + `30b6009` (anti-peek)
 
 ## 3. Kiến trúc dữ liệu (toàn bộ trên Firebase)
 
@@ -99,6 +108,22 @@ matches/{code}-{ts}       lịch sử trận bất biến, ghi 1 lần lúc game
       tách wolf chat thành subcollection riêng + rule theo role.
 - [ ] Nếu nâng lên Blaze sau này: bật Firestore TTL cho `rooms.expiresAt`
       (Console → Firestore → TTL) — chạy song song với lazy cleanup, vô hại.
+
+### Session 2026-08-12 — roadmap tiếp theo (ưu tiên cao → thấp)
+- [ ] **Implement 10 vai planned** (theo `docs/SCENARIOS.md`): bắt đầu với
+      `doctor` (đơn giản nhất — giống guard nhưng không last-target rule),
+      rồi `detective`, `medium`, `raven`. Mỗi vai cần: `implemented: true`
+      trong `roles.ts` + server logic `game-logic.ts` + UI branch trong
+      `NightScreen` + night order update.
+- [ ] **Host Control Panel** — hiện chỉ có 1 nút "Chuyển pha". Cần Master Log
+      + 3-mode tabs UI (Auto/Direct/Hybrid) cho host. Design target: `design/
+      project/design_handoff_ma_soi_realtime/` screen "Host Panel".
+- [ ] **Personal Report (5 variants)** — design-S2 có báo cáo cá nhân mỗi
+      người (saved/cursed/elder/poison/none). Hiện chỉ có death list công khai.
+- [ ] **Dawn Transition** — cinematic 2-3s giữa night_resolve → day. Hiện
+      skip thẳng. Design: `MaSoiApp.dc.html` state `sDawn`.
+- [ ] **Wolf/dead chat tách subcollection** — hiện UI filter, không secure.
+      Nếu cần chặt hơn: `rooms/{code}/wolfMessages` + rule theo role.
 
 ## 7. Lệnh thường dùng
 
