@@ -9,6 +9,7 @@ import {
   type RoomDoc, type PlayerDoc, type SecretDoc, type NightActionDoc,
   WOLF_ROLES,
 } from '@/lib/firestore-server'
+import { ROLE_REGISTRY } from '@/lib/roles'
 import type { Winner } from '@/lib/roles'
 
 // ---- Phase durations (ms) — single source of truth ----
@@ -30,16 +31,37 @@ export const PHASE_DURATIONS = {
 // ---- Night wake ladder (order matters) ----
 export interface NightStep {
   roles: Role[]
-  action: ActionType
+  /** 'sim_all' = một bước duy nhất, mọi vai hành động cùng lúc. */
+  action: ActionType | 'sim_all'
   duration: number
   label: string
 }
 
+/** Thời lượng bước đêm đồng thời (mọi vai cùng thao tác một lượt). */
+export const SIM_NIGHT_DURATION = 45_000
+
 export function buildNightSequence(
   players: PlayerDoc[], secrets: Map<string, SecretDoc>, dayCount: number, cupidDone: boolean,
+  nightMode: 'seq' | 'sim' = 'seq',
 ): NightStep[] {
   const alive = players.filter((p) => p.isAlive)
   const has = (r: Role[]) => alive.some((p) => r.includes(secrets.get(p.userId)?.role as Role))
+
+  // Chế độ ĐỒNG THỜI: 1 bước duy nhất — không có thứ tự để suy đoán,
+  // Phù Thủy không được báo ai bị cắn (cứu mù).
+  if (nightMode === 'sim') {
+    const actingRoles = alive
+      .map((p) => secrets.get(p.userId)?.role as Role)
+      .filter((r, i, arr) => r && arr.indexOf(r) === i)
+      .filter((r) => {
+        const def = ROLE_REGISTRY[r]
+        if (!def?.nightAction) return false
+        if (r === 'cupid') return dayCount === 0 && !cupidDone
+        return true
+      })
+    if (actingRoles.length === 0) return []
+    return [{ roles: actingRoles, action: 'sim_all', duration: SIM_NIGHT_DURATION, label: 'Đang là đêm' }]
+  }
   // ANTI-REVEAL: label là PUBLIC (phaseLabel/nightWake trên room doc) — tuyệt
   // đối không nêu tên vai đang dậy, thứ tự đêm phải ẩn danh với người ngoài.
   const NIGHT_LABEL = 'Đang là đêm'
@@ -62,6 +84,24 @@ export function buildNightSequence(
   if (has(['medium'])) seq.push({ roles: ['medium'], action: 'medium_listen', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['raven'])) seq.push({ roles: ['raven'], action: 'raven_mark', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   return seq
+}
+
+/**
+ * Số người CÒN SỐNG có hành động đêm nay (mẫu số của tiến độ ẩn danh
+ * "X/Y đã hành động"). Medium không nộp gì nên không tính.
+ */
+export function countNightActors(
+  players: PlayerDoc[], secrets: Map<string, SecretDoc>, dayCount: number, cupidDone: boolean,
+): number {
+  return players.filter((p) => {
+    if (!p.isAlive) return false
+    const r = secrets.get(p.userId)?.role
+    const def = r ? ROLE_REGISTRY[r] : null
+    if (!def?.nightAction) return false
+    if (def.key === 'medium') return false
+    if (def.key === 'cupid') return dayCount === 0 && !cupidDone
+    return true
+  }).length
 }
 
 // ============================================================
@@ -179,6 +219,7 @@ export function resolveNight(
   players: PlayerDoc[],
   secrets: Map<string, SecretDoc>,
   actions: NightActionDoc[],
+  nightMode: 'seq' | 'sim' = 'seq',
 ): NightResolution {
   const protected_ = new Set<string>()
   const bitten = new Set<string>()
@@ -238,14 +279,26 @@ export function resolveNight(
   }
 
   const witchSave = actions.find((a) => a.actionType === 'witch_save')
-  if (witchSave && bitten.size > 0) {
-    saved = true
-    // Người bị cắn nhưng được cứu → báo riêng 'saved' (không nêu nguồn).
-    for (const pid of bitten) {
-      const s = secrets.get(pid)
-      if (s) s.lastNightFx = 'saved'
+  if (witchSave) {
+    if (nightMode === 'sim') {
+      // ĐỒNG THỜI: Phù Thủy cứu MÙ — chỉ hiệu lực nếu đoán trúng nạn nhân.
+      // Thuốc vẫn bị trừ dù trượt (đặt cược — route đã mark witchSaveUsed).
+      if (witchSave.targetId && bitten.has(witchSave.targetId)) {
+        saved = true
+        const s = secrets.get(witchSave.targetId)
+        if (s) s.lastNightFx = 'saved'
+        bitten.delete(witchSave.targetId)
+      }
+    } else if (bitten.size > 0) {
+      // TUẦN TỰ: Phù Thủy được báo ai bị cắn → cứu là trúng.
+      saved = true
+      // Người bị cắn nhưng được cứu → báo riêng 'saved' (không nêu nguồn).
+      for (const pid of bitten) {
+        const s = secrets.get(pid)
+        if (s) s.lastNightFx = 'saved'
+      }
+      bitten.clear()
     }
-    bitten.clear()
   }
 
   const witchPoison = actions.find((a) => a.actionType === 'witch_poison')

@@ -177,7 +177,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
     switch (event) {
       case 'create-room':
-        run(gameApi.create(token, data?.config ?? {}, data?.hostMode ?? 'auto')); break
+        run(gameApi.create(token, data?.config ?? {}, data?.hostMode ?? 'auto', data?.nightMode ?? 'seq')); break
       case 'join-room':
         run(gameApi.join(token, data?.code ?? '')); break
       case 'leave-room':

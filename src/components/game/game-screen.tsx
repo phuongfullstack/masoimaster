@@ -11,7 +11,7 @@ import { GameAvatar } from '@/components/ui/game/GameAvatar'
 import { CharacterIcon } from '@/components/characters/CharacterIcon'
 import { useGameStore } from '@/store/game-store'
 import { useSocket } from '@/components/game/socket-provider'
-import { ROLE_INFO, isWolfRole } from '@/lib/types'
+import { ROLE_INFO, ROLE_REGISTRY, isWolfRole } from '@/lib/types'
 import type { Role } from '@/lib/types'
 import { PressToReveal } from '@/components/game/ui/PressToReveal'
 import { CardFab } from '@/components/game/ui/CardFab'
@@ -284,8 +284,9 @@ const NIGHT_ACCENT = 'bg-[#A7C5EB]/15 border-[#A7C5EB]'
 /**
  * Màn chờ đêm — DECOY: vai không hành động, vai đã xong lượt, và người
  * chờ lượt đều thấy CHÍNH XÁC màn này (khác một pixel là lộ vai).
+ * Tiến độ hiển thị ẨN DANH (chỉ số đếm, không vai) — ai cũng thấy như nhau.
  */
-function NightWaiting() {
+function NightWaiting({ progress }: { progress?: { done: number; total: number } | null }) {
   return (
     <div className="min-h-[50vh] flex items-center justify-center">
       <motion.div
@@ -301,6 +302,11 @@ function NightWaiting() {
         </div>
         <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Đang là đêm...</p>
         <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đừng mở mắt!</p>
+        {progress && progress.total > 0 && (
+          <p className="text-[#A7C5EB]/70 text-xs mt-3 font-bold tracking-wide">
+            Đã hành động: {Math.min(progress.done, progress.total)}/{progress.total}
+          </p>
+        )}
         {/* Fake-busy decoy elements — identical visual language to NightTurnHeader
             so a bystander cannot tell whether this player has an action or not. */}
         <div className="mt-6 p-4 rounded-2xl bg-[rgba(255,255,255,0.04)] border border-[#353251]">
@@ -351,6 +357,7 @@ function NightScreen() {
   const messages = useGameStore(s => s.messages)
   const { emit } = useSocket()
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
+  const [saveTarget, setSaveTarget] = useState<string | null>(null)
   const [wolfMsg, setWolfMsg] = useState('')
   const [cupidPair, setCupidPair] = useState<string[]>([])
   const [detectivePair, setDetectivePair] = useState<string[]>([])
@@ -363,6 +370,14 @@ function NightScreen() {
   if (!room) return null
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
   const isWolf = isWolfRole(myRole)
+
+  // Đêm ĐỒNG THỜI ('sim_all'): mọi vai hành động cùng lúc — mỗi người
+  // thấy màn của CHÍNH vai mình; vai không hành động rơi xuống decoy.
+  const effectiveAction: string | null = nightWakeAction === 'sim_all'
+    ? (myRole === 'cursed_wolf'
+        ? (room.myCurseUsed ? 'wolf_bite' : 'curse')
+        : (myRole ? ROLE_REGISTRY[myRole as Role]?.nightAction ?? null : null))
+    : nightWakeAction
 
   const handleNightAction = (actionType: string, targetId: string | null) => {
     emit('night-action', { code: room.code, userId, actionType, targetId })
@@ -402,10 +417,10 @@ function NightScreen() {
     }
 
     // Waiting / no wake action — decoy thống nhất
-    if (!nightWakeAction) return <NightWaiting />
+    if (!nightWakeAction) return <NightWaiting progress={room.nightProgress} />
 
     // ---- Wolf Action ----
-    if (isWolf && nightWakeAction === 'wolf_bite') {
+    if (isWolf && effectiveAction === 'wolf_bite') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Chọn người để cắn đêm nay" />
@@ -472,7 +487,7 @@ function NightScreen() {
     }
 
     // ---- Seer Action ----
-    if (myRole === 'seer' && nightWakeAction === 'seer_check') {
+    if (myRole === 'seer' && effectiveAction === 'seer_check') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Chọn 1 người để soi phe" />
@@ -518,13 +533,13 @@ function NightScreen() {
     }
 
     // ---- Witch Action ----
-    if (myRole === 'witch' && nightWakeAction === 'witch_save') {
+    if (myRole === 'witch' && effectiveAction === 'witch_save') {
       const bittenPlayer = bittenPlayerId ? room.players.find(p => p.userId === bittenPlayerId) : null
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Dùng thuốc của bạn — hoặc không" />
 
-          {/* Save potion */}
+          {/* Save potion — chế độ TUẦN TỰ: biết ai bị cắn */}
           {bittenPlayer && (
             <motion.div variants={staggerItem}>
               <GameCard className="border-[rgb(var(--ms-wolf)/0.3)]">
@@ -537,6 +552,39 @@ function NightScreen() {
                     <Heart className="w-4 h-4" /> Dùng Thuốc Cứu
                   </GameButton>
                 </div>
+              </GameCard>
+            </motion.div>
+          )}
+
+          {/* Save potion — chế độ ĐỒNG THỜI: cứu MÙ */}
+          {!bittenPlayer && room.nightMode === 'sim' && (
+            <motion.div variants={staggerItem}>
+              <GameCard className="border-white/[0.06]">
+                <p className="text-sm font-bold text-white/85 mb-1">
+                  🌫️ Đêm đồng thời — bạn <span className="text-[rgb(var(--ms-wolf))]">không biết ai bị cắn</span>.
+                </p>
+                <p className="text-xs text-[rgb(var(--ms-text-muted))] mb-3">
+                  Chọn 1 người để cứu mù: chỉ hiệu lực nếu đoán trúng nạn nhân — thuốc bị trừ dù trượt.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {alivePlayers.map(p => (
+                    <PlayerTarget
+                      key={p.userId}
+                      player={p}
+                      isSelected={saveTarget === p.userId}
+                      accentColor="bg-[rgb(var(--ms-brand))]/15 border-[rgb(var(--ms-brand))]"
+                      onClick={() => { setSaveTarget(p.userId); handleNightAction('witch_save', p.userId) }}
+                    />
+                  ))}
+                </div>
+                <GameButton
+                  variant="secondary"
+                  size="sm"
+                  className="w-full mt-2"
+                  onClick={() => { setSaveTarget(userId); handleNightAction('witch_save', userId) }}
+                >
+                  <Heart className="w-4 h-4" /> Cứu chính mình
+                </GameButton>
               </GameCard>
             </motion.div>
           )}
@@ -563,7 +611,7 @@ function NightScreen() {
     }
 
     // ---- Guard Action ----
-    if (myRole === 'guard' && nightWakeAction === 'guard_protect') {
+    if (myRole === 'guard' && effectiveAction === 'guard_protect') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Chọn 1 người để bảo vệ" />
@@ -584,7 +632,7 @@ function NightScreen() {
     }
 
     // ---- Medium Action ----
-    if (myRole === 'medium' && nightWakeAction === 'medium_listen') {
+    if (myRole === 'medium' && effectiveAction === 'medium_listen') {
       const seance = room.mySeance ?? []
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
@@ -615,7 +663,7 @@ function NightScreen() {
     }
 
     // ---- Cursed Wolf Action ----
-    if (myRole === 'cursed_wolf' && nightWakeAction === 'curse') {
+    if (myRole === 'cursed_wolf' && effectiveAction === 'curse') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Nguyền 1 người — biến họ thành sói (1 lần cả ván)" />
@@ -646,7 +694,7 @@ function NightScreen() {
     }
 
     // ---- Wolf Seer Action ----
-    if (myRole === 'wolf_seer' && nightWakeAction === 'wolf_seer_check') {
+    if (myRole === 'wolf_seer' && effectiveAction === 'wolf_seer_check') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Soi 1 người — có phải Tiên Tri không?" />
@@ -691,7 +739,7 @@ function NightScreen() {
     }
 
     // ---- Detective Action ----
-    if (myRole === 'detective' && nightWakeAction === 'detective_compare') {
+    if (myRole === 'detective' && effectiveAction === 'detective_compare') {
       const togglePick = (uid2: string) => {
         setDetectivePair(prev =>
           prev.includes(uid2)
@@ -762,7 +810,7 @@ function NightScreen() {
     }
 
     // ---- Doctor Action ----
-    if (myRole === 'doctor' && nightWakeAction === 'doctor_heal') {
+    if (myRole === 'doctor' && effectiveAction === 'doctor_heal') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Chọn 1 người để chữa (không tự chữa được)" />
@@ -782,7 +830,7 @@ function NightScreen() {
     }
 
     // ---- Raven Action ----
-    if (myRole === 'raven' && nightWakeAction === 'raven_mark') {
+    if (myRole === 'raven' && effectiveAction === 'raven_mark') {
       return (
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
           <NightTurnHeader prompt="Đánh dấu 1 người — họ vào buổi vote với 2 phiếu sẵn" />
@@ -802,7 +850,7 @@ function NightScreen() {
     }
 
     // ---- Cupid Action ----
-    if (myRole === 'cupid' && nightWakeAction === 'cupid_link') {
+    if (myRole === 'cupid' && effectiveAction === 'cupid_link') {
       const togglePair = (uid: string) => {
         setCupidPair(prev =>
           prev.includes(uid)
@@ -850,7 +898,7 @@ function NightScreen() {
 
     // Default waiting — decoy thống nhất (KHÔNG hiện nightWakeLabel:
     // biết vai nào đang dậy = lộ thứ tự đêm)
-    return <NightWaiting />
+    return <NightWaiting progress={room.nightProgress} />
   }
 
   return (

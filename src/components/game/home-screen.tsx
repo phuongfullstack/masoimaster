@@ -24,11 +24,12 @@ export function HomeScreen() {
 
   const [joinCode, setJoinCode] = useState('')
   const [hostMode, setHostMode] = useState<'auto' | 'direct' | 'hybrid'>('auto')
+  const [nightMode, setNightMode] = useState<'seq' | 'sim'>('seq')
   const [config, setConfig] = useState<RoleConfig>({ ...DEFAULT_CONFIG })
   const [showConfig, setShowConfig] = useState(false)
 
   const handleCreate = () => {
-    emit('create-room', { userId, username, config, hostMode })
+    emit('create-room', { userId, username, config, hostMode, nightMode })
   }
 
   const handleJoin = () => {
@@ -144,6 +145,32 @@ export function HomeScreen() {
                   className={`p-3 rounded-2xl border-2 text-left transition-all duration-150 ${
                     hostMode === mode
                       ? 'bg-[rgb(var(--ms-wolf))]/20 border-[rgb(var(--ms-wolf))] text-white shadow-game-red scale-[1.02]'
+                      : 'bg-[rgb(var(--ms-surface))] border-white/[0.06] text-[rgb(var(--ms-text-secondary))] hover:border-white/10'
+                  }`}
+                >
+                  <div className="font-bold text-sm">{label}</div>
+                  <div className="text-xs opacity-70 mt-1">{desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Night Mode Selection */}
+          <div className="mb-4">
+            <label className="text-sm font-bold text-[rgb(var(--ms-text-secondary))] mb-2 block">
+              Chế độ Đêm
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { mode: 'seq' as const, label: '⇢ Tuần tự', desc: 'Từng vai một — Phù Thủy biết ai bị cắn' },
+                { mode: 'sim' as const, label: '⇉ Đồng thời', desc: 'Cùng lúc, nhanh — Phù Thủy cứu mù' },
+              ]).map(({ mode, label, desc }) => (
+                <button
+                  key={mode}
+                  onClick={() => setNightMode(mode)}
+                  className={`p-3 rounded-2xl border-2 text-left transition-all duration-150 ${
+                    nightMode === mode
+                      ? 'bg-[#A7C5EB]/15 border-[#A7C5EB] text-white'
                       : 'bg-[rgb(var(--ms-surface))] border-white/[0.06] text-[rgb(var(--ms-text-secondary))] hover:border-white/10'
                   }`}
                 >

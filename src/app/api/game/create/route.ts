@@ -15,8 +15,10 @@ export async function POST(req: Request) {
 
   const body = await readBody<{
     config?: Partial<RoleConfig>; hostMode?: 'auto' | 'direct' | 'hybrid'
+    nightMode?: 'seq' | 'sim'
   }>(req)
   const hostMode = body.hostMode ?? 'auto'
+  const nightMode: 'seq' | 'sim' = body.nightMode === 'sim' ? 'sim' : 'seq'
   // sanitizeConfig: chỉ nhận vai đã implement, số nguyên ≥ 0.
   const config: RoleConfig = { ...DEFAULT_CONFIG, ...sanitizeConfig(body.config) }
 
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
   const code = await generateUniqueCode()
 
   const room: RoomDoc = {
-    code, hostId: uid, hostMode, status: 'waiting', phase: 'lobby', dayCount: 0,
+    code, hostId: uid, hostMode, nightMode, status: 'waiting', phase: 'lobby', dayCount: 0,
     config, timerEnd: null, timerPhase: null, phaseLabel: 'Sảnh chờ',
     cupidPair: null, cupidDone: false, lastGuardTarget: null, nightStep: 0,
     bittenTarget: null, dayResult: null, voteResult: null, nightWake: null,

@@ -54,6 +54,12 @@ export interface RoomState {
   myNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
   /** Bà Đồng: tin ẩn danh từ cõi chết (server copy mỗi đêm, một chiều). */
   mySeance?: string[]
+  /** Chế độ đêm host chọn khi tạo phòng. */
+  nightMode?: 'seq' | 'sim'
+  /** Tiến độ đêm ẩn danh (X/Y đã hành động) — public, không nêu vai. */
+  nightProgress?: { done: number; total: number } | null
+  /** Sói Nguyền: đã dùng lời nguyền chưa (điều hướng UI ở đêm đồng thời). */
+  myCurseUsed?: boolean
 }
 
 export interface NightActionResult {

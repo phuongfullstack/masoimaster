@@ -101,6 +101,10 @@ export type MsgType = 'public' | 'dead' | 'wolf' | 'system'
 /** Các vai phe sói — derive từ registry (trước đây hard-code 2 vai). */
 export const WOLF_ROLES: Role[] = WOLF_ROLE_KEYS
 
+/** Chế độ đêm: 'seq' = tuần tự từng vai (Phù Thủy biết ai bị cắn);
+ *  'sim' = mọi vai hành động cùng lúc (Phù Thủy cứu mù). */
+export type NightMode = 'seq' | 'sim'
+
 export interface RoomDoc {
   code: string
   hostId: string
@@ -112,6 +116,10 @@ export interface RoomDoc {
   timerEnd: number | null
   timerPhase: Phase | null
   phaseLabel: string
+  /** Chế độ đêm — phòng cũ thiếu field → đọc fallback 'seq'. */
+  nightMode?: NightMode
+  /** Tiến độ đêm ẨN DANH (public): bao nhiêu người đã hành động. */
+  nightProgress?: { done: number; total: number } | null
   // Admin-only fields (denied to clients by rules, but stored on the room
   // doc for simplicity since rules already deny client writes/reads of
   // sensitive siblings — these are not in `secrets` because they are
@@ -125,7 +133,8 @@ export interface RoomDoc {
   // `saved` không còn được ghi công khai (anti-reveal) — optional cho doc cũ.
   dayResult: { deaths: string[]; saved?: boolean } | null
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
-  nightWake: { actionType: ActionType; label: string; duration: number; bittenPlayer?: string | null } | null
+  // actionType 'sim_all' = chế độ đồng thời (mọi vai hành động cùng lúc).
+  nightWake: { actionType: ActionType | 'sim_all'; label: string; duration: number; bittenPlayer?: string | null } | null
   reveal: Record<string, Role> | null  // { uid: role } — populated at game_over
   gameWinner: Winner | null
   /** Con Quạ đánh dấu đêm qua — PUBLIC khi vote (+2 phiếu sẵn), clear mỗi đêm mới. */

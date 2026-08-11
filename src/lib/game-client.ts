@@ -30,8 +30,8 @@ async function post(path: string, idToken: string, body: Record<string, unknown>
 }
 
 export const gameApi = {
-  create: (idToken: string, config: Partial<RoleConfig>, hostMode: 'auto' | 'direct' | 'hybrid') =>
-    post('/api/game/create', idToken, { config, hostMode }),
+  create: (idToken: string, config: Partial<RoleConfig>, hostMode: 'auto' | 'direct' | 'hybrid', nightMode: 'seq' | 'sim' = 'seq') =>
+    post('/api/game/create', idToken, { config, hostMode, nightMode }),
   join: (idToken: string, code: string) =>
     post('/api/game/join', idToken, { code }),
   leave: (idToken: string, code: string) =>
@@ -70,7 +70,9 @@ interface RoomDocClient {
   code: string; hostId: string; hostMode: 'auto' | 'direct' | 'hybrid'
   status: 'waiting' | 'playing' | 'finished'; phase: Phase; dayCount: number
   config: RoleConfig; timerEnd: number | null
-  nightWake: { actionType: ActionType; label: string; duration: number; bittenPlayer?: string | null } | null
+  nightMode?: 'seq' | 'sim'
+  nightProgress?: { done: number; total: number } | null
+  nightWake: { actionType: ActionType | 'sim_all'; label: string; duration: number; bittenPlayer?: string | null } | null
   dayResult: { deaths: string[]; saved?: boolean } | null
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
   reveal: Record<string, string> | null
@@ -93,6 +95,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     role: string; linkedPartner: string | null; packmates?: string[]
     lastNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
     seance?: string[]
+    curseUsed?: boolean
   } | null = null
   let latestVotes: Record<string, string> = {}
   let latestWolfPicks: Record<string, string> = {}
@@ -131,6 +134,9 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       wolfPicks: latestWolfPicks,
       myNightFx: latestSecret.lastNightFx ?? 'none',
       mySeance: latestSecret.seance ?? [],
+      nightMode: latestRoom.nightMode ?? 'seq',
+      nightProgress: latestRoom.nightProgress ?? null,
+      myCurseUsed: latestSecret.curseUsed ?? false,
     } as RoomState
 
     cb.onRoom(roomState)

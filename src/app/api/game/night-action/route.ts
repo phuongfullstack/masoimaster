@@ -3,10 +3,39 @@
 // cho bầy sói). Các vai soi nhận kết quả trả về ngay.
 import { authenticate, readBody, error, ok, isAuthError } from '@/app/api/game/_helpers'
 import {
-  nightActionsCol, secretDoc, wolfPickDoc, loadRoom, loadPlayers, loadSecrets,
-  WOLF_ROLES, type ActionType, type NightActionDoc,
+  nightActionsCol, secretDoc, wolfPickDoc, wolfPicksCol, roomDoc,
+  loadRoom, loadPlayers, loadSecrets,
+  WOLF_ROLES, type ActionType, type NightActionDoc, type RoomDoc,
 } from '@/lib/firestore-server'
 import { isWolfRole } from '@/lib/roles'
+
+/**
+ * Cập nhật tiến độ đêm ẨN DANH (X/Y đã hành động) sau mỗi lần nộp.
+ * Chế độ đồng thời: đủ người → hạ timerEnd để đêm kết thúc sớm
+ * (client tick trong ~1.5s; tick idempotent nên nhiều client vô hại).
+ */
+async function updateNightProgress(code: string, room: RoomDoc) {
+  try {
+    const [actionsSnap, picksSnap] = await Promise.all([
+      nightActionsCol(code).get(),
+      wolfPicksCol(code).get(),
+    ])
+    const actors = new Set<string>()
+    actionsSnap.docs.forEach((d) => {
+      const a = (d.data() as NightActionDoc).actorId
+      if (a && a !== 'pack') actors.add(a)
+    })
+    picksSnap.docs.forEach((d) => actors.add(d.id))
+
+    const total = room.nightProgress?.total ?? 0
+    const done = Math.min(actors.size, total || actors.size)
+    const patch: Record<string, unknown> = { nightProgress: { done, total } }
+    if ((room.nightMode ?? 'seq') === 'sim' && total > 0 && done >= total) {
+      patch.timerEnd = Date.now() + 1500 // đủ người → chốt đêm sớm
+    }
+    await roomDoc(code).update(patch)
+  } catch { /* tiến độ là phụ trợ — không làm hỏng action */ }
+}
 
 // Action nào được nộp trong bước đêm nào (nightWake.actionType của bước).
 const STEP_ALLOWS: Partial<Record<ActionType, ActionType[]>> = {
@@ -38,9 +67,12 @@ export async function POST(req: Request) {
   if (room.phase !== 'night') return error('Không phải giai đoạn đêm.')
 
   // Chống nộp sai lượt (vd sói cắn trong lượt phù thủy).
+  // 'sim_all' (đêm đồng thời): mọi action đêm hợp lệ đều được nộp.
   const stepAction = room.nightWake?.actionType
-  if (!stepAction || !(STEP_ALLOWS[stepAction] ?? []).includes(actionType)) {
-    return error('Chưa đến lượt hành động này.')
+  if (stepAction !== 'sim_all') {
+    if (!stepAction || !(STEP_ALLOWS[stepAction as ActionType] ?? []).includes(actionType)) {
+      return error('Chưa đến lượt hành động này.')
+    }
   }
 
   const mySecretSnap = await secretDoc(upper, uid).get()
@@ -156,6 +188,10 @@ export async function POST(req: Request) {
       const secrets = await loadSecrets(upper)
       const target = players.find((p) => p.userId === targetId)
       if (!target?.isAlive) return error('Mục tiêu không hợp lệ.')
+      // Ghi nhận action (tiến độ + log) rồi trả kết quả ngay.
+      await nightActionsCol(upper).doc(`wolf_seer_${uid}`).set(
+        { actorId: uid, actionType, targetId } satisfies NightActionDoc)
+      await updateNightProgress(upper, room)
       // Kết quả trả ngay: mục tiêu CÓ PHẢI Tiên Tri không.
       const isSeer = secrets.get(targetId)?.role === 'seer'
       return ok({ wolfSeerResult: { targetName: target.username, isSeer } })
@@ -168,6 +204,9 @@ export async function POST(req: Request) {
       const a = players.find((p) => p.userId === targetId)
       const b = players.find((p) => p.userId === targetId2)
       if (!a?.isAlive || !b?.isAlive) return error('Mục tiêu không hợp lệ.')
+      await nightActionsCol(upper).doc(`detective_${uid}`).set(
+        { actorId: uid, actionType, targetId, targetId2 } satisfies NightActionDoc)
+      await updateNightProgress(upper, room)
       // "Cùng phe": cùng bên sói hoặc cùng bên không-sói. Không lộ phe nào.
       const sameFaction = isWolfRole(secrets.get(targetId)?.role) === isWolfRole(secrets.get(targetId2)?.role)
       return ok({ detectiveResult: { aName: a.username, bName: b.username, sameFaction } })
@@ -176,5 +215,6 @@ export async function POST(req: Request) {
       return error('Hành động không hợp lệ.')
   }
 
+  await updateNightProgress(upper, room)
   return ok()
 }

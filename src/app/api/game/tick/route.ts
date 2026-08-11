@@ -16,8 +16,8 @@ import {
   type RoomDoc, type Phase, type SecretDoc, type NightActionDoc, type PlayerDoc,
 } from '@/lib/firestore-server'
 import {
-  buildNightSequence, resolveNight, resolveVotes, tallyWolfBite, PHASE_DURATIONS,
-  type NightStep,
+  buildNightSequence, resolveNight, resolveVotes, tallyWolfBite, countNightActors,
+  PHASE_DURATIONS, type NightStep,
 } from '@/lib/game-logic'
 import { archiveMatch } from '@/lib/match-archive'
 
@@ -79,7 +79,8 @@ async function prepareMediumSeance(
   code: string, step: NightStep | undefined,
   players: PlayerDoc[], secrets: Map<string, SecretDoc>,
 ) {
-  if (step?.action !== 'medium_listen') return
+  // 'sim_all': đêm đồng thời — Bà Đồng nghe ngay từ đầu đêm.
+  if (step?.action !== 'medium_listen' && step?.action !== 'sim_all') return
   const snap = await deadChatCol(code).orderBy('createdAt', 'desc').limit(5).get()
   const lines = snap.docs
     .map((d) => (d.data() as { content: string }).content)
@@ -97,7 +98,9 @@ async function prepareMediumSeance(
  * đó vẫn thấy nạn nhân như cũ.
  */
 async function finalizeWolfBite(code: string, seq: NightStep[], room: RoomDoc, secrets: Map<string, SecretDoc>) {
-  if (seq[room.nightStep]?.action !== 'wolf_bite') return
+  const stepAction = seq[room.nightStep]?.action
+  // 'sim_all': bước đồng thời cũng chứa phát cắn của bầy → tally khi rời.
+  if (stepAction !== 'wolf_bite' && stepAction !== 'sim_all') return
   const picks = await loadWolfPicks(code)
   const targetId = tallyWolfBite(picks, secrets)
   if (targetId) {
@@ -111,7 +114,12 @@ async function finalizeWolfBite(code: string, seq: NightStep[], room: RoomDoc, s
 async function startNightLadder(code: string, room: RoomDoc) {
   const players = await loadPlayers(code)
   const secrets = await loadSecrets(code)
-  const seq = buildNightSequence(players, secrets, room.dayCount, room.cupidDone)
+  const nightMode = room.nightMode ?? 'seq'
+  const seq = buildNightSequence(players, secrets, room.dayCount, room.cupidDone, nightMode)
+  const nightProgress = {
+    done: 0,
+    total: countNightActors(players, secrets, room.dayCount, room.cupidDone),
+  }
 
   const batch = roomDoc(code).firestore.batch()
   // Clear per-night collections.
@@ -131,6 +139,7 @@ async function startNightLadder(code: string, room: RoomDoc) {
       timerPhase: 'night_resolve', timerEnd: Date.now() + PHASE_DURATIONS.night_resolve,
       nightStep: 0, nightWake: null, bittenTarget: null, dayCount: nextDay,
       ravenMarkedId: null, // dấu quạ chỉ sống 1 buổi vote
+      nightProgress: null,
     } as Record<string, unknown>)
   } else {
     const step0 = seq[0]!
@@ -141,6 +150,7 @@ async function startNightLadder(code: string, room: RoomDoc) {
       nightStep: 0, nightWake: { actionType: step0.action, label: step0.label, duration: step0.duration / 1000 },
       bittenTarget: null, dayCount: nextDay,
       ravenMarkedId: null, // dấu quạ chỉ sống 1 buổi vote
+      nightProgress,
     } as Record<string, unknown>)
   }
   await batch.commit()
@@ -153,7 +163,7 @@ async function startNightLadder(code: string, room: RoomDoc) {
 async function advanceNightStep(code: string, room: RoomDoc) {
   const players = await loadPlayers(code)
   const secrets = await loadSecrets(code)
-  const seq = buildNightSequence(players, secrets, room.dayCount, room.cupidDone)
+  const seq = buildNightSequence(players, secrets, room.dayCount, room.cupidDone, room.nightMode ?? 'seq')
   const nextIndex = room.nightStep + 1
 
   // Nếu đang rời bước cắn của bầy → tally wolfPicks thành 1 phát cắn chuẩn.
@@ -199,7 +209,7 @@ async function runNightResolution(code: string, room: RoomDoc) {
   const players = await loadPlayers(code)
   const secrets = await loadSecrets(code)
   const actions = await loadNightActions(code)
-  const res = resolveNight(room, players, secrets, actions)
+  const res = resolveNight(room, players, secrets, actions, room.nightMode ?? 'seq')
 
   const batch = roomDoc(code).firestore.batch()
   // Write mutated player/secret state.
