@@ -1,28 +1,21 @@
 // ============================================================
 // Shared Types for Ma Sói Realtime
+// Role/ActionType/RoleConfig sống trong roles.ts (single source
+// of truth cho 18 vai) — re-export tại đây để import cũ khỏi vỡ.
 // ============================================================
+import { ALL_ROLES } from '@/lib/roles'
+import type { Role, ActionType, RoleConfig } from '@/lib/roles'
 
-export type Role =
-  | 'werewolf'
-  | 'white_werewolf'
-  | 'villager'
-  | 'seer'
-  | 'witch'
-  | 'guard'
-  | 'hunter'
-  | 'cupid'
+export type { Role, ActionType, RoleConfig, Faction, RoleDef } from '@/lib/roles'
+export {
+  ROLE_REGISTRY, ALL_ROLES, DEFAULT_CONFIG,
+  WOLF_ROLE_KEYS, isWolfRole, NIGHT_ORDER, sumSpecial, sumTotal, countOf,
+} from '@/lib/roles'
 
 export type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'
 export type RoomStatus = 'waiting' | 'playing' | 'finished'
 export type HostMode = 'auto' | 'direct' | 'hybrid'
 export type MsgType = 'public' | 'dead' | 'wolf' | 'system'
-export type ActionType =
-  | 'wolf_bite'
-  | 'seer_check'
-  | 'witch_save'
-  | 'witch_poison'
-  | 'guard_protect'
-  | 'cupid_link'
 
 export interface PlayerInfo {
   id: string
@@ -55,28 +48,6 @@ export interface RoomState {
   votes: Record<string, string>
 }
 
-export interface RoleConfig {
-  werewolf: number
-  white_werewolf: number
-  seer: number
-  witch: number
-  guard: number
-  hunter: number
-  cupid: number
-  villager: number
-}
-
-export const DEFAULT_CONFIG: RoleConfig = {
-  werewolf: 2,
-  white_werewolf: 0,
-  seer: 1,
-  witch: 1,
-  guard: 1,
-  hunter: 0,
-  cupid: 0,
-  villager: 0, // will be auto-calculated
-}
-
 export interface NightActionResult {
   actorId: string
   actionType: ActionType
@@ -105,68 +76,18 @@ export interface PhaseTimer {
   totalTime: number
 }
 
-// Role metadata for UI
+// Role metadata for UI — derive từ registry (shape cũ giữ nguyên
+// để các màn hình đang đọc ROLE_INFO không phải sửa).
 export const ROLE_INFO: Record<
   string,
-  { name: string; team: string; color: string; desc: string; glowKey: string }
-> = {
-  werewolf: {
-    name: 'Ma Sói',
-    team: 'Sói',
-    color: '#dc2626',
-    desc: 'Mỗi đêm chọn 1 người để cắn.',
-    glowKey: 'wolf',
-  },
-  white_werewolf: {
-    name: 'Sói Trắng',
-    team: 'Sói',
-    color: '#f59e0b',
-    desc: 'Cắn đồng đội Sói để phá hoại.',
-    glowKey: 'white-wolf',
-  },
-  villager: {
-    name: 'Dân Thường',
-    team: 'Dân',
-    color: '#3b82f6',
-    desc: 'Không có kỹ năng đặc biệt.',
-    glowKey: 'villager',
-  },
-  seer: {
-    name: 'Tiên Tri',
-    team: 'Dân',
-    color: '#8b5cf6',
-    desc: 'Mỗi đêm soi 1 người để biết phe.',
-    glowKey: 'seer',
-  },
-  witch: {
-    name: 'Phù Thủy',
-    team: 'Dân',
-    color: '#10b981',
-    desc: 'Có thuốc cứu và thuốc độc.',
-    glowKey: 'witch',
-  },
-  guard: {
-    name: 'Bảo Vệ',
-    team: 'Dân',
-    color: '#f59e0b',
-    desc: 'Mỗi đêm che chắn 1 người khỏi Sói.',
-    glowKey: 'guard',
-  },
-  hunter: {
-    name: 'Thợ Săn',
-    team: 'Độc lập',
-    color: '#ef4444',
-    desc: 'Khi chết có thể bắn 1 người.',
-    glowKey: 'hunter',
-  },
-  cupid: {
-    name: 'Cúp Đôi',
-    team: 'Độc lập',
-    color: '#ec4899',
-    desc: 'Đêm đầu ghép đôi 2 người.',
-    glowKey: 'cupid',
-  },
-}
+  { name: string; team: string; color: string; desc: string; glowKey: string; emoji: string; implemented: boolean }
+> = Object.fromEntries(
+  ALL_ROLES.map((r) => [r.key, {
+    name: r.nameVi, team: r.teamVi, color: r.color,
+    desc: r.descVi, glowKey: r.glowKey, emoji: r.emoji,
+    implemented: r.implemented,
+  }]),
+)
 
 export const PHASE_CONFIG: Record<string, { duration: number; label: string }> = {
   role_reveal: { duration: 10, label: 'Lật Bài' },

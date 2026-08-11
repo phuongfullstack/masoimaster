@@ -11,7 +11,7 @@ import { GameBadge } from '@/components/ui/game/GameBadge'
 import { CharacterIcon } from '@/components/characters/CharacterIcon'
 import { RoleCrest } from '@/components/characters/RoleCrest'
 import { StatsHistory } from '@/components/game/stats-history'
-import { DEFAULT_CONFIG, ROLE_INFO } from '@/lib/types'
+import { DEFAULT_CONFIG, ROLE_INFO, sumSpecial } from '@/lib/types'
 import type { RoleConfig } from '@/lib/types'
 import { LogOut, Users, Plus, Moon, ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -47,9 +47,7 @@ export function HomeScreen() {
     setConfig(prev => ({ ...prev, [key]: Math.max(0, value) }))
   }
 
-  const totalSpecial =
-    config.werewolf + config.white_werewolf + config.seer + config.witch +
-    config.guard + config.hunter + config.cupid
+  const totalSpecial = sumSpecial(config)
 
   const MIN_PLAYERS = 4
   const minPlayersNeeded = Math.max(MIN_PLAYERS, totalSpecial)
@@ -179,7 +177,7 @@ export function HomeScreen() {
                 </p>
               )}
               {Object.entries(ROLE_INFO)
-                .filter(([k]) => k !== 'villager')
+                .filter(([k, info]) => k !== 'villager' && info.implemented)
                 .map(([key, info]) => (
                   <div key={key} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

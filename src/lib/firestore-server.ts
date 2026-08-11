@@ -81,18 +81,17 @@ export const messagesCol = (code: string) => roomDoc(code).collection('messages'
 
 // ============================================================
 // Domain types (server-internal — full state, includes secrets).
+// Role/ActionType/RoleConfig hợp nhất về roles.ts (18 vai).
 // ============================================================
-export type Role = 'werewolf' | 'white_werewolf' | 'villager' | 'seer' | 'witch' | 'guard' | 'hunter' | 'cupid'
+import { WOLF_ROLE_KEYS, ALL_ROLES, DEFAULT_CONFIG as REGISTRY_DEFAULT_CONFIG, countOf } from '@/lib/roles'
+import type { Role, ActionType, RoleConfig } from '@/lib/roles'
+
+export type { Role, ActionType, RoleConfig } from '@/lib/roles'
 export type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'
-export type ActionType = 'wolf_bite' | 'seer_check' | 'witch_save' | 'witch_poison' | 'guard_protect' | 'cupid_link'
 export type MsgType = 'public' | 'dead' | 'wolf' | 'system'
 
-export const WOLF_ROLES: Role[] = ['werewolf', 'white_werewolf']
-
-export interface RoleConfig {
-  werewolf: number; white_werewolf: number; seer: number; witch: number
-  guard: number; hunter: number; cupid: number; villager: number
-}
+/** Các vai phe sói — derive từ registry (trước đây hard-code 2 vai). */
+export const WOLF_ROLES: Role[] = WOLF_ROLE_KEYS
 
 export interface RoomDoc {
   code: string
@@ -138,12 +137,20 @@ export interface SecretDoc {
   witchSaveUsed: boolean
   witchPoisonUsed: boolean
   linkedPartner: string | null  // userId of lover
+  // ---- Field mới cho 17-vai design (optional — doc cũ đọc an toàn) ----
+  packmates?: string[]          // sói: userId đồng đội bầy
+  lastNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'  // báo riêng lúc rạng sáng
+  elderShieldUsed?: boolean     // elder đã chịu 1 cắn
+  curseUsed?: boolean           // cursed wolf đã dùng lời nguyền
+  originalRole?: Role           // vai gốc trước khi bị nguyền
+  seance?: string[]             // medium: tin nhắn ẩn danh từ cõi chết (server copy)
 }
 
 export interface NightActionDoc {
   actorId: string
   actionType: ActionType
   targetId: string | null
+  targetId2?: string | null     // detective so 2 người
 }
 
 // ============================================================
@@ -229,22 +236,17 @@ export function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-/** Default role config (matches the prior server default). */
-export const DEFAULT_CONFIG: RoleConfig = {
-  werewolf: 2, white_werewolf: 0, seer: 1, witch: 1,
-  guard: 1, hunter: 0, cupid: 0, villager: 0,
-}
+/** Default role config (derive từ registry — vai mới mặc định 0). */
+export const DEFAULT_CONFIG: RoleConfig = { ...REGISTRY_DEFAULT_CONFIG }
 
-/** Build the shuffled role list for a game start. */
+/** Build the shuffled role list for a game start — generic theo registry. */
 export function generateRoleList(config: RoleConfig, total: number): Role[] {
   const roles: Role[] = []
-  roles.push(...Array(config.werewolf).fill('werewolf') as Role[])
-  roles.push(...Array(config.white_werewolf).fill('white_werewolf') as Role[])
-  roles.push(...Array(config.seer).fill('seer') as Role[])
-  roles.push(...Array(config.witch).fill('witch') as Role[])
-  roles.push(...Array(config.guard).fill('guard') as Role[])
-  roles.push(...Array(config.hunter).fill('hunter') as Role[])
-  roles.push(...Array(config.cupid).fill('cupid') as Role[])
+  for (const def of ALL_ROLES) {
+    if (def.key === 'villager') continue
+    const n = countOf(config, def.key)
+    for (let i = 0; i < n; i++) roles.push(def.key)
+  }
   const remaining = total - roles.length
   if (remaining > 0) roles.push(...Array(remaining).fill('villager') as Role[])
   return shuffle(roles)

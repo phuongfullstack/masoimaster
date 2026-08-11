@@ -6,6 +6,7 @@ import {
   type RoomDoc, type PlayerDoc, type SecretDoc, type RoleConfig,
 } from '@/lib/firestore-server'
 import { getDisplayName } from '@/lib/user-profile'
+import { sanitizeConfig } from '@/lib/roles'
 
 export async function POST(req: Request) {
   const auth = await authenticate(req)
@@ -16,7 +17,8 @@ export async function POST(req: Request) {
     config?: Partial<RoleConfig>; hostMode?: 'auto' | 'direct' | 'hybrid'
   }>(req)
   const hostMode = body.hostMode ?? 'auto'
-  const config: RoleConfig = { ...DEFAULT_CONFIG, ...(body.config ?? {}) }
+  // sanitizeConfig: chỉ nhận vai đã implement, số nguyên ≥ 0.
+  const config: RoleConfig = { ...DEFAULT_CONFIG, ...sanitizeConfig(body.config) }
 
   // Lazy TTL: nhân tiện dọn vài phòng đã hết hạn (best-effort).
   await cleanupExpiredRooms(5)

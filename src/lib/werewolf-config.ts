@@ -37,19 +37,16 @@ export interface BalanceReport {
   tips: string[];
 }
 
-// ---- Role Registry ----
-export const ROLES: Role[] = [
-  { id: 'werewolf', name: 'Sói', faction: 'wolf', description: 'Phát hiện đồng đội, cắn 1 người mỗi đêm', category: 'essential' },
-  { id: 'alpha_wolf', name: 'Sói Đầu Sỏ', faction: 'wolf', description: 'Khi chết, Sói còn lại cắn 2 người/đêm', category: 'offensive' },
-  { id: 'seer', name: 'Tiên Tri', faction: 'village', description: 'Mỗi đêm soi 1 người, biết được phe', category: 'essential' },
-  { id: 'witch', name: 'Phù Thủy', faction: 'village', description: '1 thuốc cứu & 1 thuốc độc, dùng 1 lần mỗi loại', category: 'essential' },
-  { id: 'guard', name: 'Bảo Vệ', faction: 'village', description: 'Mỗi đêm bảo vệ 1 người khỏi sói cắn', category: 'protective' },
-  { id: 'hunter', name: 'Săn Thủ', faction: 'village', description: 'Khi chết được bắn 1 người theo', category: 'offensive' },
-  { id: 'cupid', name: 'Thần Tình Yêu', faction: 'neutral', description: 'Đêm 1: nối 2 người, 1 chết người kia chết theo', category: 'special' },
-  { id: 'elder', name: 'Lão Làng', faction: 'village', description: 'Chịu 1 cắn từ sói. Bị Dân xử → Dân mất 1 vai trò', category: 'special' },
-  { id: 'doctor', name: 'Bác Sĩ', faction: 'village', description: 'Nhắm mắt chữa 1 người/đêm (không tự chữa)', category: 'protective' },
-  { id: 'villager', name: 'Dân Thường', faction: 'village', description: 'Không có kỹ năng, dựa vào phân tích & biểu quyết', category: 'essential' },
-];
+// ---- Role Registry — derive từ nguồn sự thật duy nhất (roles.ts, 18 vai) ----
+import { ALL_ROLES } from '@/lib/roles'
+
+export const ROLES: Role[] = ALL_ROLES.map((r) => ({
+  id: r.key,
+  name: r.nameVi,
+  faction: r.faction,
+  description: r.noteVi ? `${r.descVi} ${r.noteVi}` : r.descVi,
+  category: r.category,
+}));
 
 export const WOLF_ROLES = ROLES.filter((r) => r.faction === 'wolf');
 export const VILLAGE_ROLES = ROLES.filter((r) => r.faction === 'village');

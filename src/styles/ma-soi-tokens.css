@@ -34,6 +34,20 @@
     --ms-elder-dark: 100 116 139;   /* #64748b */
     --ms-doctor: 52 211 153;        /* #34d399 */
     --ms-doctor-dark: 4 120 87;     /* #047857 */
+    --ms-wolf-seer: 192 38 211;     /* #c026d3 */
+    --ms-wolf-seer-dark: 134 25 143;
+    --ms-cursed-wolf: 153 27 27;    /* #991b1b */
+    --ms-cursed-wolf-dark: 127 29 29;
+    --ms-detective: 14 165 233;     /* #0ea5e9 */
+    --ms-detective-dark: 2 132 199;
+    --ms-medium: 167 139 250;       /* #a78bfa */
+    --ms-medium-dark: 124 58 237;
+    --ms-raven: 100 116 139;        /* #64748b */
+    --ms-raven-dark: 71 85 105;
+    --ms-chief: 234 179 8;          /* #eab308 */
+    --ms-chief-dark: 161 98 7;
+    --ms-jester: 244 114 182;       /* #f472b6 */
+    --ms-jester-dark: 219 39 119;
 
     /* ---- UI Accents ---- */
     --ms-info: 28 176 246;          /* #1cb0f6 */
@@ -153,6 +167,13 @@
 .glow-alpha-wolf { filter: drop-shadow(0 0 12px rgb(var(--ms-alpha-wolf) / 0.5)); }
 .glow-elder { filter: drop-shadow(0 0 12px rgb(var(--ms-elder) / 0.5)); }
 .glow-doctor { filter: drop-shadow(0 0 12px rgb(var(--ms-doctor) / 0.5)); }
+.glow-wolf-seer { filter: drop-shadow(0 0 12px rgb(var(--ms-wolf-seer) / 0.5)); }
+.glow-cursed-wolf { filter: drop-shadow(0 0 12px rgb(var(--ms-cursed-wolf) / 0.5)); }
+.glow-detective { filter: drop-shadow(0 0 12px rgb(var(--ms-detective) / 0.5)); }
+.glow-medium { filter: drop-shadow(0 0 12px rgb(var(--ms-medium) / 0.5)); }
+.glow-raven { filter: drop-shadow(0 0 12px rgb(var(--ms-raven) / 0.5)); }
+.glow-chief { filter: drop-shadow(0 0 12px rgb(var(--ms-chief) / 0.5)); }
+.glow-jester { filter: drop-shadow(0 0 12px rgb(var(--ms-jester) / 0.5)); }
 
 /* Pulse glow animation */
 @keyframes glow-pulse {

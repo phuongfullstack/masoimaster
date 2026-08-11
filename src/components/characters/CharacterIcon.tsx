@@ -52,6 +52,13 @@ const GLOW_CLASS: Record<string, string> = {
   villager: 'glow-villager',
   elder: 'glow-elder',
   doctor: 'glow-doctor',
+  wolf_seer: 'glow-wolf-seer',
+  cursed_wolf: 'glow-cursed-wolf',
+  detective: 'glow-detective',
+  medium: 'glow-medium',
+  raven: 'glow-raven',
+  chief: 'glow-chief',
+  jester: 'glow-jester',
 }
 
 const CHARACTERS: Record<string, ComponentType<CharacterProps>> = {
@@ -79,7 +86,9 @@ export function CharacterIcon({
 }: CharacterIconProps) {
   const px = SIZE_MAP[size]
   const glowClass = glow ? GLOW_CLASS[role] || '' : ''
-  const Component = CHARACTERS[role] ?? CHARACTERS.villager
+  // Vai chưa có portrait (7 vai mới) → dùng crest ở MỌI kích thước, tuyệt đối
+  // không fallback sang portrait Dân Thường (lộ/nhầm vai).
+  const Component = CHARACTERS[role]
 
   return (
     <span
@@ -89,8 +98,8 @@ export function CharacterIcon({
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      {px <= CREST_THRESHOLD ? (
-        <RoleCrest role={role} size={px} tinted />
+      {px <= CREST_THRESHOLD || !Component ? (
+        <RoleCrest role={role} size={px <= CREST_THRESHOLD ? px : Math.round(px * 0.72)} tinted />
       ) : (
         <Component state={state} width={px} height={px} />
       )}

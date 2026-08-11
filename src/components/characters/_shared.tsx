@@ -88,6 +88,13 @@ export const ROLE_PALETTE: Record<string, { accent: string }> = {
   villager: { accent: C.blue },
   elder: { accent: C.slate },
   doctor: { accent: C.green },
+  wolf_seer: { accent: '#d16bf0' },
+  cursed_wolf: { accent: '#c0392b' },
+  detective: { accent: C.blue },
+  medium: { accent: C.purple },
+  raven: { accent: C.slate },
+  chief: { accent: C.yellow },
+  jester: { accent: C.pink },
 }
 
 // ============================================================

@@ -11,7 +11,7 @@ import { GameAvatar } from '@/components/ui/game/GameAvatar'
 import { CharacterIcon } from '@/components/characters/CharacterIcon'
 import { useGameStore } from '@/store/game-store'
 import { useSocket } from '@/components/game/socket-provider'
-import { ROLE_INFO } from '@/lib/types'
+import { ROLE_INFO, isWolfRole } from '@/lib/types'
 import type { Role } from '@/lib/types'
 import {
   Moon, Sun, Vote, Skull, Eye,
@@ -299,8 +299,7 @@ function NightScreen() {
 
   if (!room) return null
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
-  const WOLF_ROLES = ['werewolf', 'white_werewolf']
-  const isWolf = WOLF_ROLES.includes(myRole)
+  const isWolf = isWolfRole(myRole)
 
   const handleNightAction = (actionType: string, targetId: string | null) => {
     emit('night-action', { code: room.code, userId, actionType, targetId })
@@ -417,7 +416,7 @@ function NightScreen() {
           {/* Target Selection */}
           <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
             {alivePlayers
-              .filter(p => !WOLF_ROLES.includes(p.role || 'villager') || p.role === 'white_werewolf')
+              .filter(p => !isWolfRole(p.role) || p.role === 'white_werewolf')
               .map(p => (
                 <PlayerTarget
                   key={p.userId}

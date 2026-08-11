@@ -5,6 +5,7 @@ import {
   roomDoc, secretDoc, loadRoom, loadPlayers, generateRoleList,
   type RoomDoc, type SecretDoc,
 } from '@/lib/firestore-server'
+import { sumSpecial } from '@/lib/roles'
 import { PHASE_DURATIONS } from '@/lib/game-logic'
 
 export async function POST(req: Request) {
@@ -25,8 +26,7 @@ export async function POST(req: Request) {
   if (total < 4) return error('Cần ít nhất 4 người!')
 
   const config = { ...room.config }
-  const specialCount = config.werewolf + config.white_werewolf + config.seer +
-    config.witch + config.guard + config.hunter + config.cupid
+  const specialCount = sumSpecial(config)
   if (specialCount > total) return error('Quá nhiều vai trò đặc biệt!')
   config.villager = total - specialCount
 

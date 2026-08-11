@@ -25,6 +25,13 @@ export type CrestRole =
   | 'villager'
   | 'elder'
   | 'doctor'
+  | 'wolf_seer'
+  | 'cursed_wolf'
+  | 'detective'
+  | 'medium'
+  | 'raven'
+  | 'chief'
+  | 'jester'
 
 // Shared wolf-head outline: two ear notches over a tapering muzzle.
 const WOLF_HEAD =
@@ -205,6 +212,84 @@ const CRESTS: Record<CrestRole, React.ReactNode> = {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </>
+  ),
+
+  wolf_seer: (
+    <>
+      {/* wolf head with a single all-seeing eye */}
+      <path d={WOLF_HEAD} fill="currentColor" />
+      <ellipse cx="12" cy="12.6" rx="4.6" ry="3" fill="var(--crest-bg, #16182b)" />
+      <circle cx="12" cy="12.6" r="1.7" fill="currentColor" />
+    </>
+  ),
+
+  cursed_wolf: (
+    <>
+      {/* wolf head with a crescent-moon scar */}
+      <path d={WOLF_HEAD} fill="currentColor" />
+      <path
+        d="M 14.8 9 A 4.6 4.6 0 1 0 14.8 16.6 A 3.6 3.6 0 1 1 14.8 9 Z"
+        fill="var(--crest-bg, #16182b)"
+      />
+    </>
+  ),
+
+  detective: (
+    <>
+      {/* magnifying glass */}
+      <circle cx="10" cy="10" r="6.4" fill="none" stroke="currentColor" strokeWidth="3" />
+      <line x1="14.8" y1="14.8" x2="21.6" y2="21.6" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" />
+      <circle cx="10" cy="10" r="2" fill="currentColor" />
+    </>
+  ),
+
+  medium: (
+    <>
+      {/* candle with flame */}
+      <path d="M 12 1 C 14 3.4 15 5 15 6.6 C 15 8.4 13.7 9.6 12 9.6 C 10.3 9.6 9 8.4 9 6.6 C 9 5 10 3.4 12 1 Z" fill="currentColor" />
+      <rect x="8.6" y="11" width="6.8" height="10.6" rx="1.6" fill="currentColor" />
+      <line x1="12" y1="13" x2="12" y2="16" stroke="var(--crest-bg, #16182b)" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M 5 21.6 L 19 21.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </>
+  ),
+
+  raven: (
+    <>
+      {/* perched raven silhouette */}
+      <path
+        d="M 15.2 2.4 C 12 2.4 9.8 4.8 9.8 8 L 9.8 12.6 C 9.8 15 8.4 16.8 6 18.4 L 12.6 17.4 L 10.8 21.6 L 15 17.2 C 17.6 15.2 19 12.4 19 9 L 19 6.8 L 21.4 5.8 L 19 4.8 C 18.4 3.4 17 2.4 15.2 2.4 Z"
+        fill="currentColor"
+      />
+      <circle cx="15.6" cy="5.6" r="1.1" fill="var(--crest-bg, #16182b)" />
+    </>
+  ),
+
+  chief: (
+    <>
+      {/* village hall — pediment over three pillars */}
+      <path d="M 12 1.2 L 22.4 7 L 1.6 7 Z" fill="currentColor" />
+      <rect x="3.4" y="8.6" width="3.4" height="9.4" fill="currentColor" />
+      <rect x="10.3" y="8.6" width="3.4" height="9.4" fill="currentColor" />
+      <rect x="17.2" y="8.6" width="3.4" height="9.4" fill="currentColor" />
+      <rect x="2" y="19.6" width="20" height="3" rx="1" fill="currentColor" />
+    </>
+  ),
+
+  jester: (
+    <>
+      {/* three-pointed cap with bells */}
+      <path
+        d="M 3 16 C 3.6 10 6 4.2 7.6 4.6 C 9 5 9.6 8.4 12 8.4 C 14.4 8.4 15 5 16.4 4.6 C 18 4.2 20.4 10 21 16 Z"
+        fill="currentColor"
+      />
+      <circle cx="4" cy="5.6" r="2" fill="currentColor" />
+      <circle cx="12" cy="3" r="2" fill="currentColor" />
+      <circle cx="20" cy="5.6" r="2" fill="currentColor" />
+      <rect x="2.4" y="17.6" width="19.2" height="4" rx="2" fill="currentColor" />
+      <circle cx="7.6" cy="19.6" r="1.1" fill="var(--crest-bg, #16182b)" />
+      <circle cx="12" cy="19.6" r="1.1" fill="var(--crest-bg, #16182b)" />
+      <circle cx="16.4" cy="19.6" r="1.1" fill="var(--crest-bg, #16182b)" />
     </>
   ),
 }

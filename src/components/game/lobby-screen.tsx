@@ -8,7 +8,7 @@ import { GameCard, GameCardHeader, GameCardTitle } from '@/components/ui/game/Ga
 import { GameBadge } from '@/components/ui/game/GameBadge'
 import { GameAvatar } from '@/components/ui/game/GameAvatar'
 import { RoleCrest } from '@/components/characters/RoleCrest'
-import { ROLE_INFO } from '@/lib/types'
+import { ROLE_INFO, sumSpecial } from '@/lib/types'
 import { Copy, CheckCircle2, DoorOpen, X, Check } from 'lucide-react'
 
 export function LobbyScreen() {
@@ -22,14 +22,7 @@ export function LobbyScreen() {
   if (!room) return null
   const isHost = room.hostId === userId
   const myPlayer = room.players.find((p) => p.userId === userId)
-  const totalSpecial =
-    room.config.werewolf +
-    room.config.white_werewolf +
-    room.config.seer +
-    room.config.witch +
-    room.config.guard +
-    room.config.hunter +
-    room.config.cupid
+  const totalSpecial = sumSpecial(room.config)
 
   const minPlayersNeeded = Math.max(4, totalSpecial)
 
