@@ -13,6 +13,8 @@ import { useGameStore } from '@/store/game-store'
 import { useSocket } from '@/components/game/socket-provider'
 import { ROLE_INFO, isWolfRole } from '@/lib/types'
 import type { Role } from '@/lib/types'
+import { PressToReveal } from '@/components/game/ui/PressToReveal'
+import { CardFab } from '@/components/game/ui/CardFab'
 import {
   Moon, Sun, Vote, Skull, Eye,
   Send, SkipForward, Heart, Target, Trophy,
@@ -193,81 +195,68 @@ function RoleReveal() {
 
   if (!info) return null
 
+  // ANTI-PEEK (design 17-vai): mọi người ngồi chung bàn nên thẻ vai
+  // KHÔNG hiển thị sẵn. Khung thẻ trung tính duy nhất (không glow,
+  // không màu phe), min-height cố định, nội dung chỉ rõ khi ĐÈ GIỮ.
   return (
     <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={springBouncy}
         className="w-full max-w-sm"
       >
-        <GameCard className="text-center overflow-hidden" glow={info.glowKey}>
-          {/* Character */}
-          <motion.div
-            variants={characterBounce}
-            initial="initial"
-            animate="animate"
-            className="flex justify-center my-4"
-          >
-            <CharacterIcon role={myRole || 'villager'} size="hero" state="happy" glow />
-          </motion.div>
+        <div
+          className="rounded-3xl border p-6 text-center"
+          style={{
+            minHeight: 330,
+            background: 'linear-gradient(155deg,#16141F,#211E30)',
+            borderColor: '#35325180',
+          }}
+        >
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-white/40 mb-4">
+            Thẻ bài của bạn
+          </p>
 
-          {/* Role Info */}
-          <motion.div
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, ...springGentle }}
-            className="space-y-3"
+          <PressToReveal
+            hint={
+              <span className="px-4 py-2 rounded-2xl bg-black/55 text-[11px] font-extrabold tracking-[0.2em] uppercase text-white/90">
+                🎴 Nhấn giữ để lật thẻ
+              </span>
+            }
           >
-            <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
-              {info.name}
-            </h2>
-            <p className="text-[rgb(var(--ms-text-secondary))] text-sm">{info.desc}</p>
-            <GameBadge color={info.color} className="mx-auto">
-              Phe: {info.team}
-            </GameBadge>
-          </motion.div>
-
-          {/* Wolf Partners */}
-          {wolfPartners.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-4 p-3 rounded-xl bg-[rgb(var(--ms-wolf)/0.15)] border border-[rgb(var(--ms-wolf)/0.3)]"
-            >
-              <p className="text-[rgb(var(--ms-wolf))] text-sm font-bold">
-                Đồng đội bầy sói: {wolfPartners.join(', ')}
+            <div className="space-y-3" style={{ minHeight: 250 }}>
+              <div className="flex justify-center">
+                <CharacterIcon role={myRole || 'villager'} size="xl" state="happy" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-white">{info.name}</h2>
+              {/* Phe chỉ là chữ — không mã màu (chống liếc trộm màu từ xa) */}
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/50">
+                Phe {info.team}
               </p>
-            </motion.div>
-          )}
+              <p className="text-sm text-white/70 leading-relaxed">{info.desc}</p>
 
-          {/* Lover Partner (Cupid) */}
-          {loverPartner && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-4 p-3 rounded-xl bg-[rgb(var(--ms-cupid)/0.15)] border border-[rgb(var(--ms-cupid)/0.3)]"
-            >
-              <p className="text-[rgb(var(--ms-cupid))] text-sm font-bold flex items-center gap-1.5 justify-center">
-                <Heart className="w-3.5 h-3.5" /> Đôi tình nhân: {loverPartner}
-              </p>
-            </motion.div>
-          )}
+              {wolfPartners.length > 0 && (
+                <div className="rounded-2xl bg-black/30 px-3 py-2.5">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/45 mb-1">
+                    Bầy của bạn
+                  </p>
+                  <p className="text-sm font-bold text-white/85">{wolfPartners.join(' · ')}</p>
+                </div>
+              )}
 
-          {/* Hint */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="mt-5"
-          >
-            <p className="text-[rgb(var(--ms-text-muted))] text-xs">
-              Ghi nhớ vai trò của bạn! Đang chuyển sang đêm...
-            </p>
-          </motion.div>
-        </GameCard>
+              {loverPartner && (
+                <p className="text-sm font-bold text-white/85 flex items-center gap-1.5 justify-center">
+                  <Heart className="w-3.5 h-3.5" /> Người yêu: {loverPartner}
+                </p>
+              )}
+            </div>
+          </PressToReveal>
+
+          <p className="text-white/35 text-xs mt-4">
+            Nhấc tay là thẻ tự úp lại. Giữa ván, đè nút 🎴 để xem lại.
+          </p>
+        </div>
       </motion.div>
     </div>
   )
@@ -289,7 +278,6 @@ function NightScreen() {
   const { emit } = useSocket()
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
   const [wolfMsg, setWolfMsg] = useState('')
-  const [seerRevealed, setSeerRevealed] = useState(false)
   const [cupidPair, setCupidPair] = useState<string[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -312,11 +300,6 @@ function NightScreen() {
     setWolfMsg('')
   }
 
-  const handleSeerReveal = () => {
-    if (!seerResult) return
-    setSeerRevealed(true)
-    setTimeout(() => setSeerRevealed(false), 3000)
-  }
 
   // ---- Render role-specific action ----
   const renderRoleAction = () => {
@@ -445,52 +428,33 @@ function NightScreen() {
             <p className="text-[rgb(var(--ms-text-secondary))] text-sm">Chọn 1 người để soi phe</p>
           </motion.div>
 
-          {/* Seer Result */}
+          {/* Seer Result — anti-peek: chỉ rõ trong lúc đè, nhả tay là che ngay */}
           {seerResult && (
             <motion.div variants={staggerItem}>
-              <motion.div
-                whileTap={{ scale: 0.97 }}
-                onTouchStart={handleSeerReveal}
-                onMouseDown={handleSeerReveal}
-                className={cn(
-                  'p-5 rounded-2xl border-2 text-center cursor-pointer select-none transition-all duration-200',
-                  seerRevealed
-                    ? seerResult.isWolf
-                      ? 'bg-[rgb(var(--ms-wolf)/0.15)] border-[rgb(var(--ms-wolf))]'
-                      : 'bg-[rgb(var(--ms-brand)/0.15)] border-[rgb(var(--ms-brand))]'
-                    : 'bg-[rgb(var(--ms-card))] border-white/[0.06]'
-                )}
-              >
-                {seerRevealed ? (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key="revealed"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={springSnappy}
-                    >
-                      <CharacterIcon
-                        role={seerResult.isWolf ? 'werewolf' : 'villager'}
-                        size="xl"
-                        state={seerResult.isWolf ? 'action' : 'happy'}
-                        glow
-                      />
-                      <div className={cn(
-                        'font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)]',
-                        seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]',
-                      )}>
-                        {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN LÀNG'}
-                      </div>
-                      <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>
-                    </motion.div>
-                  </AnimatePresence>
-                ) : (
-                  <div className="text-[rgb(var(--ms-text-muted))]">
+              <PressToReveal
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                hint={
+                  <span className="text-[rgb(var(--ms-text-muted))] text-center">
                     <Lock className="w-6 h-6 mx-auto mb-2" />
-                    <p className="text-sm font-bold">Nhấn giữ để xem kết quả</p>
+                    <span className="text-sm font-bold">Nhấn giữ để xem kết quả</span>
+                  </span>
+                }
+              >
+                <div>
+                  <CharacterIcon
+                    role={seerResult.isWolf ? 'werewolf' : 'villager'}
+                    size="xl"
+                    state={seerResult.isWolf ? 'action' : 'happy'}
+                  />
+                  <div className={cn(
+                    'font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)]',
+                    seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]',
+                  )}>
+                    {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN LÀNG'}
                   </div>
-                )}
-              </motion.div>
+                  <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>
+                </div>
+              </PressToReveal>
             </motion.div>
           )}
 
@@ -1160,6 +1124,8 @@ export function GameScreen() {
   const myRole = useGameStore(s => s.room?.myRole)
   const isAlive = useGameStore(s => s.room?.isAlive)
   const hunterTriggered = useGameStore(s => s.hunterTriggered)
+  const wolfPartners = useGameStore(s => s.room?.wolfPartners || [])
+  const loverPartner = useGameStore(s => s.room?.loverPartner)
 
   if (!room) return null
 
@@ -1169,15 +1135,24 @@ export function GameScreen() {
   // Role Reveal
   if (phase === 'role_reveal' && myRole) return <RoleReveal />
 
+  // Nút 🎴 xem lại thẻ (đè giữ) — hiện ở mọi màn trong ván.
+  const fab = myRole ? (
+    <CardFab
+      role={myRole}
+      packmates={wolfPartners}
+      extraNote={loverPartner ? `💘 Người yêu: ${loverPartner}` : null}
+    />
+  ) : null
+
   // Hunter Shoot
-  if (hunterTriggered && myRole === 'hunter') return <HunterShoot />
+  if (hunterTriggered && myRole === 'hunter') return <>{fab}<HunterShoot /></>
 
   // Night
-  if (phase === 'night' || phase === 'night_resolve') return <NightScreen />
+  if (phase === 'night' || phase === 'night_resolve') return <>{fab}<NightScreen /></>
 
   // Voting
-  if (phase === 'voting' || phase === 'vote_result') return <VotingScreen />
+  if (phase === 'voting' || phase === 'vote_result') return <>{fab}<VotingScreen /></>
 
   // Day (default)
-  return <DayScreen />
+  return <>{fab}<DayScreen /></>
 }
