@@ -27,6 +27,11 @@ export async function POST(req: Request) {
   if (!mySecretSnap.exists || mySecretSnap.data()!.role !== 'hunter') {
     return error('Chỉ thợ săn mới bắn được.')
   }
+  // Chỉ được bắn khi ĐÃ CHẾT và đang trong cửa sổ bắn (chống thợ săn
+  // còn sống snipe bất kỳ lúc nào qua API).
+  const meSnap = await playerDoc(upper, uid).get()
+  if (meSnap.data()?.isAlive) return error('Thợ săn chỉ bắn khi vừa gục xuống.')
+  if (room.phaseLabel !== 'Thợ Săn Bắn') return error('Đã hết cửa sổ bắn.')
 
   const players = await loadPlayers(upper)
   const secrets = await loadSecrets(upper)
@@ -81,21 +86,24 @@ function emptyFlow() {
 }
 
 function nextPhaseAfterHunter(current: Phase): Phase {
-  // After a hunter shoots during night_resolve → day discussion.
-  // After a hunter shoots during vote_result → next night.
-  if (current === 'night' || current === 'night_resolve') return 'day'
-  return 'night'
+  // Cửa sổ bắn sau CHẾT ĐÊM có phase='day' (đặt ở runNightResolution)
+  // → bắn xong vào thảo luận ngày. Cửa sổ sau BỊ TREO có phase='vote_result'
+  // → bắn xong về vote_result ngắn rồi tick tự mở đêm mới.
+  if (current === 'vote_result') return 'vote_result'
+  return 'day'
 }
 
 function timerFor(phase: Phase): Record<string, unknown> {
-  const durations: Partial<Record<Phase, number>> = {
-    day: PHASE_DURATIONS.day,
-    voting: PHASE_DURATIONS.voting,
-  }
-  const dur = durations[phase]
   if (phase === 'day') {
-    return { phase, phaseLabel: `Thảo Luận`, timerEnd: Date.now() + (dur as number), timerPhase: phase }
+    return {
+      phase, phaseLabel: 'Thảo Luận',
+      timerPhase: 'day', timerEnd: Date.now() + PHASE_DURATIONS.day,
+    }
   }
-  // Night: clear nightActions + votes, set phase; the ladder restarts via tick.
-  return { phase, phaseLabel: `Đêm`, timerEnd: null, timerPhase: phase, nightStep: 0, bittenTarget: null }
+  // vote_result ngắn — hết giờ tick sẽ startNightLadder (đêm mới).
+  // QUAN TRỌNG: timerEnd phải là số thật; để null là deadlock (không ai tick).
+  return {
+    phase: 'vote_result', phaseLabel: 'Kết Quả',
+    timerPhase: 'vote_result', timerEnd: Date.now() + PHASE_DURATIONS.vote_result,
+  }
 }
