@@ -96,70 +96,67 @@
   font-family: var(--font-be-vietnam), var(--font-nunito), system-ui, sans-serif;
 }
 
-/* Chunky bottom shadow — playful press effect */
+/* Canvas: "glow instead of drop shadow" — bóng đổ mềm + viền sáng nhẹ,
+   bỏ hiệu ứng chunky bottom (giữ nguyên tên class để khỏi sửa call sites). */
 .shadow-game {
-  box-shadow: var(--ms-shadow-md);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 255 255 / 0.03);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .shadow-game-sm {
-  box-shadow: var(--ms-shadow-sm);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.03);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .shadow-game-lg {
-  box-shadow: var(--ms-shadow-lg);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 14px 40px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.04);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-/* Press-down effect: combine with whileTap in Framer Motion or :active */
+/* Press effect nhẹ */
 .shadow-game:active,
 .shadow-game-sm:active,
 .shadow-game-lg:active {
-  transform: translateY(2px);
-  box-shadow: var(--ms-shadow-sm);
+  transform: scale(0.985);
 }
 
-/* Green shadow variant */
+/* Accent glows cho nút hành động (thay bóng gạch chunky) */
 .shadow-game-green {
-  box-shadow: 0 4px 0 0 rgb(76 175 0);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 0 18px rgb(var(--ms-brand) / 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.shadow-game-green:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 0 rgb(76 175 0);
-}
+.shadow-game-green:active { transform: scale(0.985); box-shadow: 0 0 10px rgb(var(--ms-brand) / 0.3); }
 
-/* Red shadow variant */
 .shadow-game-red {
-  box-shadow: 0 4px 0 0 rgb(220 38 38);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 0 18px rgb(var(--ms-wolf) / 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.shadow-game-red:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 0 rgb(220 38 38);
-}
+.shadow-game-red:active { transform: scale(0.985); box-shadow: 0 0 10px rgb(var(--ms-wolf) / 0.3); }
 
-/* Blue shadow variant */
 .shadow-game-blue {
-  box-shadow: 0 4px 0 0 rgb(14 165 233);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 0 18px rgb(var(--ms-moon) / 0.3);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.shadow-game-blue:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 0 rgb(14 165 233);
-}
+.shadow-game-blue:active { transform: scale(0.985); box-shadow: 0 0 10px rgb(var(--ms-moon) / 0.25); }
 
-/* Background gradient */
+/* Background gradient — phase backgrounds theo canvas */
 .bg-game-primary {
-  background: linear-gradient(180deg, rgb(var(--ms-bg-primary)) 0%, rgb(var(--ms-bg-secondary)) 100%);
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgb(45 27 78 / 0.35) 0%, transparent 60%),
+    linear-gradient(180deg, rgb(var(--ms-bg-primary)) 0%, rgb(var(--ms-bg-secondary)) 100%);
 }
 .bg-game-night {
-  background: linear-gradient(180deg, rgb(var(--ms-bg-primary)) 0%, rgb(15 20 40) 50%, rgb(var(--ms-bg-primary)) 100%);
+  background:
+    radial-gradient(100% 50% at 50% 0%, rgb(167 197 235 / 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(11 10 18) 0%, rgb(20 19 34) 55%, rgb(var(--ms-bg-primary)) 100%);
 }
 .bg-game-day {
-  background: linear-gradient(180deg, rgb(40 35 20) 0%, rgb(var(--ms-bg-primary)) 30%);
+  background:
+    radial-gradient(110% 55% at 50% 0%, rgb(236 201 75 / 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(38 32 26 / 0.9) 0%, rgb(var(--ms-bg-primary)) 35%);
 }
 .bg-game-sunset {
-  background: linear-gradient(180deg, rgb(60 20 30) 0%, rgb(var(--ms-bg-primary)) 40%);
+  background:
+    radial-gradient(110% 55% at 50% 0%, rgb(229 62 62 / 0.14) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(52 22 30) 0%, rgb(var(--ms-bg-primary)) 40%);
 }
 
 /* Glow effect per role */

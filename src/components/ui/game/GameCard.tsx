@@ -9,15 +9,21 @@ interface GameCardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean
 }
 
-export function GameCard({ children, glow, hover = false, className, ...props }: GameCardProps) {
+export function GameCard({ children, glow, hover = false, className, style, ...props }: GameCardProps) {
   return (
     <div
       className={cn(
-        'rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06] shadow-game-sm p-5',
-        hover && 'hover:bg-[rgb(var(--ms-card-hover))] transition-colors duration-150 cursor-pointer',
+        // Canvas card: gradient tối 155deg + viền #353251 mờ, glow mềm.
+        'rounded-2xl border shadow-game-sm p-5',
+        hover && 'hover:brightness-110 transition-[filter] duration-150 cursor-pointer',
         glow && `glow-${glow}`,
         className,
       )}
+      style={{
+        background: 'linear-gradient(155deg, rgb(var(--ms-bg-secondary)), rgb(var(--ms-card-hover)))',
+        borderColor: 'rgba(53, 50, 81, 0.5)',
+        ...style,
+      }}
       {...props}
     >
       {children}

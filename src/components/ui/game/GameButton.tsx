@@ -10,13 +10,14 @@ interface GameButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg'
 }
 
+// Canvas style: nền đậm hơn một tông, viền sáng mảnh + glow mềm cùng màu.
 const variantClasses: Record<GameButtonVariant, string> = {
   primary:
-    'bg-[rgb(var(--ms-brand))] text-white shadow-game-green hover:brightness-110 active:brightness-95',
+    'bg-[rgb(var(--ms-brand))] text-white border border-white/15 shadow-game-green hover:brightness-110 active:brightness-95',
   danger:
-    'bg-[rgb(var(--ms-wolf))] text-white shadow-game-red hover:brightness-110 active:brightness-95',
+    'bg-[rgb(var(--ms-wolf-dark))] text-white border border-white/15 shadow-game-red hover:brightness-110 active:brightness-95',
   secondary:
-    'bg-[rgb(var(--ms-info))] text-white shadow-game-blue hover:brightness-110 active:brightness-95',
+    'bg-[rgb(var(--ms-card-hover))] text-[rgb(var(--ms-moon))] border border-[rgba(167,197,235,0.35)] shadow-game-blue hover:brightness-125 active:brightness-95',
   ghost:
     'bg-transparent text-[rgb(var(--ms-text-secondary))] hover:text-[rgb(var(--ms-text-primary))] hover:bg-[rgb(var(--ms-card-hover))] shadow-none',
 }
