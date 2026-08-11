@@ -684,6 +684,28 @@ function NightScreen() {
       )
     }
 
+    // ---- Doctor Action ----
+    // Giống guard (chống cắn), nhưng: không có last-target rule, KHÔNG được tự chữa.
+    if (myRole === 'doctor' && effectiveAction === 'doctor_heal') {
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Chọn 1 người để chữa" />
+
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers.map(p => (
+              <PlayerTarget
+                key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor={NIGHT_ACCENT}
+                onClick={() => handleNightAction('doctor_heal', p.userId)}
+              />
+            ))}
+          </motion.div>
+        </motion.div>
+      )
+    }
+
     // ---- Medium Action ----
     if (myRole === 'medium' && effectiveAction === 'medium_listen') {
       const seance = room.mySeance ?? []
