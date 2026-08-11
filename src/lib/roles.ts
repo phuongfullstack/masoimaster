@@ -88,7 +88,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     key: 'werewolf', emoji: '🐺', nameVi: 'Ma Sói', nameEn: 'Werewolf',
     faction: 'wolf', teamVi: 'Sói', color: '#dc2626', glowKey: 'wolf',
     descVi: 'Mỗi đêm cùng bầy chọn 1 người để cắn.',
-    promptVi: 'Chọn người để cắn đêm nay:', confirmVi: 'Xác nhận cắn',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'wolf_bite', targets: 1, seesPack: true, category: 'essential', implemented: true,
   },
   alpha_wolf: {
@@ -96,7 +96,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'wolf', teamVi: 'Sói', color: '#ea580c', glowKey: 'alpha-wolf',
     descVi: 'Dẫn dắt bầy sói. Khi bầy chia phiếu, lựa chọn của bạn quyết định.',
     noteVi: 'Phiếu của bạn thắng khi bầy hoà.',
-    promptVi: 'Chọn người để cắn đêm nay:', confirmVi: 'Xác nhận cắn',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'wolf_bite', targets: 1, seesPack: true, category: 'offensive', implemented: false,
   },
   wolf_seer: {
@@ -104,7 +104,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'wolf', teamVi: 'Sói', color: '#c026d3', glowKey: 'wolf-seer',
     descVi: 'Mỗi đêm soi 1 người để biết họ có phải Tiên Tri hay không.',
     noteVi: 'Bạn vẫn cắn cùng bầy như sói thường.',
-    promptVi: 'Chọn 1 người để soi Tiên Tri:', confirmVi: 'Xác nhận soi',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'wolf_seer_check', targets: 1, seesPack: true, category: 'special', implemented: false,
   },
   cursed_wolf: {
@@ -112,28 +112,28 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'wolf', teamVi: 'Sói', color: '#7f1d1d', glowKey: 'cursed-wolf',
     descVi: 'Một lần mỗi ván, biến 1 dân thường thành sói thay vì cắn chết họ.',
     noteVi: 'Dùng xong lời nguyền, bạn cắn như sói thường.',
-    promptVi: 'Chọn người để nguyền:', confirmVi: 'Xác nhận nguyền',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'curse', targets: 1, oncePerGame: true, seesPack: true, category: 'special', implemented: false,
   },
   white_werewolf: {
     key: 'white_werewolf', emoji: '🐺', nameVi: 'Sói Trắng', nameEn: 'White Werewolf',
     faction: 'wolf', teamVi: 'Sói', color: '#f59e0b', glowKey: 'white-wolf',
     descVi: 'Cắn cùng bầy, nhưng thắng một mình khi là sói cuối cùng.',
-    promptVi: 'Chọn người để cắn đêm nay:', confirmVi: 'Xác nhận cắn',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'wolf_bite', targets: 1, seesPack: true, category: 'special', implemented: true,
   },
   seer: {
     key: 'seer', emoji: '🔮', nameVi: 'Tiên Tri', nameEn: 'Seer',
     faction: 'village', teamVi: 'Dân', color: '#8b5cf6', glowKey: 'seer',
     descVi: 'Mỗi đêm soi 1 người để biết họ thuộc phe nào.',
-    promptVi: 'Chọn 1 người để soi phe:', confirmVi: 'Xác nhận soi',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'seer_check', targets: 1, category: 'essential', implemented: true,
   },
   witch: {
     key: 'witch', emoji: '🧪', nameVi: 'Phù Thủy', nameEn: 'Witch',
     faction: 'village', teamVi: 'Dân', color: '#10b981', glowKey: 'witch',
     descVi: 'Có 1 thuốc cứu và 1 thuốc độc, mỗi loại dùng được 1 lần cả ván.',
-    promptVi: 'Chọn người để đầu độc:', confirmVi: 'Xác nhận',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     badges: [
       { label: 'Thuốc cứu: 1', color: '#38A169' },
       { label: 'Thuốc độc: 1', color: '#E53E3E' },
@@ -145,14 +145,14 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'village', teamVi: 'Dân', color: '#f59e0b', glowKey: 'guard',
     descVi: 'Mỗi đêm bảo vệ 1 người khỏi bị cắn.',
     noteVi: 'Không bảo vệ cùng một người 2 đêm liên tiếp.',
-    promptVi: 'Chọn người để bảo vệ:', confirmVi: 'Xác nhận bảo vệ',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'guard_protect', targets: 1, category: 'protective', implemented: true,
   },
   doctor: {
     key: 'doctor', emoji: '💊', nameVi: 'Bác Sĩ', nameEn: 'Doctor',
     faction: 'village', teamVi: 'Dân', color: '#22c55e', glowKey: 'doctor',
     descVi: 'Mỗi đêm chữa 1 người, không được tự chữa.',
-    promptVi: 'Chọn người để chữa:', confirmVi: 'Xác nhận chữa',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'doctor_heal', targets: 1, category: 'protective', implemented: false,
   },
   hunter: {
@@ -167,7 +167,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'village', teamVi: 'Dân', color: '#0ea5e9', glowKey: 'detective',
     descVi: 'Mỗi đêm so 2 người để biết họ có cùng phe hay không.',
     noteVi: 'Bạn biết họ cùng phe, nhưng không biết là phe nào.',
-    promptVi: 'Chọn 2 người để so phe:', confirmVi: 'Xác nhận so phe',
+    promptVi: 'Chọn 2 người:', confirmVi: 'Xác nhận',
     nightAction: 'detective_compare', targets: 2, category: 'special', implemented: false,
   },
   medium: {
@@ -175,7 +175,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'village', teamVi: 'Dân', color: '#a78bfa', glowKey: 'medium',
     descVi: 'Ban đêm bạn nghe được tiếng của những người đã chết.',
     noteVi: 'Bạn không biết ai đang nói, và không nhắn lại được. Nghe, rồi tự suy luận.',
-    promptVi: 'Đêm nay cõi chết lên tiếng:', confirmVi: 'Đã nghe xong',
+    promptVi: 'Lắng nghe:', confirmVi: 'Xác nhận',
     nightAction: 'medium_listen', targets: 0, category: 'special', implemented: false,
   },
   raven: {
@@ -183,7 +183,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'village', teamVi: 'Dân', color: '#64748b', glowKey: 'raven',
     descVi: 'Mỗi đêm đánh dấu 1 người.',
     noteVi: 'Người bị đánh dấu bắt đầu buổi biểu quyết hôm sau với 2 phiếu sẵn.',
-    promptVi: 'Chọn người để đánh dấu:', confirmVi: 'Xác nhận đánh dấu',
+    promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
     nightAction: 'raven_mark', targets: 1, category: 'special', implemented: false,
   },
   chief: {
@@ -205,7 +205,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'neutral', teamVi: 'Độc lập', color: '#ec4899', glowKey: 'cupid',
     descVi: 'Đêm đầu tiên bạn ghép đôi 2 người chơi.',
     noteVi: 'Một người trong cặp chết thì người kia chết theo.',
-    promptVi: 'Chọn 2 người để ghép đôi:', confirmVi: 'Xác nhận ghép đôi',
+    promptVi: 'Chọn 2 người:', confirmVi: 'Xác nhận',
     nightAction: 'cupid_link', targets: 2, category: 'special', implemented: true,
   },
   jester: {

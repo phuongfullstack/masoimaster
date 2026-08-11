@@ -291,7 +291,7 @@ function NightWaiting() {
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        className="text-center"
+        className="text-center w-full max-w-xs"
       >
         <div className="relative mb-6">
           <Moon className="w-16 h-16 text-[#A7C5EB]/60 mx-auto" />
@@ -301,7 +301,29 @@ function NightWaiting() {
         </div>
         <p className="text-[rgb(var(--ms-text-secondary))] text-lg font-bold">Đang là đêm...</p>
         <p className="text-[rgb(var(--ms-text-muted))] text-sm mt-1">Đừng mở mắt!</p>
-        <div className="mt-8 max-w-xs mx-auto p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
+        {/* Fake-busy decoy elements — identical visual language to NightTurnHeader
+            so a bystander cannot tell whether this player has an action or not. */}
+        <div className="mt-6 p-4 rounded-2xl bg-[rgba(255,255,255,0.04)] border border-[#353251]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[#7E93AF] text-xs font-bold uppercase tracking-wider">Đang xử lý</span>
+            <motion.span
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="text-[#A7C5EB] text-xs font-mono"
+            >
+              ●●●
+            </motion.span>
+          </div>
+          {/* Fake progress bar — animates the same way as a real night step */}
+          <div className="w-full h-2 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+            <motion.div
+              animate={{ width: ['15%', '70%', '92%'] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', times: [0, 0.6, 1] }}
+              className="h-full rounded-full bg-[#A7C5EB]/40"
+            />
+          </div>
+        </div>
+        <div className="mt-4 p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
           <p className="text-[rgb(var(--ms-text-muted))] text-xs uppercase tracking-wider mb-2 font-bold">
             Ghi chú riêng
           </p>
@@ -449,15 +471,10 @@ function NightScreen() {
                 }
               >
                 <div>
-                  <CharacterIcon
-                    role={seerResult.isWolf ? 'werewolf' : 'villager'}
-                    size="xl"
-                    state={seerResult.isWolf ? 'action' : 'happy'}
-                  />
-                  <div className={cn(
-                    'font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)]',
-                    seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]',
-                  )}>
+                  <div className="text-5xl mb-2">
+                    {seerResult.isWolf ? '🐺' : '👤'}
+                  </div>
+                  <div className="font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)] text-white">
                     {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN LÀNG'}
                   </div>
                   <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>

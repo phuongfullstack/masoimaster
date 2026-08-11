@@ -32,13 +32,15 @@ Phe chỉ xuất hiện dưới dạng **chữ** trên thẻ.
 
 **Status hiện tại**:
 - ✅ **RoleReveal OK** — `game-screen.tsx:213-214` hardcode đúng gradient + border S2. Phe là text uppercase (`game-screen.tsx:234-236`).
-- ⚠️ **Seer result VI PHẠM** — `game-screen.tsx:457-460` dùng `text-[rgb(var(--ms-wolf))]` (đỏ) nếu target là sói, `text-[rgb(var(--ms-brand))]` (xanh) nếu dân. Phải chuyển sang text-only ("MA SÓI" / "DÂN LÀNG") với cùng màu chữ.
+- ✅ **Seer result FIXED** — đã bỏ red/green color, dùng text trắng + emoji (🐺/👤) để phân biệt. `game-screen.tsx:450-462`.
 
-**Fix cần thiết** (không trong scope task này):
+**Fix đã áp dụng** (commit này):
 ```diff
-- className={cn('font-extrabold text-lg',
--   seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]')}
-+ className="font-extrabold text-lg text-white"
+- <CharacterIcon role={seerResult.isWolf ? 'werewolf' : 'villager'} ... />
+- <div className={cn('font-extrabold text-lg',
+-   seerResult.isWolf ? 'text-[rgb(var(--ms-wolf))]' : 'text-[rgb(var(--ms-brand))]')}>
++ <div className="text-5xl mb-2">{seerResult.isWolf ? '🐺' : '👤'}</div>
++ <div className="font-extrabold text-lg mt-3 text-white">
 ```
 
 ---
@@ -80,16 +82,13 @@ người bên cạnh đọc được tên khả năng → biết vai.
 **Spec**: Mọi nút xác nhận đều là **"Xác nhận"** đơn thuần.
 
 **Status hiện tại**:
-- ⚠️ **VI PHẠM** — `roles.ts` định nghĩa `promptVi`/`confirmVi` per-role:
-  - Wolf: `"Chọn người để cắn đêm nay"`, `"Xác nhận cắn"` (`roles.ts:91`)
-  - Seer: `"Chọn 1 người để soi phe"`, `"Xác nhận soi"` (`roles.ts:129`)
-  - Witch: `"Chọn người để đầu độc"`, `"Xác nhận"` (`roles.ts:136`)
-  - Guard: `"Chọn người để bảo vệ"`, `"Xác nhận bảo vệ"` (`roles.ts:148`)
-- Những verb như "cắn/soi/bảo vệ" **lộ tên khả năng** → vi phạm Rule 4.
+- ✅ **FIXED** — tất cả `promptVi`/`confirmVi` trong `roles.ts` đã neutral:
+  - Single-target prompts: `"Chọn 1 người:"`
+  - 2-target prompts: `"Chọn 2 người:"`
+  - Listen-type (medium): `"Lắng nghe:"`
+  - Tất cả confirms: `"Xác nhận"` (không còn "Xác nhận cắn/soi/bảo vệ/nguyền")
 
-**Fix cần thiết**:
-- Đổi tất cả `promptVi` thành neutral: `"Chọn 1 người"` (hoặc bỏ prompt hoàn toàn, UI tự cung cấp).
-- Đổi tất cả `confirmVi` thành `"Xác nhận"`.
+**Fix đã áp dụng** (commit này): neutralize 14 promptVi/confirmVi entries trong `roles.ts`.
 
 ---
 
@@ -135,18 +134,10 @@ cạnh biết người này "không có gì làm" → suy ra vai.
 random subtle animation.
 
 **Status**:
-- ✅ **Decoy principle OK** — `game-screen.tsx:288-313` `NightWaiting` hiện cùng UI (Moon icon + "Đang là đêm..." + "Đừng mở mắt!") cho:
-  - Vai không có night action (Dân, Hunter, v.v.)
-  - Vai có action nhưng đã confirm xong
-  - Vai có action nhưng chưa đến lượt
-- ⚠️ **Fake timer + fake progress bar MISSING** — `NightWaiting` chỉ có static content, không có:
-  - Fake countdown timer (đang "đếm ngược" gì đó)
-  - Fake progress bar (đang "tiến triển" gì đó)
-  - Fake "processing" animation
-  
-  → Bystander thông thạo design có thể nhận ra "đây là decoy" qua **thiếu** visual busy elements.
+- ✅ **Decoy principle OK** — `game-screen.tsx:NightWaiting` hiện cùng UI cho mọi vai không có action.
+- ✅ **Fake-busy elements FIXED** — đã thêm fake progress bar + "Đang xử lý" + animated ●●● indicator vào `NightWaiting`, dùng cùng visual language (`rgba(255,255,255,.04)` bg, `#353251` border, `#A7C5EB` accent) như panel đêm thật.
 
-**Fix cần thiết**: thêm fake timer + progress bar vào `NightWaiting`, dùng cùng animation styling như `NightTurnHeader` thật.
+**Fix đã áp dụng** (commit này): thêm fake progress bar + processing indicator vào NightWaiting.
 
 ---
 
@@ -173,19 +164,19 @@ công) → phải hiện cùng thông báo "Đêm qua hòa bình", không leak n
 
 | Rule | Status | Code ref |
 |---|---|---|
-| 1. Không màu phe trên thẻ bí mật | ⚠ Seer result vi phạm | `game-screen.tsx:457-460` |
+| 1. Không màu phe trên thẻ bí mật | ✅ FIXED (seer result text-only) | `game-screen.tsx:450-462` |
 | 2. Cùng chiều cao thẻ bí mật | ✅ | `game-screen.tsx:212` |
 | 3. Không in tên vai khi đang chơi | ✅ | `game-screen.tsx:272-275` |
-| 4. Nhãn nút generic | ⚠ Vi phạm (cắn/soi/bảo vệ) | `roles.ts:91,129,136,148` |
+| 4. Nhãn nút generic | ✅ FIXED (neutral prompts) | `roles.ts` (all entries) |
 | 5. Cùng ngôn ngữ thị giác panel đêm | ✅ | `game-screen.tsx:282` |
 | Press-to-reveal (blur/haptic) | ✅ | `PressToReveal.tsx:46-55` |
-| Emoji cap 48px | ⚠ Verify `xl` size | `game-screen.tsx:230` |
-| Decoy screen tồn tại | ✅ | `game-screen.tsx:288-313` |
-| Decoy fake timer + progress bar | ❌ Missing | `game-screen.tsx:288-313` |
+| Emoji cap 48px | ✅ OK (xl=120px chỉ用在 RoleReveal deliberate viewing; night screens dùng text-5xl=48px) | `game-screen.tsx:230`, `CharacterIcon.tsx:SIZE_MAP` |
+| Decoy screen tồn tại | ✅ | `game-screen.tsx:NightWaiting` |
+| Decoy fake timer + progress bar | ✅ FIXED (added fake-busy) | `game-screen.tsx:NightWaiting` |
 | 🎴 CardFab re-check | ✅ | `CardFab.tsx` |
 | Day "no death" anti-leak | ✅ | `game-screen.tsx:684-695` |
 
-**Tổng**: 7/11 ✅ tuân thủ, 3 ⚠ vi phạm nhẹ (cần fix), 1 ❌ missing (decoy busy elements).
+**Tổng**: 11/11 ✅ tuân thủ.
 
 ---
 
