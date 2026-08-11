@@ -36,7 +36,7 @@ interface GameState {
   voteResult: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null
 
   // Game Over
-  gameWinner: 'werewolf' | 'villager' | 'lovers' | null
+  gameWinner: 'werewolf' | 'villager' | 'lovers' | 'jester' | null
   gameOverPlayers: { username: string; role: string; isAlive: boolean }[] | null
 
   // Hunter
@@ -60,7 +60,7 @@ interface GameActions {
   setSeerResult: (result: { targetName: string; isWolf: boolean } | null) => void
   setDayResult: (deaths: string[], saved: boolean) => void
   setVoteResult: (result: { eliminated: string | null; voteCounts: Record<string, number>; isTie: boolean; chainedDeaths?: string[] } | null) => void
-  setGameOver: (winner: 'werewolf' | 'villager' | 'lovers', players: { username: string; role: string; isAlive: boolean }[]) => void
+  setGameOver: (winner: 'werewolf' | 'villager' | 'lovers' | 'jester', players: { username: string; role: string; isAlive: boolean }[]) => void
   setHunterTriggered: (v: boolean) => void
   setError: (error: string | null) => void
   resetGame: () => void

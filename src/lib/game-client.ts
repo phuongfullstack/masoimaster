@@ -73,7 +73,8 @@ interface RoomDocClient {
   dayResult: { deaths: string[]; saved?: boolean } | null
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
   reveal: Record<string, string> | null
-  gameWinner: 'werewolf' | 'villager' | 'lovers' | null
+  gameWinner: 'werewolf' | 'villager' | 'lovers' | 'jester' | null
+  ravenMarkedId?: string | null
 }
 
 export interface SubscribeCallbacks {
@@ -118,6 +119,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       loverPartner: loverPartnerName,
       timerEnd: latestRoom.timerEnd,
       votes: latestRoom.phase === 'voting' ? latestVotes : {},
+      ravenMarkedId: latestRoom.ravenMarkedId ?? null,
     } as RoomState
 
     cb.onRoom(roomState)

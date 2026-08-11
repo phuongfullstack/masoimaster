@@ -90,6 +90,25 @@ export async function POST(req: Request) {
       await batch.commit()
       break
     }
+    case 'doctor_heal': {
+      if (role !== 'doctor') return error('Chỉ bác sĩ mới chữa được.')
+      if (targetId === uid) return error('Bác sĩ không được tự chữa.')
+      const existing = await col.where('actionType', '==', 'doctor_heal').where('actorId', '==', uid).get()
+      const batch = col.firestore.batch()
+      existing.docs.forEach((d) => batch.delete(d.ref))
+      if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)
+      await batch.commit()
+      break
+    }
+    case 'raven_mark': {
+      if (role !== 'raven') return error('Chỉ Con Quạ mới đánh dấu được.')
+      const existing = await col.where('actionType', '==', 'raven_mark').where('actorId', '==', uid).get()
+      const batch = col.firestore.batch()
+      existing.docs.forEach((d) => batch.delete(d.ref))
+      if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)
+      await batch.commit()
+      break
+    }
     default:
       return error('Hành động không hợp lệ.')
   }

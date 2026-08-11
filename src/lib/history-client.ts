@@ -23,7 +23,7 @@ export interface PlayerStats {
 export interface MatchSummary {
   id: string
   code: string
-  winner: 'werewolf' | 'villager' | 'lovers'
+  winner: 'werewolf' | 'villager' | 'lovers' | 'jester'
   endedAt: number
   dayCount: number
   playerCount: number

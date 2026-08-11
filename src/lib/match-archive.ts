@@ -17,7 +17,8 @@ import {
   type RoomDoc, type PlayerDoc, type SecretDoc, type Role,
 } from '@/lib/firestore-server'
 
-export type Winner = 'werewolf' | 'villager' | 'lovers'
+export type { Winner } from '@/lib/roles'
+import type { Winner } from '@/lib/roles'
 
 export interface MatchPlayer {
   uid: string
@@ -44,6 +45,8 @@ function playerWon(winner: Winner, role: Role, cupidPair: [string, string] | nul
   if (winner === 'lovers') {
     return cupidPair != null && (uid === cupidPair[0] || uid === cupidPair[1])
   }
+  // Thằng Ngố thắng một mình khi bị xử — chỉ người cầm vai jester thắng.
+  if (winner === 'jester') return role === 'jester'
   const isWolf = WOLF_ROLES.includes(role)
   if (winner === 'werewolf') return isWolf
   return !isWolf
@@ -101,7 +104,7 @@ export async function archiveMatch(
             gamesPlayed: FieldValue.increment(1),
             wins: FieldValue.increment(p.won ? 1 : 0),
             winsAsWolf: FieldValue.increment(p.won && WOLF_ROLES.includes(p.role) ? 1 : 0),
-            winsAsVillager: FieldValue.increment(p.won && !WOLF_ROLES.includes(p.role) && winner !== 'lovers' ? 1 : 0),
+            winsAsVillager: FieldValue.increment(p.won && !WOLF_ROLES.includes(p.role) && winner !== 'lovers' && winner !== 'jester' ? 1 : 0),
             winsAsLover: FieldValue.increment(p.won && winner === 'lovers' ? 1 : 0),
             roleCounts: { [p.role]: FieldValue.increment(1) },
           },

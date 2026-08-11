@@ -17,6 +17,7 @@ const WINNER_LABEL: Record<MatchSummary['winner'], string> = {
   werewolf: 'Phe Sói thắng',
   villager: 'Phe Dân thắng',
   lovers: 'Cặp Đôi thắng',
+  jester: 'Thằng Ngố thắng',
 }
 
 export function StatsHistory() {

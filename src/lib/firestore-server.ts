@@ -84,9 +84,9 @@ export const messagesCol = (code: string) => roomDoc(code).collection('messages'
 // Role/ActionType/RoleConfig hợp nhất về roles.ts (18 vai).
 // ============================================================
 import { WOLF_ROLE_KEYS, ALL_ROLES, DEFAULT_CONFIG as REGISTRY_DEFAULT_CONFIG, countOf } from '@/lib/roles'
-import type { Role, ActionType, RoleConfig } from '@/lib/roles'
+import type { Role, ActionType, RoleConfig, Winner } from '@/lib/roles'
 
-export type { Role, ActionType, RoleConfig } from '@/lib/roles'
+export type { Role, ActionType, RoleConfig, Winner } from '@/lib/roles'
 export type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'
 export type MsgType = 'public' | 'dead' | 'wolf' | 'system'
 
@@ -119,7 +119,9 @@ export interface RoomDoc {
   voteResult: { eliminated: string | null; chainedDeaths: string[]; voteCounts: Record<string, number>; isTie: boolean } | null
   nightWake: { actionType: ActionType; label: string; duration: number; bittenPlayer?: string | null } | null
   reveal: Record<string, Role> | null  // { uid: role } — populated at game_over
-  gameWinner: 'werewolf' | 'villager' | 'lovers' | null
+  gameWinner: Winner | null
+  /** Con Quạ đánh dấu đêm qua — PUBLIC khi vote (+2 phiếu sẵn), clear mỗi đêm mới. */
+  ravenMarkedId?: string | null
   createdAt: number
   // Firestore TTL: phòng tự bị dọn khi quá hạn (bật TTL policy trên field này).
   expiresAt?: Date | Timestamp

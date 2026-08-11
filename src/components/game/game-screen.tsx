@@ -564,6 +564,46 @@ function NightScreen() {
       )
     }
 
+    // ---- Doctor Action ----
+    if (myRole === 'doctor' && nightWakeAction === 'doctor_heal') {
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Chọn 1 người để chữa (không tự chữa được)" />
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers.map(p => (
+              <PlayerTarget
+                key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor={NIGHT_ACCENT}
+                onClick={() => handleNightAction('doctor_heal', p.userId)}
+              />
+            ))}
+          </motion.div>
+        </motion.div>
+      )
+    }
+
+    // ---- Raven Action ----
+    if (myRole === 'raven' && nightWakeAction === 'raven_mark') {
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Đánh dấu 1 người — họ vào buổi vote với 2 phiếu sẵn" />
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers.map(p => (
+              <PlayerTarget
+                key={p.userId}
+                player={p}
+                isSelected={selectedTarget === p.userId}
+                accentColor={NIGHT_ACCENT}
+                onClick={() => handleNightAction('raven_mark', p.userId)}
+              />
+            ))}
+          </motion.div>
+        </motion.div>
+      )
+    }
+
     // ---- Cupid Action ----
     if (myRole === 'cupid' && nightWakeAction === 'cupid_link') {
       const togglePair = (uid: string) => {
@@ -909,10 +949,17 @@ function VotingScreen() {
           </GameButton>
         )}
 
+        {/* Dấu Con Quạ — CÔNG KHAI theo design: mọi người cân nhắc được */}
+        {room.ravenMarkedId === userId && (
+          <div className="rounded-2xl bg-[rgb(var(--ms-card))] border border-white/10 px-4 py-2.5 text-sm font-bold text-white/85 text-center">
+            🐦 Bạn bị Con Quạ đánh dấu — vào buổi vote này với 2 phiếu sẵn
+          </div>
+        )}
+
         {/* Vote grid */}
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-2 gap-2">
           {alivePlayers.map(p => (
-            <motion.div key={p.userId} variants={staggerItem}>
+            <motion.div key={p.userId} variants={staggerItem} className="relative">
               <PlayerTarget
                 player={p}
                 isSelected={myVote === p.userId}
@@ -921,6 +968,11 @@ function VotingScreen() {
                 voteCount={voteCounts[p.userId]}
                 onClick={() => isAlive && emit('submit-vote', { code: room.code, userId, targetId: p.userId })}
               />
+              {room.ravenMarkedId === p.userId && (
+                <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-lg bg-[#2D3748] border border-white/15 text-[10px] font-extrabold text-white/90">
+                  🐦 +2
+                </span>
+              )}
             </motion.div>
           ))}
         </motion.div>
@@ -1015,6 +1067,7 @@ function GameOverScreen() {
     werewolf: { accent: 'rgb(var(--ms-wolf))', char: 'werewolf', heading: 'Bầy Sói Thắng!', sub: 'Sói đã thống trị bản làng...' },
     villager: { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
     lovers: { accent: 'rgb(var(--ms-cupid))', char: 'cupid', heading: 'Cặp Đôi Thắng!', sub: 'Tình yêu đã chinh phục tất cả!' },
+    jester: { accent: 'rgb(var(--ms-jester))', char: 'jester', heading: 'Thằng Ngố Thắng!', sub: 'Cả làng đã trúng kế — xử đúng người muốn bị xử!' },
   }[gameWinner]
   const accent = winMeta.accent
 

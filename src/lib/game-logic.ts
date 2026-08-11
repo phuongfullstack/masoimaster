@@ -9,6 +9,7 @@ import {
   type RoomDoc, type PlayerDoc, type SecretDoc, type NightActionDoc,
   WOLF_ROLES,
 } from '@/lib/firestore-server'
+import type { Winner } from '@/lib/roles'
 
 // ---- Phase durations (ms) — single source of truth ----
 export const PHASE_DURATIONS = {
@@ -47,9 +48,11 @@ export function buildNightSequence(
     seq.push({ roles: ['cupid'], action: 'cupid_link', duration: PHASE_DURATIONS.night_step_cupid, label: NIGHT_LABEL })
   }
   if (has(['guard'])) seq.push({ roles: ['guard'], action: 'guard_protect', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
+  if (has(['doctor'])) seq.push({ roles: ['doctor'], action: 'doctor_heal', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
   if (has(WOLF_ROLES)) seq.push({ roles: WOLF_ROLES, action: 'wolf_bite', duration: PHASE_DURATIONS.night_step_wolves, label: NIGHT_LABEL })
   if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: NIGHT_LABEL })
+  if (has(['raven'])) seq.push({ roles: ['raven'], action: 'raven_mark', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   return seq
 }
 
@@ -58,7 +61,7 @@ export function buildNightSequence(
 // ============================================================
 export function checkWinCondition(
   players: PlayerDoc[], secrets: Map<string, SecretDoc>, cupidPair: [string, string] | null,
-): 'werewolf' | 'villager' | 'lovers' | null {
+): Winner | null {
   const alive = players.filter((p) => p.isAlive)
   // Lovers (classic Cupid): both alive AND everyone else dead.
   if (cupidPair) {
@@ -127,7 +130,9 @@ export interface NightResolution {
   updatedPlayers: PlayerDoc[]  // mutated isAlive flags
   updatedSecrets: Map<string, SecretDoc>  // mutated (witch potions, lover links)
   lastGuardTarget: string | null
-  winner: 'werewolf' | 'villager' | 'lovers' | null
+  /** Con Quạ đánh dấu — public khi vote (+2 phiếu sẵn). */
+  ravenMarkedId: string | null
+  winner: Winner | null
 }
 
 export function resolveNight(
@@ -143,6 +148,11 @@ export function resolveNight(
 
   const guardAction = actions.find((a) => a.actionType === 'guard_protect')
   if (guardAction?.targetId) protected_.add(guardAction.targetId)
+
+  // Doctor heal — same effect as guard (target survives bite), but no
+  // last-target restriction and cannot self-heal (enforced at action submit).
+  const doctorAction = actions.find((a) => a.actionType === 'doctor_heal')
+  if (doctorAction?.targetId) protected_.add(doctorAction.targetId)
 
   const wolfBite = actions.find((a) => a.actionType === 'wolf_bite')
   if (wolfBite?.targetId) bitten.add(wolfBite.targetId)
@@ -188,10 +198,14 @@ export function resolveNight(
 
   const winner = checkWinCondition(players, secrets, cupidAutoPair ?? room.cupidPair)
 
+  // Con Quạ: dấu +2 phiếu áp lên buổi vote hôm sau (public).
+  const ravenAction = actions.find((a) => a.actionType === 'raven_mark')
+
   return {
     deaths, deathIds, saved, deadHunterId, cupidAutoPair,
     updatedPlayers: players, updatedSecrets: secrets,
     lastGuardTarget: guardAction?.targetId ?? null,
+    ravenMarkedId: ravenAction?.targetId ?? null,
     winner,
   }
 }
@@ -206,7 +220,7 @@ export interface VoteResolution {
   chainedDeaths: string[]
   isTie: boolean
   deadHunterId: string | null
-  winner: 'werewolf' | 'villager' | 'lovers' | null
+  winner: Winner | null
 }
 
 export function resolveVotes(
@@ -214,10 +228,18 @@ export function resolveVotes(
   players: PlayerDoc[],
   secrets: Map<string, SecretDoc>,
   cupidPair: [string, string] | null,
+  ravenMarkedId: string | null = null,
 ): VoteResolution {
   const voteCounts: Record<string, number> = {}
-  for (const [, targetId] of votes) {
-    if (targetId) voteCounts[targetId] = (voteCounts[targetId] || 0) + 1
+  // Con Quạ: người bị đánh dấu vào buổi vote với 2 phiếu sẵn (public).
+  if (ravenMarkedId && players.find((p) => p.userId === ravenMarkedId)?.isAlive) {
+    voteCounts[ravenMarkedId] = 2
+  }
+  for (const [voterId, targetId] of votes) {
+    if (!targetId) continue
+    // Trưởng Làng: lá phiếu tính đôi.
+    const weight = secrets.get(voterId)?.role === 'chief' ? 2 : 1
+    voteCounts[targetId] = (voteCounts[targetId] || 0) + weight
   }
   let maxVotes = 0
   const candidates: string[] = []
@@ -245,7 +267,14 @@ export function resolveVotes(
     ? players.find((p) => p.userId === eliminatedId && secrets.get(p.userId)?.role === 'hunter')?.userId ?? null
     : null
 
-  const winner = checkWinCondition(players, secrets, cupidPair)
+  // Thằng Ngố: bị làng biểu quyết loại → thắng MỘT MÌNH, ván kết thúc ngay
+  // (ưu tiên trên mọi điều kiện thắng khác).
+  let winner: Winner | null
+  if (eliminatedId && secrets.get(eliminatedId)?.role === 'jester') {
+    winner = 'jester'
+  } else {
+    winner = checkWinCondition(players, secrets, cupidPair)
+  }
 
   return { voteCounts, eliminatedId, eliminatedName, chainedDeaths, isTie, deadHunterId, winner }
 }
@@ -256,7 +285,7 @@ export function resolveVotes(
 export interface HunterShotResult {
   targetName: string
   chainedDeaths: string[]
-  winner: 'werewolf' | 'villager' | 'lovers' | null
+  winner: Winner | null
 }
 
 export function applyHunterShot(

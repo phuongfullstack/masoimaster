@@ -10,6 +10,9 @@
 
 export type Faction = 'wolf' | 'village' | 'neutral'
 
+/** Phe thắng cuộc. `jester`: Thằng Ngố thắng một mình khi bị làng xử. */
+export type Winner = 'werewolf' | 'villager' | 'lovers' | 'jester'
+
 export type Role =
   | 'werewolf'
   | 'alpha_wolf'
@@ -153,7 +156,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'village', teamVi: 'Dân', color: '#22c55e', glowKey: 'doctor',
     descVi: 'Mỗi đêm chữa 1 người, không được tự chữa.',
     promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
-    nightAction: 'doctor_heal', targets: 1, category: 'protective', implemented: false,
+    nightAction: 'doctor_heal', targets: 1, category: 'protective', implemented: true,
   },
   hunter: {
     key: 'hunter', emoji: '🏹', nameVi: 'Săn Thủ', nameEn: 'Hunter',
@@ -184,14 +187,14 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Mỗi đêm đánh dấu 1 người.',
     noteVi: 'Người bị đánh dấu bắt đầu buổi biểu quyết hôm sau với 2 phiếu sẵn.',
     promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
-    nightAction: 'raven_mark', targets: 1, category: 'special', implemented: false,
+    nightAction: 'raven_mark', targets: 1, category: 'special', implemented: true,
   },
   chief: {
     key: 'chief', emoji: '🏛️', nameVi: 'Trưởng Làng', nameEn: 'Village Chief',
     faction: 'village', teamVi: 'Dân', color: '#eab308', glowKey: 'chief',
     descVi: 'Bạn không hành động ban đêm.',
     noteVi: 'Lá phiếu của bạn tính thành 2 khi biểu quyết.',
-    nightAction: null, targets: 0, category: 'special', implemented: false,
+    nightAction: null, targets: 0, category: 'special', implemented: true,
   },
   elder: {
     key: 'elder', emoji: '👴', nameVi: 'Lão Làng', nameEn: 'Elder',
@@ -213,7 +216,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     faction: 'neutral', teamVi: 'Độc lập', color: '#f472b6', glowKey: 'jester',
     descVi: 'Bạn không hành động ban đêm.',
     noteVi: 'Bạn thắng một mình nếu bị làng biểu quyết loại.',
-    nightAction: null, targets: 0, category: 'special', implemented: false,
+    nightAction: null, targets: 0, category: 'special', implemented: true,
   },
   villager: {
     key: 'villager', emoji: '👤', nameVi: 'Dân Thường', nameEn: 'Villager',

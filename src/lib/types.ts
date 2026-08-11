@@ -46,6 +46,8 @@ export interface RoomState {
   loverPartner: string | null
   timerEnd: number | null
   votes: Record<string, string>
+  /** Con Quạ đánh dấu — public khi vote (+2 phiếu sẵn). */
+  ravenMarkedId?: string | null
 }
 
 export interface NightActionResult {

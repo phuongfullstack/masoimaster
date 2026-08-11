@@ -89,6 +89,7 @@ async function startNightLadder(code: string, room: RoomDoc) {
       phase: 'night_resolve', phaseLabel: 'Đang giải quyết...',
       timerPhase: 'night_resolve', timerEnd: Date.now() + PHASE_DURATIONS.night_resolve,
       nightStep: 0, nightWake: null, bittenTarget: null, dayCount: nextDay,
+      ravenMarkedId: null, // dấu quạ chỉ sống 1 buổi vote
     } as Record<string, unknown>)
   } else {
     const step0 = seq[0]!
@@ -98,6 +99,7 @@ async function startNightLadder(code: string, room: RoomDoc) {
       timerPhase: 'night', timerEnd: stepEnd,
       nightStep: 0, nightWake: { actionType: step0.action, label: step0.label, duration: step0.duration / 1000 },
       bittenTarget: null, dayCount: nextDay,
+      ravenMarkedId: null, // dấu quạ chỉ sống 1 buổi vote
     } as Record<string, unknown>)
   }
   await batch.commit()
@@ -190,6 +192,7 @@ async function runNightResolution(code: string, room: RoomDoc) {
       dayResult: { deaths: res.deaths },
       lastGuardTarget: res.lastGuardTarget, dayCount,
       nightWake: null,
+      ravenMarkedId: res.ravenMarkedId, // public: dấu quạ cho buổi vote hôm nay
     } as Record<string, unknown>)
   } else {
     batch.update(roomDoc(code), {
@@ -198,6 +201,7 @@ async function runNightResolution(code: string, room: RoomDoc) {
       dayResult: { deaths: res.deaths },
       lastGuardTarget: res.lastGuardTarget, dayCount,
       nightWake: null,
+      ravenMarkedId: res.ravenMarkedId, // public: dấu quạ cho buổi vote hôm nay
     } as Record<string, unknown>)
   }
   await batch.commit()
@@ -222,7 +226,7 @@ async function runVoteResolution(code: string, room: RoomDoc) {
   const votes = await loadVotes(code)
   const players = await loadPlayers(code)
   const secrets = await loadSecrets(code)
-  const res = resolveVotes(votes, players, secrets, room.cupidPair)
+  const res = resolveVotes(votes, players, secrets, room.cupidPair, room.ravenMarkedId ?? null)
 
   const batch = roomDoc(code).firestore.batch()
   // Write mutated player/secret state.
