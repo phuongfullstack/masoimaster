@@ -51,6 +51,11 @@ export function buildNightSequence(
   if (has(['doctor'])) seq.push({ roles: ['doctor'], action: 'doctor_heal', duration: PHASE_DURATIONS.night_step_guard, label: NIGHT_LABEL })
   if (has(WOLF_ROLES)) seq.push({ roles: WOLF_ROLES, action: 'wolf_bite', duration: PHASE_DURATIONS.night_step_wolves, label: NIGHT_LABEL })
   if (has(['wolf_seer'])) seq.push({ roles: ['wolf_seer'], action: 'wolf_seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
+  // Sói Nguyền chỉ có bước riêng khi CHƯA dùng lời nguyền (1 lần/ván).
+  const cursedWolfReady = alive.some(
+    (p) => secrets.get(p.userId)?.role === 'cursed_wolf' && !secrets.get(p.userId)?.curseUsed,
+  )
+  if (cursedWolfReady) seq.push({ roles: ['cursed_wolf'], action: 'curse', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['seer'])) seq.push({ roles: ['seer'], action: 'seer_check', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
   if (has(['witch'])) seq.push({ roles: ['witch'], action: 'witch_save', duration: PHASE_DURATIONS.night_step_witch, label: NIGHT_LABEL })
   if (has(['detective'])) seq.push({ roles: ['detective'], action: 'detective_compare', duration: PHASE_DURATIONS.night_step_seer, label: NIGHT_LABEL })
@@ -179,6 +184,14 @@ export function resolveNight(
   const poisoned = new Set<string>()
   let saved = false
 
+  // Reset báo cáo rạng sáng: mọi người còn sống mặc định 'none';
+  // các hiệu ứng bên dưới ghi đè. Client chỉ đọc fx của CHÍNH MÌNH
+  // (secrets owner-only) — nguồn hiệu ứng không bao giờ được nêu.
+  for (const p of players) {
+    const s = secrets.get(p.userId)
+    if (s && p.isAlive) s.lastNightFx = 'none'
+  }
+
   const guardAction = actions.find((a) => a.actionType === 'guard_protect')
   if (guardAction?.targetId) protected_.add(guardAction.targetId)
 
@@ -190,8 +203,49 @@ export function resolveNight(
   const wolfBite = actions.find((a) => a.actionType === 'wolf_bite')
   if (wolfBite?.targetId) bitten.add(wolfBite.targetId)
 
+  // Sói Nguyền: biến 1 người không-sói thành sói THAY VÌ giết.
+  // Không bị guard/doctor chặn; cắn cùng đêm vào người này bị vô hiệu
+  // (họ đã thuộc bầy). Đánh dấu curseUsed cho sói nguyền tại đây.
+  const curseAction = actions.find((a) => a.actionType === 'curse')
+  if (curseAction?.targetId) {
+    const ts = secrets.get(curseAction.targetId)
+    const tp = players.find((p) => p.userId === curseAction.targetId)
+    if (ts && tp?.isAlive && !WOLF_ROLES.includes(ts.role)) {
+      ts.originalRole = ts.role
+      ts.role = 'werewolf'
+      ts.lastNightFx = 'cursed'
+      const actorSecret = secrets.get(curseAction.actorId)
+      if (actorSecret) actorSecret.curseUsed = true
+      bitten.delete(curseAction.targetId)
+      // Cập nhật packmates cho CẢ bầy (kể cả thành viên mới).
+      const wolves = players.filter((p) => WOLF_ROLES.includes(secrets.get(p.userId)?.role as Role))
+      for (const w of wolves) {
+        const ws = secrets.get(w.userId)
+        if (ws) ws.packmates = wolves.filter((o) => o.userId !== w.userId).map((o) => o.username)
+      }
+    }
+  }
+
+  // Lão Làng: chịu được 1 lần cắn (không cần ai che). Lá chắn vỡ tại đây.
+  for (const pid of [...bitten]) {
+    const s = secrets.get(pid)
+    if (s?.role === 'elder' && !s.elderShieldUsed && !protected_.has(pid)) {
+      s.elderShieldUsed = true
+      s.lastNightFx = 'elder'
+      bitten.delete(pid)
+    }
+  }
+
   const witchSave = actions.find((a) => a.actionType === 'witch_save')
-  if (witchSave && bitten.size > 0) { saved = true; bitten.clear() }
+  if (witchSave && bitten.size > 0) {
+    saved = true
+    // Người bị cắn nhưng được cứu → báo riêng 'saved' (không nêu nguồn).
+    for (const pid of bitten) {
+      const s = secrets.get(pid)
+      if (s) s.lastNightFx = 'saved'
+    }
+    bitten.clear()
+  }
 
   const witchPoison = actions.find((a) => a.actionType === 'witch_poison')
   if (witchPoison?.targetId) poisoned.add(witchPoison.targetId)
@@ -204,8 +258,21 @@ export function resolveNight(
 
   // Deaths
   const deathIds: string[] = []
-  for (const pid of bitten) if (!protected_.has(pid)) deathIds.push(pid)
-  for (const pid of poisoned) deathIds.push(pid)
+  for (const pid of bitten) {
+    if (protected_.has(pid)) {
+      // Cắn hụt vì được che — báo riêng cho nạn nhân.
+      const s = secrets.get(pid)
+      if (s) s.lastNightFx = 'saved'
+    } else {
+      deathIds.push(pid)
+    }
+  }
+  for (const pid of poisoned) {
+    deathIds.push(pid)
+    // Nạn nhân biết riêng mình trúng độc (công bố chung không nêu nguyên nhân).
+    const s = secrets.get(pid)
+    if (s) s.lastNightFx = 'poison'
+  }
 
   const deaths: string[] = []
   for (const uid of deathIds) {

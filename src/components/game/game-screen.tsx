@@ -583,6 +583,37 @@ function NightScreen() {
       )
     }
 
+    // ---- Cursed Wolf Action ----
+    if (myRole === 'cursed_wolf' && nightWakeAction === 'curse') {
+      return (
+        <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+          <NightTurnHeader prompt="Nguyền 1 người — biến họ thành sói (1 lần cả ván)" />
+          <motion.div variants={staggerItem} className="grid grid-cols-2 gap-2">
+            {alivePlayers
+              .filter(p => !isWolfRole(p.role))
+              .map(p => (
+                <PlayerTarget
+                  key={p.userId}
+                  player={p}
+                  isSelected={selectedTarget === p.userId}
+                  accentColor={NIGHT_ACCENT}
+                  onClick={() => handleNightAction('curse', p.userId)}
+                />
+              ))}
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <GameButton
+              variant="secondary"
+              onClick={() => handleNightAction('curse', null)}
+              className="w-full"
+            >
+              Đêm nay không nguyền (giữ lại dùng sau)
+            </GameButton>
+          </motion.div>
+        </motion.div>
+      )
+    }
+
     // ---- Wolf Seer Action ----
     if (myRole === 'wolf_seer' && nightWakeAction === 'wolf_seer_check') {
       return (
@@ -872,6 +903,24 @@ function DayScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Báo cáo rạng sáng CÁ NHÂN — chỉ mình bạn thấy, không nêu nguồn */}
+        {room.myNightFx && room.myNightFx !== 'none' && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={springBouncy}>
+            <div
+              className="rounded-2xl border px-4 py-3 text-sm font-bold text-white/90"
+              style={{ background: 'linear-gradient(155deg,#16141F,#211E30)', borderColor: '#35325180' }}
+            >
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/40 mb-1">
+                Chỉ mình bạn thấy
+              </p>
+              {room.myNightFx === 'saved' && '🛡️ Đêm qua bạn bị tấn công — nhưng đã được che chắn. Bạn không biết ai đã cứu mình.'}
+              {room.myNightFx === 'elder' && '👴 Bạn đã chịu một nhát cắn. Lá chắn của bạn đã vỡ — lần sau sẽ không còn.'}
+              {room.myNightFx === 'cursed' && '🌑 BẠN ĐÃ BỊ NGUYỀN. Từ đêm nay bạn thuộc bầy sói — xem lại thẻ 🎴 để nhận bầy.'}
+              {room.myNightFx === 'poison' && '☠️ Bạn đã trúng độc trong đêm.'}
+            </div>
+          </motion.div>
+        )}
 
         {/* ANTI-REVEAL: hiện khi không ai chết BẤT KỂ lý do — sự có mặt của
             hộp này không được tiết lộ chuyện Phù Thủy đã cứu hay sói cắn hụt */}

@@ -116,7 +116,7 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     descVi: 'Một lần mỗi ván, biến 1 dân thường thành sói thay vì cắn chết họ.',
     noteVi: 'Dùng xong lời nguyền, bạn cắn như sói thường.',
     promptVi: 'Chọn 1 người:', confirmVi: 'Xác nhận',
-    nightAction: 'curse', targets: 1, oncePerGame: true, seesPack: true, category: 'special', implemented: false,
+    nightAction: 'curse', targets: 1, oncePerGame: true, seesPack: true, category: 'special', implemented: true,
   },
   white_werewolf: {
     key: 'white_werewolf', emoji: '🐺', nameVi: 'Sói Trắng', nameEn: 'White Werewolf',
@@ -200,8 +200,8 @@ export const ROLE_REGISTRY: Record<Role, RoleDef> = {
     key: 'elder', emoji: '👴', nameVi: 'Lão Làng', nameEn: 'Elder',
     faction: 'village', teamVi: 'Dân', color: '#94a3b8', glowKey: 'elder',
     descVi: 'Bạn chịu được 1 lần bị sói cắn.',
-    noteVi: 'Nếu bị dân xử, làng mất thêm 1 vai trò đặc biệt.',
-    nightAction: null, targets: 0, category: 'special', implemented: false,
+    noteVi: 'Chịu được nhát cắn đầu tiên của bầy sói.',
+    nightAction: null, targets: 0, category: 'special', implemented: true,
   },
   cupid: {
     key: 'cupid', emoji: '💘', nameVi: 'Thần Tình Yêu', nameEn: 'Cupid',

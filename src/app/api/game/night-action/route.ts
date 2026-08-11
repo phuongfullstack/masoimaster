@@ -19,6 +19,7 @@ const STEP_ALLOWS: Partial<Record<ActionType, ActionType[]>> = {
   witch_save: ['witch_save', 'witch_poison'], // bước phù thủy nộp được cả 2
   detective_compare: ['detective_compare'],
   raven_mark: ['raven_mark'],
+  curse: ['curse'],
 }
 
 export async function POST(req: Request) {
@@ -122,6 +123,26 @@ export async function POST(req: Request) {
     case 'raven_mark': {
       if (role !== 'raven') return error('Chỉ Con Quạ mới đánh dấu được.')
       const existing = await col.where('actionType', '==', 'raven_mark').where('actorId', '==', uid).get()
+      const batch = col.firestore.batch()
+      existing.docs.forEach((d) => batch.delete(d.ref))
+      if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)
+      await batch.commit()
+      break
+    }
+    case 'curse': {
+      if (role !== 'cursed_wolf') return error('Chỉ Sói Nguyền mới nguyền được.')
+      if (mySecret.curseUsed) return error('Lời nguyền đã dùng rồi.')
+      if (targetId) {
+        const players = await loadPlayers(upper)
+        const secrets = await loadSecrets(upper)
+        const target = players.find((p) => p.userId === targetId)
+        if (!target?.isAlive) return error('Mục tiêu không hợp lệ.')
+        if (WOLF_ROLES.includes(secrets.get(targetId)?.role as never)) {
+          return error('Không thể nguyền sói.')
+        }
+      }
+      // Upsert — được đổi ý trong lượt; curseUsed chỉ chốt lúc resolve đêm.
+      const existing = await col.where('actionType', '==', 'curse').where('actorId', '==', uid).get()
       const batch = col.firestore.batch()
       existing.docs.forEach((d) => batch.delete(d.ref))
       if (targetId) batch.set(col.doc(), { actorId: uid, actionType, targetId } satisfies NightActionDoc)

@@ -50,6 +50,8 @@ export interface RoomState {
   ravenMarkedId?: string | null
   /** Pack board: pick cắn hiện tại của từng sói (chỉ sói nhận được data). */
   wolfPicks?: Record<string, string>
+  /** Báo cáo rạng sáng RIÊNG TƯ của chính mình (không bao giờ nêu nguồn). */
+  myNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
 }
 
 export interface NightActionResult {

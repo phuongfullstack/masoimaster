@@ -10,6 +10,7 @@ import {
   collection, doc, onSnapshot, query, orderBy, type Unsubscribe,
 } from 'firebase/firestore'
 import { fsDb } from '@/lib/firebase'
+import { isWolfRole } from '@/lib/types'
 import type {
   RoleConfig, RoomState, PlayerInfo, Phase, ActionType, MsgType,
 } from '@/lib/types'
@@ -88,7 +89,10 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
   const upper = code.toUpperCase()
   let latestRoom: RoomDocClient | null = null
   let latestPlayers: PlayerInfo[] = []
-  let latestSecret: { role: string; linkedPartner: string | null; packmates?: string[] } | null = null
+  let latestSecret: {
+    role: string; linkedPartner: string | null; packmates?: string[]
+    lastNightFx?: 'none' | 'saved' | 'cursed' | 'elder' | 'poison'
+  } | null = null
   let latestVotes: Record<string, string> = {}
   let latestWolfPicks: Record<string, string> = {}
   let messagesCleared = false
@@ -124,6 +128,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
       votes: latestRoom.phase === 'voting' ? latestVotes : {},
       ravenMarkedId: latestRoom.ravenMarkedId ?? null,
       wolfPicks: latestWolfPicks,
+      myNightFx: latestSecret.lastNightFx ?? 'none',
     } as RoomState
 
     cb.onRoom(roomState)
@@ -148,6 +153,7 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     latestSecret = snap.exists()
       ? (snap.data() as { role: string; linkedPartner: string | null })
       : { role: '', linkedPartner: null }
+    ensureWolfPicksSub() // role là sói (kể cả vừa bị nguyền) → bật pack board
     emit()
   }, (err) => cb.onError(err))
 
@@ -159,14 +165,20 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     emit()
   }, () => { /* permission-denied when not voting — ignore */ })
 
-  // Wolf picks — pack board realtime; rules chỉ cho sói đọc,
-  // non-wolf bị permission-denied → bỏ qua êm.
-  const unsubWolfPicks = onSnapshot(collection(fsDb, 'rooms', upper, 'wolfPicks'), (snap) => {
-    const v: Record<string, string> = {}
-    snap.docs.forEach((d) => { v[d.id] = (d.data() as { targetId: string }).targetId })
-    latestWolfPicks = v
-    emit()
-  }, () => { /* permission-denied for non-wolves — ignore */ })
+  // Wolf picks — pack board realtime; rules chỉ cho sói đọc. Listener bị
+  // hủy vĩnh viễn khi permission-denied, nên chỉ subscribe KHI role là sói
+  // (lazy) — người bị Sói Nguyền biến thành sói giữa ván cũng nhận được
+  // pack board vì secret listener sẽ kích hoạt subscribe lúc role đổi.
+  let unsubWolfPicks: Unsubscribe | null = null
+  const ensureWolfPicksSub = () => {
+    if (unsubWolfPicks || !isWolfRole(latestSecret?.role)) return
+    unsubWolfPicks = onSnapshot(collection(fsDb, 'rooms', upper, 'wolfPicks'), (snap) => {
+      const v: Record<string, string> = {}
+      snap.docs.forEach((d) => { v[d.id] = (d.data() as { targetId: string }).targetId })
+      latestWolfPicks = v
+      emit()
+    }, () => { unsubWolfPicks = null /* permission-denied (race đổi role) — thử lại lần sau */ })
+  }
 
   // Messages (chat).
   const unsubMessages = onSnapshot(
@@ -182,5 +194,5 @@ export function subscribeRoom(code: string, uid: string, cb: SubscribeCallbacks)
     () => { /* ignore permission errors */ },
   )
 
-  return () => { unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes(); unsubWolfPicks(); unsubMessages() }
+  return () => { unsubRoom(); unsubPlayers(); unsubSecret(); unsubVotes(); unsubWolfPicks?.(); unsubMessages() }
 }
