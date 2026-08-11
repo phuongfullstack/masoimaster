@@ -10,6 +10,7 @@ import { HomeScreen } from '@/components/game/home-screen'
 import { LobbyScreen } from '@/components/game/lobby-screen'
 import { GameScreen } from '@/components/game/game-screen'
 import { CharacterIcon } from '@/components/characters/CharacterIcon'
+import { DisconnectOverlay } from '@/components/game/ui/DisconnectOverlay'
 
 /** Splash shown while Firebase auth state is resolving. */
 function AuthSplash() {
@@ -98,6 +99,7 @@ function MaSoiApp() {
   return (
     <SocketProvider>
       <GameRouter />
+      <DisconnectOverlay />
     </SocketProvider>
   )
 }
