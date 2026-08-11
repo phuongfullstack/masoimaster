@@ -38,7 +38,7 @@ export interface BalanceReport {
 }
 
 // ---- Role Registry — derive từ nguồn sự thật duy nhất (roles.ts, 18 vai) ----
-import { ALL_ROLES } from '@/lib/roles'
+import { ALL_ROLES, suggestConfig } from '@/lib/roles'
 
 export const ROLES: Role[] = ALL_ROLES.map((r) => ({
   id: r.key,
@@ -69,10 +69,13 @@ export const PLAYER_COUNTS = [6, 7, 8, 9, 10, 12, 15, 18];
 // ---- Balance Analyzer ----
 export function analyzeBalance(counts: Record<string, number>): BalanceReport {
   const totalPlayers = Object.values(counts).reduce((a, b) => a + b, 0);
-  const wolfCount = (counts['werewolf'] || 0) + (counts['alpha_wolf'] || 0);
+  // Đếm ĐỦ mọi vai phe sói từ registry (trước đây sót white_werewolf,
+  // wolf_seer, cursed_wolf → tỷ lệ sói tính sai, gợi ý lệch).
+  const wolfCount = WOLF_ROLES.reduce((sum, r) => sum + (counts[r.id] || 0), 0);
   const wolfRatio = totalPlayers > 0 ? wolfCount / totalPlayers : 0;
 
-  const villagePowerIds = ['seer', 'witch', 'guard', 'hunter', 'elder', 'doctor'];
+  // Vai quyền năng phe dân = mọi vai làng trừ Dân Thường (derive từ registry).
+  const villagePowerIds = VILLAGE_ROLES.filter((r) => r.id !== 'villager').map((r) => r.id);
   const villagePowerCount = villagePowerIds.reduce((sum, id) => sum + (counts[id] || 0), 0);
   const villageCount = VILLAGE_ROLES.reduce((sum, r) => sum + (counts[r.id] || 0), 0);
   const villageRatio = totalPlayers > 0 ? villageCount / totalPlayers : 0;
@@ -190,20 +193,9 @@ export function analyzeBalance(counts: Record<string, number>): BalanceReport {
 }
 
 // ---- Helper: get counts for a preset ----
+// Giờ derive từ suggestConfig (bảng chia vai chuẩn duy nhất trong roles.ts).
 export function getPresetCounts(playerCount: number): Record<string, number> {
-  const preset = PRESETS[playerCount];
-  if (!preset) {
-    // Auto-generate reasonable defaults
-    const wolfCount = Math.max(2, Math.floor(playerCount / 3));
-    const result: Record<string, number> = { werewolf: wolfCount, seer: 1, witch: 1, villager: 0 };
-    let assigned = wolfCount + 2; // wolves + seer + witch
-    if (playerCount >= 7 && assigned < playerCount) { result.guard = 1; assigned++; }
-    if (playerCount >= 8 && assigned < playerCount) { result.hunter = 1; assigned++; }
-    if (playerCount >= 10 && assigned < playerCount) { result.cupid = 1; assigned++; }
-    if (playerCount >= 12 && assigned < playerCount) { result.elder = 1; assigned++; }
-    if (playerCount >= 15 && assigned < playerCount) { result.doctor = 1; assigned++; }
-    result.villager = Math.max(0, playerCount - assigned);
-    return result;
-  }
-  return { ...preset.counts };
+  const cfg = suggestConfig(playerCount);
+  const special = Object.values(cfg).reduce((a, b) => a + (b ?? 0), 0);
+  return { ...cfg, villager: Math.max(0, playerCount - special) } as Record<string, number>;
 }

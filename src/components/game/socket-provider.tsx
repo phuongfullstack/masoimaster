@@ -192,6 +192,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         run(gameApi.hostNext(token, code)); break
       case 'host-action':
         run(gameApi.hostAction(token, code, data?.action, data?.value, data?.targetUid)); break
+      case 'update-config':
+        run(gameApi.updateConfig(token, code, data?.config ?? {})); break
       case 'night-action':
         run(gameApi.nightAction(token, code, data?.actionType as ActionType, data?.targetId ?? null, data?.targetId2 ?? null)); break
       case 'cupid-link':

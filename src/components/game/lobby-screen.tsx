@@ -8,8 +8,10 @@ import { GameCard, GameCardHeader, GameCardTitle } from '@/components/ui/game/Ga
 import { GameBadge } from '@/components/ui/game/GameBadge'
 import { GameAvatar } from '@/components/ui/game/GameAvatar'
 import { RoleCrest } from '@/components/characters/RoleCrest'
-import { ROLE_INFO, sumSpecial } from '@/lib/types'
-import { Copy, CheckCircle2, DoorOpen, X, Check } from 'lucide-react'
+import { ROLE_INFO, sumSpecial, suggestConfig } from '@/lib/types'
+import type { RoleConfig } from '@/lib/types'
+import { analyzeBalance } from '@/lib/werewolf-config'
+import { Copy, CheckCircle2, DoorOpen, X, Check, Scale, ChevronDown, ChevronUp } from 'lucide-react'
 
 export function LobbyScreen() {
   const { emit } = useSocket()
@@ -18,6 +20,7 @@ export function LobbyScreen() {
   const setRoom = useGameStore(s => s.setRoom)
   const setScreen = useGameStore(s => s.setScreen)
   const [copied, setCopied] = useState(false)
+  const [editConfig, setEditConfig] = useState(false)
 
   if (!room) return null
   const isHost = room.hostId === userId
@@ -96,7 +99,7 @@ export function LobbyScreen() {
           </div>
         </GameCard>
 
-        {/* Config Summary */}
+        {/* Config Summary + chỉnh vai theo số người thật (design S04) */}
         <GameCard className="animate-slide-up">
           <div className="text-xs font-bold text-[rgb(var(--ms-text-muted))] mb-2 uppercase tracking-wider">
             Bộ bài: {totalSpecial} vai đặc biệt + {Math.max(0, room.players.length - totalSpecial)} Dân
@@ -118,6 +121,69 @@ export function LobbyScreen() {
               {Math.max(0, room.players.length - totalSpecial)}
             </GameBadge>
           </div>
+
+          {/* Cảnh báo cân bằng — cho MỌI NGƯỜI thấy để cùng bàn */}
+          {(() => {
+            const report = analyzeBalance({
+              ...(room.config as Record<string, number>),
+              villager: Math.max(0, room.players.length - totalSpecial),
+            })
+            const topWarning = report.warnings[0]
+            return (
+              <p className={`text-xs mt-3 font-bold ${report.ratingColor}`}>
+                <Scale className="w-3.5 h-3.5 inline mr-1" />
+                {report.ratingLabel}
+                {topWarning && <span className="font-normal text-[rgb(var(--ms-text-muted))]"> — {topWarning.message}</span>}
+              </p>
+            )
+          })()}
+
+          {/* Host: gợi ý chuẩn theo số người + chỉnh tay */}
+          {isHost && (
+            <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-3">
+              <div className="flex gap-2">
+                <GameButton
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => emit('update-config', { code: room.code, config: suggestConfig(room.players.length) })}
+                  className="flex-1"
+                >
+                  <Scale className="w-4 h-4" /> Gợi ý chuẩn cho {room.players.length} người
+                </GameButton>
+                <GameButton size="sm" variant="ghost" onClick={() => setEditConfig(v => !v)}>
+                  {editConfig ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  Chỉnh tay
+                </GameButton>
+              </div>
+
+              {editConfig && (
+                <div className="rounded-2xl bg-[rgb(var(--ms-bg-primary))]/60 p-3 space-y-2">
+                  {Object.entries(ROLE_INFO)
+                    .filter(([k, info]) => k !== 'villager' && info.implemented)
+                    .map(([key, info]) => {
+                      const count = ((room.config as any)[key] ?? 0) as number
+                      const change = (delta: number) => {
+                        const next: Partial<RoleConfig> = { ...(room.config as Partial<RoleConfig>) }
+                        ;(next as any)[key] = Math.max(0, count + delta)
+                        emit('update-config', { code: room.code, config: next })
+                      }
+                      return (
+                        <div key={key} className="flex items-center justify-between">
+                          <span className="flex items-center gap-2 text-sm font-bold text-[rgb(var(--ms-text-secondary))]">
+                            <RoleCrest role={key} size={16} tinted /> {info.name}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => change(-1)} className="w-7 h-7 rounded-lg bg-[rgb(var(--ms-surface))] text-[rgb(var(--ms-text-muted))] font-bold">−</button>
+                            <span className="w-5 text-center text-white font-bold font-mono text-sm">{count}</span>
+                            <button onClick={() => change(1)} className="w-7 h-7 rounded-lg bg-[rgb(var(--ms-surface))] text-[rgb(var(--ms-text-muted))] font-bold">+</button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
+            </div>
+          )}
         </GameCard>
 
         {/* Player List */}

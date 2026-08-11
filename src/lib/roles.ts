@@ -287,6 +287,42 @@ export function sumTotal(config: RoleConfig): number {
   return ALL_ROLES.reduce((sum, r) => sum + countOf(config, r.key), 0)
 }
 
+// ------------------------------------------------------------
+// Gợi ý chia vai CHUẨN theo số người (nguồn sự thật duy nhất —
+// dùng cả ở home sheet, lobby và analyzer).
+// Nguyên tắc: tỷ lệ sói 25–33%, vai quyền năng tăng dần theo mốc,
+// luôn chừa ≥2 Dân Thường để sói còn chỗ nguỵ trang.
+// Vai trung lập/khó cân (jester, elder, white_werewolf) không nằm
+// trong gợi ý — host tự thêm nếu nhóm muốn.
+// ------------------------------------------------------------
+const SUGGESTED_BY_COUNT: Record<number, RoleConfig> = {
+  4:  { werewolf: 1, seer: 1 },
+  5:  { werewolf: 1, seer: 1, witch: 1 },
+  6:  { werewolf: 2, seer: 1, witch: 1 },
+  7:  { werewolf: 2, seer: 1, witch: 1, guard: 1 },
+  8:  { werewolf: 2, seer: 1, witch: 1, guard: 1, hunter: 1 },
+  9:  { werewolf: 3, seer: 1, witch: 1, guard: 1 },
+  10: { werewolf: 3, seer: 1, witch: 1, guard: 1, hunter: 1 },
+  11: { werewolf: 3, seer: 1, witch: 1, guard: 1, hunter: 1, cupid: 1 },
+  12: { werewolf: 3, wolf_seer: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1 },
+  13: { werewolf: 3, wolf_seer: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1, raven: 1 },
+  14: { werewolf: 3, wolf_seer: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1, raven: 1, medium: 1 },
+  15: { werewolf: 3, wolf_seer: 1, cursed_wolf: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1, raven: 1 },
+  16: { werewolf: 3, wolf_seer: 1, cursed_wolf: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1, raven: 1, doctor: 1 },
+  17: { werewolf: 3, wolf_seer: 1, cursed_wolf: 1, seer: 1, witch: 1, guard: 1, hunter: 1, detective: 1, raven: 1, doctor: 1, chief: 1 },
+  18: { werewolf: 3, alpha_wolf: 1, wolf_seer: 1, cursed_wolf: 1, seer: 1, witch: 1, guard: 1, hunter: 1, doctor: 1, detective: 1, raven: 1, medium: 1, chief: 1 },
+}
+
+/**
+ * Gợi ý cấu hình cân bằng cho `playerCount` người.
+ * villager KHÔNG nằm trong kết quả — server tự điền phần còn lại lúc start.
+ * <4 người trả về gợi ý của mốc 4; >18 mở rộng từ mốc 18 (thêm dân).
+ */
+export function suggestConfig(playerCount: number): RoleConfig {
+  const n = Math.max(4, Math.min(18, Math.floor(playerCount)))
+  return { ...SUGGESTED_BY_COUNT[n]! }
+}
+
 /**
  * Làm sạch config từ client: chỉ giữ vai đã implement, ép số nguyên ≥ 0.
  * Chống gọi API trực tiếp với vai chưa có logic server.

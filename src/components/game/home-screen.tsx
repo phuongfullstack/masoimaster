@@ -11,7 +11,7 @@ import { GameBadge } from '@/components/ui/game/GameBadge'
 import { CharacterIcon } from '@/components/characters/CharacterIcon'
 import { RoleCrest } from '@/components/characters/RoleCrest'
 import { StatsHistory } from '@/components/game/stats-history'
-import { DEFAULT_CONFIG, ROLE_INFO, sumSpecial } from '@/lib/types'
+import { DEFAULT_CONFIG, ROLE_INFO, sumSpecial, suggestConfig } from '@/lib/types'
 import type { RoleConfig } from '@/lib/types'
 import { LogOut, Users, Plus, Moon, ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -197,6 +197,22 @@ export function HomeScreen() {
             <div className="rounded-2xl bg-[rgb(var(--ms-bg-primary))]/60 p-4 space-y-3 mb-4">
               <div className="text-xs text-[rgb(var(--ms-text-muted))]">
                 Bộ bài: {totalSpecial} vai đặc biệt + Dân (cần ≥ {minPlayersNeeded} người)
+              </div>
+              {/* Gợi ý chia vai chuẩn theo số người dự kiến */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-bold text-[rgb(var(--ms-text-secondary))]">⚖️ Gợi ý:</span>
+                {[6, 8, 10, 12, 15].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      const zeroed = Object.fromEntries(Object.keys(DEFAULT_CONFIG).map((k) => [k, 0]))
+                      setConfig({ ...zeroed, ...suggestConfig(n) } as RoleConfig)
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[rgb(var(--ms-surface))] text-xs font-bold text-[rgb(var(--ms-moon))] hover:brightness-125"
+                  >
+                    {n} người
+                  </button>
+                ))}
               </div>
               {configWarning && (
                 <p className="text-xs text-amber-300">

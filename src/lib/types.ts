@@ -10,6 +10,7 @@ export type { Role, ActionType, RoleConfig, Faction, RoleDef } from '@/lib/roles
 export {
   ROLE_REGISTRY, ALL_ROLES, DEFAULT_CONFIG,
   WOLF_ROLE_KEYS, isWolfRole, NIGHT_ORDER, sumSpecial, sumTotal, countOf,
+  suggestConfig,
 } from '@/lib/roles'
 
 export type Phase = 'lobby' | 'role_reveal' | 'night' | 'night_resolve' | 'day' | 'voting' | 'vote_result' | 'game_over'

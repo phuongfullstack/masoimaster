@@ -58,6 +58,8 @@ export const gameApi = {
     post('/api/game/message', idToken, { code, content, msgType }),
   hostAction: (idToken: string, code: string, action: string, value?: string, targetUid?: string) =>
     post('/api/game/host-action', idToken, { code, action, value, targetUid }),
+  updateConfig: (idToken: string, code: string, config: Partial<RoleConfig>) =>
+    post('/api/game/update-config', idToken, { code, config }),
 }
 
 // ============================================================
