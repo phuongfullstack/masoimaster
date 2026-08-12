@@ -60,9 +60,28 @@ function friendlyError(code: string | undefined, fallback: string): string {
 
 type Tab = 'email' | 'link' | 'phone'
 
+/**
+ * Bật/tắt từng phương thức đăng nhập. Google luôn bật (nút riêng phía trên).
+ * UI tự co theo: còn 1 phương thức thì bỏ hàng tab, còn 0 thì bỏ luôn divider
+ * "hoặc" và chỉ hiện nút Google.
+ */
+const ENABLED_TABS: Record<Tab, boolean> = {
+  email: true,
+  link: false,
+  phone: false,
+}
+
+const ALL_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
+  { id: 'link', label: 'Link Email', icon: <Link2 className="w-4 h-4" /> },
+  { id: 'phone', label: 'Số ĐT', icon: <Phone className="w-4 h-4" /> },
+]
+
+const TABS = ALL_TABS.filter(t => ENABLED_TABS[t.id])
+
 export function LoginScreen() {
   const auth = useAuth()
-  const [tab, setTab] = useState<Tab>('email')
+  const [tab, setTab] = useState<Tab>(TABS[0]?.id ?? 'email')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
@@ -80,12 +99,6 @@ export function LoginScreen() {
       setBusy(false)
     }
   }
-
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
-    { id: 'link', label: 'Link Email', icon: <Link2 className="w-4 h-4" /> },
-    { id: 'phone', label: 'Số ĐT', icon: <Phone className="w-4 h-4" /> },
-  ]
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-game-primary p-4 font-game relative overflow-hidden">
@@ -115,23 +128,28 @@ export function LoginScreen() {
             Đăng nhập để bắt đầu chơi
           </p>
 
-          {/* Tabs */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[rgb(var(--ms-bg-primary))]/60 mb-5">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => { setTab(t.id); setError(''); setInfo('') }}
-                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  tab === t.id
-                    ? 'bg-[rgb(var(--ms-moon))] text-[rgb(var(--ms-on-moon))] shadow-game-blue'
-                    : 'text-[rgb(var(--ms-text-secondary))] hover:text-white'
-                }`}
-              >
-                {t.icon}
-                <span className="hidden xs:inline sm:inline">{t.label}</span>
-              </button>
-            ))}
-          </div>
+          {/* Tabs — chỉ hiện khi có từ 2 phương thức trở lên */}
+          {TABS.length > 1 && (
+            <div
+              className="grid gap-1.5 p-1 rounded-2xl bg-[rgb(var(--ms-bg-primary))]/60 mb-5"
+              style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}
+            >
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => { setTab(t.id); setError(''); setInfo('') }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    tab === t.id
+                      ? 'bg-[rgb(var(--ms-moon))] text-[rgb(var(--ms-on-moon))] shadow-game-blue'
+                      : 'text-[rgb(var(--ms-text-secondary))] hover:text-white'
+                  }`}
+                >
+                  {t.icon}
+                  <span className="hidden xs:inline sm:inline">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Google sign-in — available on every tab */}
           <GoogleButton
@@ -140,16 +158,18 @@ export function LoginScreen() {
             auth={auth}
           />
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-white/[0.08]" />
-            <span className="text-xs text-[rgb(var(--ms-text-muted))] font-bold uppercase">hoặc</span>
-            <div className="flex-1 h-px bg-white/[0.08]" />
-          </div>
+          {/* Divider — bỏ hẳn nếu Google là phương thức duy nhất */}
+          {TABS.length > 0 && (
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 h-px bg-white/[0.08]" />
+              <span className="text-xs text-[rgb(var(--ms-text-muted))] font-bold uppercase">hoặc</span>
+              <div className="flex-1 h-px bg-white/[0.08]" />
+            </div>
+          )}
 
-          {tab === 'email' && <EmailTab busy={busy} error={error} run={run} auth={auth} />}
-          {tab === 'link' && <LinkTab busy={busy} error={error} info={info} run={run} auth={auth} />}
-          {tab === 'phone' && <PhoneTab busy={busy} error={error} run={run} auth={auth} />}
+          {ENABLED_TABS.email && tab === 'email' && <EmailTab busy={busy} error={error} run={run} auth={auth} />}
+          {ENABLED_TABS.link && tab === 'link' && <LinkTab busy={busy} error={error} info={info} run={run} auth={auth} />}
+          {ENABLED_TABS.phone && tab === 'phone' && <PhoneTab busy={busy} error={error} run={run} auth={auth} />}
         </div>
       </div>
     </div>
