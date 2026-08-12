@@ -1147,10 +1147,10 @@ function DayScreen() {
                 ) : (
                   <div className="flex gap-2 items-start">
                     <div className={cn(
-                      'w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white',
+                      'w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold',
                       m.senderId === userId
-                        ? 'bg-[rgb(var(--ms-info))]'
-                        : 'bg-[rgb(var(--ms-card-hover))]',
+                        ? 'bg-[rgb(var(--ms-moon))] text-[rgb(var(--ms-on-moon))]'
+                        : 'bg-[rgb(var(--ms-card-hover))] text-white',
                     )}>
                       {(m.senderName || '?')[0].toUpperCase()}
                     </div>
@@ -1158,7 +1158,7 @@ function DayScreen() {
                       <span className={cn(
                         'text-xs font-bold',
                         m.senderId === userId
-                          ? 'text-[rgb(var(--ms-info))]'
+                          ? 'text-[rgb(var(--ms-moon))]'
                           : 'text-[rgb(var(--ms-text-secondary))]',
                       )}>
                         {m.senderName}
@@ -1438,11 +1438,11 @@ function GameOverScreen() {
   const winMeta = gameWinner
     ? {
         werewolf: { accent: 'rgb(var(--ms-wolf))', char: 'werewolf', heading: 'Bầy Sói Thắng!', sub: 'Sói đã thống trị bản làng...' },
-        villager: { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
+        villager: { accent: 'rgb(var(--ms-brand))', char: 'villager', heading: 'Dân Làng Thắng!', sub: 'Dân làng đã diệt trừ toàn bộ sói!' },
         lovers: { accent: 'rgb(var(--ms-cupid))', char: 'cupid', heading: 'Cặp Đôi Thắng!', sub: 'Tình yêu đã chinh phục tất cả!' },
         jester: { accent: 'rgb(var(--ms-jester))', char: 'jester', heading: 'Thằng Ngố Thắng!', sub: 'Cả làng đã trúng kế — xử đúng người muốn bị xử!' },
       }[gameWinner]
-    : { accent: 'rgb(var(--ms-info))', char: 'villager', heading: 'Ván Đấu Kết Thúc', sub: 'Quản trò đã kết thúc ván đấu.' }
+    : { accent: 'rgb(var(--ms-moon))', char: 'villager', heading: 'Ván Đấu Kết Thúc', sub: 'Quản trò đã kết thúc ván đấu.' }
   const accent = winMeta.accent
 
   return (

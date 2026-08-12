@@ -98,7 +98,7 @@ export function HomeScreen() {
         <GameCard className="animate-slide-up">
           <GameCardHeader>
             <GameCardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-[rgb(var(--ms-info))]" /> Tham Gia Nhanh
+              <Plus className="w-5 h-5 text-[rgb(var(--ms-moon))]" /> Tham Gia Nhanh
             </GameCardTitle>
           </GameCardHeader>
           <div className="flex gap-3">
@@ -184,7 +184,7 @@ export function HomeScreen() {
           {/* Config Toggle */}
           <button
             onClick={() => setShowConfig(!showConfig)}
-            className="text-sm font-bold text-[rgb(var(--ms-info))] hover:text-[rgb(var(--ms-text-primary))] flex items-center gap-1 mb-3 transition-colors"
+            className="text-sm font-bold text-[rgb(var(--ms-moon))] hover:text-[rgb(var(--ms-text-primary))] flex items-center gap-1 mb-3 transition-colors"
           >
             {showConfig ? (
               <><ChevronUp className="w-4 h-4" /> Ẩn cấu hình</>

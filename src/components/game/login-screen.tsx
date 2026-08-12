@@ -231,7 +231,7 @@ function EmailTab({
             key={m}
             onClick={() => { setMode(m); setResetSent(false) }}
             className={`py-2 rounded-lg text-sm font-bold transition-all ${
-              mode === m ? 'bg-[rgb(var(--ms-info))] text-white' : 'text-[rgb(var(--ms-text-secondary))]'
+              mode === m ? 'bg-[rgb(var(--ms-moon))] text-[rgb(var(--ms-on-moon))]' : 'text-[rgb(var(--ms-text-secondary))]'
             }`}
           >
             {m === 'signin' ? 'Đăng Nhập' : 'Đăng Ký'}
@@ -280,7 +280,7 @@ function EmailTab({
         <button
           onClick={reset}
           disabled={busy || !email.trim()}
-          className="w-full text-xs text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-info))] transition-colors"
+          className="w-full text-xs text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-moon))] transition-colors"
         >
           {resetSent ? (
             <span className="inline-flex items-center justify-center gap-1">
@@ -347,7 +347,7 @@ function LinkTab({
         autoFocus
       />
       {error && <p className="text-sm text-[rgb(var(--ms-wolf))] font-bold">{error}</p>}
-      {info && <p className="text-sm text-[rgb(var(--ms-info))] font-bold">{info}</p>}
+      {info && <p className="text-sm text-[rgb(var(--ms-moon))] font-bold">{info}</p>}
       {sent && (
         <p className="flex items-center justify-center gap-1.5 text-sm text-[rgb(var(--ms-brand))] font-bold text-center">
           <Check className="w-4 h-4 shrink-0" />Đã gửi! Mở hộp thư và bấm vào liên kết để đăng nhập.
@@ -430,7 +430,7 @@ function PhoneTab({
           </GameButton>
           <button
             onClick={() => { setOtpSent(false); setCode('') }}
-            className="w-full text-xs text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-info))] transition-colors"
+            className="w-full text-xs text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-moon))] transition-colors"
           >
             Đổi số điện thoại
           </button>
