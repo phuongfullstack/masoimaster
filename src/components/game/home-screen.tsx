@@ -70,7 +70,7 @@ export function HomeScreen() {
             <div>
               <h1 className="text-2xl font-extrabold text-white">Ma Sói Realtime</h1>
               <p className="text-sm text-[rgb(var(--ms-text-secondary))]">
-                Chào <span className="font-bold text-[rgb(var(--ms-brand))]">{username}</span>!
+                Chào <span className="font-bold text-[rgb(var(--ms-moon))]">{username}</span>!
               </p>
             </div>
           </div>
@@ -145,7 +145,7 @@ export function HomeScreen() {
                   className={`p-3 rounded-2xl border-2 text-left transition-all duration-150 ${
                     hostMode === mode
                       ? 'bg-[rgb(var(--ms-wolf))]/20 border-[rgb(var(--ms-wolf))] text-white shadow-game-red scale-[1.02]'
-                      : 'bg-[rgb(var(--ms-surface))] border-white/[0.06] text-[rgb(var(--ms-text-secondary))] hover:border-white/10'
+                      : 'bg-[rgb(var(--ms-surface))] border-[rgb(var(--ms-border))] text-[rgb(var(--ms-text-secondary))] hover:border-[rgb(var(--ms-border-strong))]'
                   }`}
                 >
                   <div className="font-bold text-sm">{label}</div>
@@ -171,7 +171,7 @@ export function HomeScreen() {
                   className={`p-3 rounded-2xl border-2 text-left transition-all duration-150 ${
                     nightMode === mode
                       ? 'bg-[#A7C5EB]/15 border-[#A7C5EB] text-white'
-                      : 'bg-[rgb(var(--ms-surface))] border-white/[0.06] text-[rgb(var(--ms-text-secondary))] hover:border-white/10'
+                      : 'bg-[rgb(var(--ms-surface))] border-[rgb(var(--ms-border))] text-[rgb(var(--ms-text-secondary))] hover:border-[rgb(var(--ms-border-strong))]'
                   }`}
                 >
                   <div className="font-bold text-sm">{label}</div>
@@ -257,7 +257,7 @@ export function HomeScreen() {
 
           <GameButton onClick={handleCreate} size="lg" className="w-full">
             {/* cutout matches the button fill so the crest's eye/muzzle knockouts read */}
-            <RoleCrest role="werewolf" size={18} cutout="rgb(var(--ms-brand))" />
+            <RoleCrest role="werewolf" size={18} cutout="rgb(var(--ms-moon))" />
             Tạo Phòng
           </GameButton>
         </GameCard>

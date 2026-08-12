@@ -69,7 +69,7 @@ function PhaseHeader({
         <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', iconColor)}>
           {icon}
         </div>
-        <span className="text-white font-bold text-lg font-[family-name:var(--font-nunito)]">
+        <span className="text-white font-bold text-lg">
           {label}
         </span>
       </div>
@@ -116,7 +116,7 @@ function PlayerTarget({
         'flex items-center gap-3 p-3 rounded-2xl border-2 text-left transition-all duration-150 w-full',
         isSelected
           ? `${accentColor} border-transparent`
-          : 'bg-[rgb(var(--ms-card))] border-white/[0.06] hover:border-white/20',
+          : 'bg-[rgb(var(--ms-card))] border-[rgb(var(--ms-border))] hover:border-[rgb(var(--ms-border-strong))]',
         disabled && 'opacity-40 cursor-not-allowed',
       )}
     >
@@ -220,7 +220,7 @@ function RoleReveal() {
                   'w-16 h-24 rounded-xl border flex flex-col items-center justify-center gap-1',
                   mine
                     ? 'border-[rgb(var(--ms-moon))] shadow-[0_0_18px_rgba(167,197,235,0.35)]'
-                    : 'border-white/10',
+                    : 'border-[rgb(var(--ms-border))]',
                 )}
                 style={{ background: 'linear-gradient(155deg,#16141F,#211E30)' }}
               >
@@ -252,7 +252,7 @@ function RoleReveal() {
   // KHÔNG hiển thị sẵn. Khung thẻ trung tính duy nhất (không glow,
   // không màu phe), min-height cố định, nội dung chỉ rõ khi ĐÈ GIỮ.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4 font-game">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -382,11 +382,11 @@ function NightWaiting({ progress }: { progress?: { done: number; total: number }
             />
           </div>
         </div>
-        <div className="mt-4 p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/[0.06]">
+        <div className="mt-4 p-4 rounded-2xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))]">
           <p className="text-[rgb(var(--ms-text-muted))] text-xs uppercase tracking-wider mb-2 font-bold">
             Ghi chú riêng
           </p>
-          <div className="w-full h-16 rounded-xl bg-[rgb(var(--ms-bg-primary))] border border-white/[0.04]" />
+          <div className="w-full h-16 rounded-xl bg-[rgb(var(--ms-bg-primary))] border border-[rgb(var(--ms-border))]" />
         </div>
       </motion.div>
     </div>
@@ -549,7 +549,7 @@ function NightScreen() {
           {seerResult && (
             <motion.div variants={staggerItem}>
               <PressToReveal
-                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-[rgb(var(--ms-border))]"
                 hint={
                   <span className="text-[rgb(var(--ms-text-muted))] text-center">
                     <Lock className="w-6 h-6 mx-auto mb-2" />
@@ -561,7 +561,7 @@ function NightScreen() {
                   <div className="text-5xl mb-2">
                     {seerResult.isWolf ? '🐺' : '👤'}
                   </div>
-                  <div className="font-extrabold text-lg mt-3 font-[family-name:var(--font-nunito)] text-white">
+                  <div className="font-extrabold text-lg mt-3 text-white">
                     {seerResult.targetName} là {seerResult.isWolf ? 'MA SÓI' : 'DÂN LÀNG'}
                   </div>
                   <div className="text-[rgb(var(--ms-text-muted))] text-xs mt-1">Nhả tay để ẩn</div>
@@ -612,7 +612,7 @@ function NightScreen() {
           {/* Save potion — chế độ ĐỒNG THỜI: cứu MÙ */}
           {!bittenPlayer && room.nightMode === 'sim' && (
             <motion.div variants={staggerItem}>
-              <GameCard className="border-white/[0.06]">
+              <GameCard className="border-[rgb(var(--ms-border))]">
                 <p className="text-sm font-bold text-white/85 mb-1">
                   🌫️ Đêm đồng thời — bạn <span className="text-[rgb(var(--ms-wolf))]">không biết ai bị cắn</span>.
                 </p>
@@ -625,7 +625,7 @@ function NightScreen() {
                       key={p.userId}
                       player={p}
                       isSelected={saveTarget === p.userId}
-                      accentColor="bg-[rgb(var(--ms-brand))]/15 border-[rgb(var(--ms-brand))]"
+                      accentColor={NIGHT_ACCENT}
                       onClick={() => { setSaveTarget(p.userId); handleNightAction('witch_save', p.userId) }}
                     />
                   ))}
@@ -777,7 +777,7 @@ function NightScreen() {
           {wolfSeerResult && (
             <motion.div variants={staggerItem}>
               <PressToReveal
-                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-[rgb(var(--ms-border))]"
                 hint={
                   <span className="text-[rgb(var(--ms-text-muted))] text-center">
                     <Lock className="w-6 h-6 mx-auto mb-2" />
@@ -829,7 +829,7 @@ function NightScreen() {
           {detectiveResult && (
             <motion.div variants={staggerItem}>
               <PressToReveal
-                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-white/[0.06]"
+                className="p-5 rounded-2xl border-2 text-center bg-[rgb(var(--ms-card))] border-[rgb(var(--ms-border))]"
                 hint={
                   <span className="text-[rgb(var(--ms-text-muted))] text-center">
                     <Lock className="w-6 h-6 mx-auto mb-2" />
@@ -977,7 +977,7 @@ function NightScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-game-night p-4">
+    <div className="min-h-screen bg-game-night p-4 font-game">
       <div className="max-w-2xl mx-auto">
         <PhaseHeader
           icon={<Moon className="w-5 h-5 text-[rgb(var(--ms-seer))]" />}
@@ -1036,7 +1036,7 @@ function DayScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-game-day p-4 flex flex-col">
+    <div className="min-h-screen bg-game-day p-4 flex flex-col font-game">
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-4">
         <PhaseHeader
           icon={<Sun className="w-5 h-5 text-[rgb(var(--ms-guard))]" />}
@@ -1180,7 +1180,7 @@ function DayScreen() {
           </div>
 
           {/* Chat Input */}
-          <div className="flex gap-2 mt-3 pt-3 border-t border-white/[0.06]">
+          <div className="flex gap-2 mt-3 pt-3 border-t border-[rgb(var(--ms-border))]">
             <GameInput
               value={chatInput}
               onChange={e => setChatInput(e.target.value)}
@@ -1236,7 +1236,7 @@ function VotingScreen() {
   // ---- Vote Result ----
   if (voteResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+      <div className="min-h-screen flex items-center justify-center bg-game-primary p-4 font-game">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -1249,7 +1249,7 @@ function VotingScreen() {
                 <motion.div variants={characterBounce} initial="initial" animate="animate" className="flex justify-center">
                   <AlertTriangle className="w-16 h-16 text-[rgb(var(--ms-warning))]" />
                 </motion.div>
-                <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">Hoà Phiếu!</h2>
+                <h2 className="text-2xl font-extrabold text-white">Hoà Phiếu!</h2>
                 <p className="text-[rgb(var(--ms-text-secondary))]">Không ai bị loại. Đang chuyển sang đêm...</p>
               </div>
             ) : voteResult.eliminated ? (
@@ -1257,7 +1257,7 @@ function VotingScreen() {
                 <motion.div variants={deathFade} initial="initial" animate="animate" className="flex justify-center">
                   <CharacterIcon role="villager" size="xl" state="sad" glow />
                 </motion.div>
-                <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+                <h2 className="text-2xl font-extrabold text-white">
                   {voteResult.eliminated}
                 </h2>
                 <p className="text-[rgb(var(--ms-wolf))] font-bold">Đã bị loại bỏ!</p>
@@ -1286,7 +1286,7 @@ function VotingScreen() {
                     <Target className="w-8 h-8 text-[rgb(var(--ms-brand))]" />
                   </div>
                 </motion.div>
-                <h2 className="text-xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+                <h2 className="text-xl font-extrabold text-white">
                   Không có ai bị loại
                 </h2>
               </div>
@@ -1299,7 +1299,7 @@ function VotingScreen() {
 
   // ---- Voting UI ----
   return (
-    <div className="min-h-screen bg-game-primary p-4">
+    <div className="min-h-screen bg-game-primary p-4 font-game">
       <div className="max-w-2xl mx-auto space-y-4">
         <PhaseHeader
           icon={<Vote className="w-5 h-5 text-[rgb(var(--ms-wolf))]" />}
@@ -1322,7 +1322,7 @@ function VotingScreen() {
 
         {/* Dấu Con Quạ — CÔNG KHAI theo design: mọi người cân nhắc được */}
         {room.ravenMarkedId === userId && (
-          <div className="rounded-2xl bg-[rgb(var(--ms-card))] border border-white/10 px-4 py-2.5 text-sm font-bold text-white/85 text-center">
+          <div className="rounded-2xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))] px-4 py-2.5 text-sm font-bold text-white/85 text-center">
             🐦 Bạn bị Con Quạ đánh dấu — vào buổi vote này với 2 phiếu sẵn
           </div>
         )}
@@ -1358,7 +1358,7 @@ function VotingScreen() {
               'w-full p-3 rounded-2xl border-2 text-center transition-all duration-150 font-bold text-sm',
               !myVote
                 ? 'bg-[rgb(var(--ms-card-hover))] border-white/20 text-[rgb(var(--ms-text-primary))]'
-                : 'bg-[rgb(var(--ms-card))] border-white/[0.06] text-[rgb(var(--ms-text-muted))] hover:border-white/20',
+                : 'bg-[rgb(var(--ms-card))] border-[rgb(var(--ms-border))] text-[rgb(var(--ms-text-muted))] hover:border-[rgb(var(--ms-border-strong))]',
             )}
           >
             Bỏ phiếu trắng (Không chọn ai)
@@ -1381,7 +1381,7 @@ function HunterShoot() {
   const alivePlayers = room.players.filter(p => p.isAlive && p.userId !== userId)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-game-sunset p-4">
+    <div className="min-h-screen flex items-center justify-center bg-game-sunset p-4 font-game">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -1392,7 +1392,7 @@ function HunterShoot() {
           <motion.div variants={characterBounce} initial="initial" animate="animate" className="flex justify-center mb-4">
             <CharacterIcon role="hunter" size="xl" state="action" glow />
           </motion.div>
-          <h2 className="text-2xl font-extrabold text-white font-[family-name:var(--font-nunito)]">
+          <h2 className="text-2xl font-extrabold text-white">
             Thợ Săn Bắn!
           </h2>
           <p className="text-[rgb(var(--ms-text-secondary))] mt-2 text-sm">
@@ -1446,7 +1446,7 @@ function GameOverScreen() {
   const accent = winMeta.accent
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4">
+    <div className="min-h-screen flex items-center justify-center bg-game-primary p-4 font-game">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1473,7 +1473,7 @@ function GameOverScreen() {
               glow
             />
           </motion.div>
-          <h1 className="text-3xl font-extrabold font-[family-name:var(--font-nunito)]" style={{ color: accent }}>
+          <h1 className="text-3xl font-extrabold" style={{ color: accent }}>
             {winMeta.heading}
           </h1>
           <p className="text-[rgb(var(--ms-text-secondary))] mt-2 text-sm">

@@ -49,7 +49,7 @@ export function HostPanel({
       <button
         aria-label="Bảng điều khiển quản trò"
         onClick={() => setOpenAndReset(true)}
-        className="fixed bottom-5 left-4 z-40 w-12 h-12 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/10 shadow-game-sm flex items-center justify-center text-[#ECC94B] active:scale-95 transition-transform"
+        className="fixed bottom-5 left-4 z-40 w-12 h-12 rounded-2xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))] shadow-game-sm flex items-center justify-center text-[#ECC94B] active:scale-95 transition-transform"
       >
         <Settings className="w-5 h-5" />
       </button>

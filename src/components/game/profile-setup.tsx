@@ -52,7 +52,7 @@ export function ProfileSetup() {
     <div className="min-h-screen flex items-center justify-center bg-game-primary p-4 font-game relative overflow-hidden">
       <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full bg-[rgb(var(--ms-moon))]/20 blur-3xl pointer-events-none" />
       <div className="w-full max-w-md relative z-10">
-        <div className="rounded-3xl bg-[rgb(var(--ms-card))] border border-white/[0.06] shadow-game-lg p-8 text-center">
+        <div className="rounded-3xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))] shadow-game-lg p-8 text-center">
           <div className="animate-bounce-in mb-4 flex justify-center">
             <CharacterIcon role="seer" size="hero" animated />
           </div>

@@ -20,8 +20,8 @@ const GameInput = forwardRef<HTMLInputElement, GameInputProps>(
           ref={ref}
           className={cn(
             'w-full rounded-2xl bg-[rgb(var(--ms-card))] text-[rgb(var(--ms-text-primary))] placeholder:text-[rgb(var(--ms-text-muted))]',
-            'border-2 border-white/[0.08] shadow-game-sm',
-            'focus:border-[rgb(var(--ms-brand))] focus:outline-none focus:shadow-[0_4px_0_0_rgb(var(--ms-brand-dark))]',
+            'border border-[rgb(var(--ms-border))]',
+            'focus:border-[rgb(var(--ms-moon))] focus:outline-none',
             'transition-all duration-150',
             'font-medium',
             icon ? 'pl-11 pr-4' : 'px-4',

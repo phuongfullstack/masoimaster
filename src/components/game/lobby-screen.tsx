@@ -74,7 +74,7 @@ export function LobbyScreen() {
                 </span>
                 <button
                   onClick={handleCopyCode}
-                  className="text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-brand))] transition-colors"
+                  className="text-[rgb(var(--ms-text-muted))] hover:text-[rgb(var(--ms-moon))] transition-colors"
                 >
                   {copied ? (
                     <CheckCircle2 className="w-5 h-5 text-[rgb(var(--ms-brand))]" />
@@ -140,7 +140,7 @@ export function LobbyScreen() {
 
           {/* Host: gợi ý chuẩn theo số người + chỉnh tay */}
           {isHost && (
-            <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-3">
+            <div className="mt-3 pt-3 border-t border-[rgb(var(--ms-border))] space-y-3">
               <div className="flex gap-2">
                 <GameButton
                   size="sm"

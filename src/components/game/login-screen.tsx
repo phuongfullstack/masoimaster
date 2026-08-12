@@ -103,7 +103,7 @@ export function LoginScreen() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="rounded-3xl bg-[rgb(var(--ms-card))] border border-white/[0.06] shadow-game-lg p-8 text-center">
+        <div className="rounded-3xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))] shadow-game-lg p-8 text-center">
           {/* Hero */}
           <div className="animate-bounce-in mb-4 flex justify-center">
             <CharacterIcon role="werewolf" size="hero" animated />
@@ -123,7 +123,7 @@ export function LoginScreen() {
                 onClick={() => { setTab(t.id); setError(''); setInfo('') }}
                 className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
                   tab === t.id
-                    ? 'bg-[rgb(var(--ms-brand))] text-white shadow-game-green'
+                    ? 'bg-[rgb(var(--ms-moon))] text-[rgb(var(--ms-on-moon))] shadow-game-blue'
                     : 'text-[rgb(var(--ms-text-secondary))] hover:text-white'
                 }`}
               >

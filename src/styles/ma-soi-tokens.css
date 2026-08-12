@@ -6,12 +6,19 @@
 
 @layer base {
   :root {
-    /* ---- Brand — dark-fantasy theo design canvas ---- */
-    --ms-brand: 56 161 105;         /* #38A169 — faction green của canvas */
+    /* ---- Accent chủ đạo — Ánh trăng (#A7C5EB) ----
+       Canvas dùng moonlight cho MỌI hành động chính: nút primary, viền focus,
+       target đang chọn, link. Nút primary = nền moonlight + chữ tối (--ms-on-moon). */
+    --ms-moon: 167 197 235;         /* #A7C5EB */
+    --ms-moon-hover: 143 179 222;   /* #8FB3DE */
+    --ms-on-moon: 15 14 23;         /* #0F0E17 — chữ trên nền moonlight */
+
+    /* ---- Brand — XANH LÁ CHỈ MANG NGHĨA "THÀNH CÔNG" ----
+       Trong canvas #38A169 chỉ xuất hiện ở: chấm online, "✓ cân bằng",
+       "✅ đã hành động", thẻ "đêm bình yên". KHÔNG dùng làm nút CTA. */
+    --ms-brand: 56 161 105;         /* #38A169 */
     --ms-brand-dark: 39 125 80;     /* #277D50 */
     --ms-brand-rgb: 56, 161, 105;
-    /* Ánh trăng — accent chủ đạo của canvas (#A7C5EB) */
-    --ms-moon: 167 197 235;
 
     /* ---- Role Accent Colors ---- */
     --ms-wolf: 255 75 75;           /* #ff4b4b */
@@ -61,17 +68,21 @@
     --ms-warning: 255 200 0;
     --ms-warning-dark: 245 158 11;
 
-    /* ---- Surfaces — palette canvas: nền #0F0E17, thẻ #16141F→#211E30 ---- */
+    /* ---- Surfaces — palette canvas ---- */
     --ms-bg-primary: 15 14 23;      /* #0F0E17 */
     --ms-bg-secondary: 22 20 31;    /* #16141F */
-    --ms-card: 26 24 38;            /* #1A1826 */
-    --ms-card-hover: 33 30 48;      /* #211E30 */
-    --ms-surface: 26 24 38;
-    --ms-surface-hover: 43 40 64;   /* #2B2840 */
+    --ms-card: 26 24 37;            /* #1A1825 */
+    --ms-card-hover: 35 33 54;      /* #232136 */
+    --ms-surface: 26 24 37;         /* #1A1825 */
+    --ms-surface-hover: 35 33 54;   /* #232136 */
+
+    /* ---- Borders — canvas dùng màu đặc, không phải white/alpha ---- */
+    --ms-border: 46 43 63;          /* #2E2B3F — viền mặc định card/button */
+    --ms-border-strong: 59 58 82;   /* #3B3A52 — viền hover */
 
     /* ---- Text ---- */
-    --ms-text-primary: 255 255 255;
-    --ms-text-secondary: 160 163 189; /* #a0a3bd */
+    --ms-text-primary: 255 255 254;  /* #FFFFFE */
+    --ms-text-secondary: 148 161 178; /* #94A1B2 */
     --ms-text-muted: 107 111 141;    /* #6b6f8d */
 
     /* ---- Shadows ---- */
@@ -131,11 +142,12 @@
 }
 .shadow-game-red:active { transform: scale(0.985); box-shadow: 0 0 10px rgb(var(--ms-wolf) / 0.3); }
 
+/* Glow của nút primary theo canvas: 0 0 24px -6px rgba(167,197,235,.7) */
 .shadow-game-blue {
-  box-shadow: 0 0 18px rgb(var(--ms-moon) / 0.3);
+  box-shadow: 0 0 24px -6px rgb(var(--ms-moon) / 0.7);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.shadow-game-blue:active { transform: scale(0.985); box-shadow: 0 0 10px rgb(var(--ms-moon) / 0.25); }
+.shadow-game-blue:active { transform: scale(0.985); box-shadow: 0 0 14px -6px rgb(var(--ms-moon) / 0.6); }
 
 /* Background gradient — phase backgrounds theo canvas */
 .bg-game-primary {

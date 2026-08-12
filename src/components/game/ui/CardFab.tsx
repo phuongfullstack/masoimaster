@@ -37,7 +37,7 @@ export function CardFab({ role, packmates = [], extraNote }: CardFabProps) {
       {/* FAB */}
       <button
         aria-label="Đè giữ để xem thẻ vai của bạn"
-        className="fixed bottom-5 right-4 z-40 w-12 h-12 rounded-2xl bg-[rgb(var(--ms-card))] border border-white/10 shadow-game-sm text-xl flex items-center justify-center select-none active:scale-95 transition-transform"
+        className="fixed bottom-5 right-4 z-40 w-12 h-12 rounded-2xl bg-[rgb(var(--ms-card))] border border-[rgb(var(--ms-border))] shadow-game-sm text-xl flex items-center justify-center select-none active:scale-95 transition-transform"
         style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
         onPointerDown={press}
         onPointerUp={release}

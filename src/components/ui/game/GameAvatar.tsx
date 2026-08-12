@@ -46,7 +46,7 @@ export function GameAvatar({
         className={cn(
           'rounded-full flex items-center justify-center overflow-hidden transition-all duration-150',
           'border-2',
-          isSelected ? 'border-[rgb(var(--ms-brand))] shadow-game-green scale-110' : 'border-white/10',
+          isSelected ? 'border-[rgb(var(--ms-moon))] shadow-game-blue scale-110' : 'border-[rgb(var(--ms-border))]',
           isHost && 'ring-2 ring-[rgb(var(--ms-white-wolf))] ring-offset-2 ring-offset-[rgb(var(--ms-bg-primary))]',
         )}
         style={{ width: px, height: px, backgroundColor: 'rgb(var(--ms-card))' }}

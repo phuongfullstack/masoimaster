@@ -13,17 +13,14 @@ export function GameCard({ children, glow, hover = false, className, style, ...p
   return (
     <div
       className={cn(
-        // Canvas card: gradient tối 155deg + viền #353251 mờ, glow mềm.
-        'rounded-2xl border shadow-game-sm p-5',
-        hover && 'hover:brightness-110 transition-[filter] duration-150 cursor-pointer',
+        // Canvas: thẻ public là nền phẳng #1A1825 + viền đặc #2E2B3F, bo 18px.
+        // (Gradient + viền #353251 là treatment riêng của thẻ vai trò bí mật.)
+        'rounded-[18px] border border-[rgb(var(--ms-border))] bg-[rgb(var(--ms-card))] shadow-game-sm p-5',
+        hover && 'hover:bg-[rgb(var(--ms-card-hover))] hover:border-[rgb(var(--ms-border-strong))] transition-colors duration-150 cursor-pointer',
         glow && `glow-${glow}`,
         className,
       )}
-      style={{
-        background: 'linear-gradient(155deg, rgb(var(--ms-bg-secondary)), rgb(var(--ms-card-hover)))',
-        borderColor: 'rgba(53, 50, 81, 0.5)',
-        ...style,
-      }}
+      style={style}
       {...props}
     >
       {children}
