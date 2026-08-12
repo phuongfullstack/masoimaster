@@ -110,21 +110,22 @@ matches/{code}-{ts}       lịch sử trận bất biến, ghi 1 lần lúc game
       (Console → Firestore → TTL) — chạy song song với lazy cleanup, vô hại.
 
 ### Session 2026-08-12 — roadmap tiếp theo (ưu tiên cao → thấp)
-- [x] **Doctor** ✅ DONE (commit `6fff4ad` + earlier server-side commits) —
-      9/18 vai implemented. Doctor heal = guard protect nhưng không last-target
-      rule, không được tự chữa.
-- [ ] **Implement 9 vai planned còn lại** (theo `docs/SCENARIOS.md`): tiếp theo
-      `detective` (compare 2 — biết cùng phe hay không), `medium` (listen dead
-      chat), `raven` (mark +2 vote), `chief` (vote ×2), `elder` (tank 1 bite),
-      `jester` (win when voted out), `alpha_wolf` (alpha tiebreak),
-      `wolf_seer` (soi phe), `cursed_wolf` (curse 1/ván). Mỗi vai cần:
-      `implemented: true` + server logic + UI branch + night order.
-- [ ] **Host Control Panel** — đã có commit `15a8d17` "Design Phase 6: Host
-      Panel + master log + mid-game interventions" — verify có hoạt động không.
-- [ ] **Personal Report (5 variants)** — design-S2 có báo cáo cá nhân mỗi
-      người (saved/cursed/elder/poison/none). Hiện chỉ có death list công khai.
-- [ ] **Dawn Transition** — cinematic 2-3s giữa night_resolve → day.
-- [ ] **Wolf/dead chat tách subcollection** — hiện UI filter, không secure.
+- [x] **18/18 vai trò implemented** ✅ — tất cả 10 vai planned (doctor,
+      detective, medium, raven, chief, elder, jester, alpha_wolf, wolf_seer,
+      cursed_wolf) đều đã `implemented: true` + server logic + UI + night order.
+- [x] **Host Control Panel** ✅ — `src/components/game/ui/HostPanel.tsx`,
+      mounted tại `game-screen.tsx:1568` (host-only, hiện khi playing).
+- [x] **Personal Report** ✅ — `myNightFx` 4 variants (saved/elder/cursed/poison)
+      tại `game-screen.tsx:1070`. Anti-reveal "no death" card cũng có.
+- [x] **Anti-peek 11/11 compliant** ✅ — seer color, button labels, decoy busy.
+- [x] **Production build verified** ✅ — 20 pages, 15 API routes, PASS.
+
+**🔴 Còn tồn đọng:**
+- [ ] **Production deploy** — 20+ commits chưa deploy Vercel. Cần user yêu cầu.
+- [ ] **E2E test 10 vai mới** — test suite chỉ cover vai cũ. Cần test interactions.
+- [ ] **Wolf/dead chat security** — hiện lọc UI, Firestore rules cho all đọc.
+- [ ] **Dawn Transition cinematic** — minor UX gap, `night_resolve` show NightScreen.
+- [ ] **Rotate service account key** `43449d76...` — từng bị lộ.
 
 ## 7. Lệnh thường dùng
 
