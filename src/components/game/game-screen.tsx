@@ -394,6 +394,68 @@ function NightWaiting({ progress }: { progress?: { done: number; total: number }
 }
 
 // ============================================================
+// Dawn Screen — cinematic transition (night_resolve phase, 3s)
+// Gradient from night → day, sun rising. No info leaked.
+// ============================================================
+function DawnScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center overflow-hidden relative">
+      {/* Animated gradient: night → dawn → day over 3s */}
+      <motion.div
+        className="absolute inset-0"
+        initial={{ background: 'linear-gradient(180deg, #0F0E17 0%, #1A1A2E 100%)' }}
+        animate={{
+          background: [
+            'linear-gradient(180deg, #0F0E17 0%, #1A1A2E 100%)',
+            'linear-gradient(180deg, #2D2B55 0%, #4A3B6B 50%, #6B5B8A 100%)',
+            'linear-gradient(180deg, #4A3B6B 0%, #6B5B8A 40%, #8FB3DE 100%)',
+          ],
+        }}
+        transition={{ duration: 2.8, ease: 'easeInOut', times: [0, 0.5, 1] }}
+      />
+      {/* Stars fading out */}
+      <motion.div
+        className="absolute inset-0"
+        initial={{ opacity: 0.6 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 2, ease: 'easeOut' }}
+        style={{
+          backgroundImage: 'radial-gradient(1px 1px at 20% 15%, rgba(255,255,255,.6), transparent), radial-gradient(1px 1px at 60% 8%, rgba(255,255,255,.4), transparent), radial-gradient(1.2px 1.2px at 80% 25%, rgba(255,255,255,.5), transparent)',
+        }}
+      />
+      {/* Sun rising from bottom */}
+      <motion.div
+        className="absolute"
+        initial={{ y: 200, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 2.5, ease: 'easeOut', delay: 0.3 }}
+      >
+        <motion.div
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-24 h-24 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, #ECC94B 0%, #F6AD55 60%, transparent 100%)',
+            filter: 'drop-shadow(0 0 40px rgba(236,201,75,.6))',
+          }}
+        />
+      </motion.div>
+      {/* Text */}
+      <motion.div
+        className="relative z-10 text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.8 }}
+      >
+        <p className="text-white text-xl font-bold font-[family-name:var(--font-nunito)]">
+          🌅 Thiên sáng rồi...
+        </p>
+      </motion.div>
+    </div>
+  )
+}
+
+// ============================================================
 // Night Screen (per role)
 // ============================================================
 function NightScreen() {
@@ -1572,8 +1634,11 @@ export function GameScreen() {
   // Hunter Shoot
   if (hunterTriggered && myRole === 'hunter') return <>{fab}<HunterShoot /></>
 
+  // Night resolve = dawn cinematic transition
+  if (phase === 'night_resolve') return <>{fab}<DawnScreen /></>
+
   // Night
-  if (phase === 'night' || phase === 'night_resolve') return <>{fab}<NightScreen /></>
+  if (phase === 'night') return <>{fab}<NightScreen /></>
 
   // Voting
   if (phase === 'voting' || phase === 'vote_result') return <>{fab}<VotingScreen /></>
