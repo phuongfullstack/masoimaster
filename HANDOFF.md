@@ -119,18 +119,19 @@ matches/{code}-{ts}       lịch sử trận bất biến, ghi 1 lần lúc game
       tại `game-screen.tsx:1070`. Anti-reveal "no death" card cũng có.
 - [x] **Anti-peek 11/11 compliant** ✅ — seer color, button labels, decoy busy.
 - [x] **Production build verified** ✅ — 20 pages, 15 API routes, PASS.
-- [x] **Test suite** ✅ — **59/59 PASS**:
+- [x] **Test suite** ✅ — **72/72 PASS**:
       - `test/vote-logic-test.ts` 31/31 (alpha tiebreak, elder shield, cursed
         convert, guard save fx, poison fx, sim vs seq night, config presets)
       - `test/game-sim.cjs` 28/28 (8-bot full game: role deal, packmates,
         seer check, witch save+poison, hunter shoot, vote, village win,
         archive+stats, master log rules)
+      - `test/new-roles-sim.cjs` 13/13 (6-bot game với doctor/detective/raven:
+        night order đúng, API night actions PASS, resolve → day OK)
 
 **🔴 Còn tồn đọng:**
 - [ ] **Production deploy** — 25+ commits chưa deploy Vercel. Cần user yêu cầu.
-- [ ] **E2E test integration vai mới** — vote-logic-test cover LOGIC 15 vai,
-      game-sim cover INTEGRATION 8 vai cũ. Gap: integration test cho
-      doctor/detective/medium/raven/chief/elder/jester chưa có full bot sim.
+- [ ] **Integration test vai còn lại** — medium/chief/elder/jester/alpha_wolf/
+      wolf_seer/cursed_wolf chưa có full bot sim (logic tested trong vote-logic).
 - [ ] **Wolf/dead chat security** — hiện lọc UI, Firestore rules cho all đọc.
 - [ ] **Dawn Transition cinematic** — minor UX gap, `night_resolve` show NightScreen.
 - [ ] **Rotate service account key** `43449d76...` — từng bị lộ.
