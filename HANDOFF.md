@@ -129,12 +129,15 @@ matches/{code}-{ts}       lịch sử trận bất biến, ghi 1 lần lúc game
         night order đúng, API night actions PASS, resolve → day OK)
 
 **🔴 Còn tồn đọng:**
-- [ ] **Production deploy** — 25+ commits chưa deploy Vercel. Cần user yêu cầu.
-- [ ] **Integration test vai còn lại** — medium/chief/elder/jester/alpha_wolf/
-      wolf_seer/cursed_wolf chưa có full bot sim (logic tested trong vote-logic).
-- [ ] **Wolf/dead chat security** — hiện lọc UI, Firestore rules cho all đọc.
+- [x] **Production deploy** ✅ — deployed commit `5ef602f` lên Vercel (2026-08-12).
+- [x] **Wolf/dead chat security** ✅ — đã tách subcollection: `wolfChat` (rules:
+      chỉ sói đọc), `deadChat` (rules: chỉ người chết đọc), `log` (rules: chỉ host).
+      Client subscribe riêng từng collection. KHÔNG còn lọc UI.
+- [ ] **Integration test 7 vai còn lại** — medium/chief/elder/jester/alpha_wolf/
+      wolf_seer/cursed_wolf logic tested trong vote-logic (31/31), nhưng chưa có
+      full bot sim. Nice-to-have, không chặn production.
 - [ ] **Dawn Transition cinematic** — minor UX gap, `night_resolve` show NightScreen.
-- [ ] **Rotate service account key** `43449d76...` — từng bị lộ.
+- [ ] **Rotate service account key** `43449d76...` — từng bị lộ, cần user gen key mới.
 
 ## 7. Lệnh thường dùng
 
