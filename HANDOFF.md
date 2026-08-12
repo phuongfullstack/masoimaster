@@ -136,7 +136,9 @@ matches/{code}-{ts}       lịch sử trận bất biến, ghi 1 lần lúc game
 - [ ] **Integration test 7 vai còn lại** — medium/chief/elder/jester/alpha_wolf/
       wolf_seer/cursed_wolf logic tested trong vote-logic (31/31), nhưng chưa có
       full bot sim. Nice-to-have, không chặn production.
-- [ ] **Dawn Transition cinematic** — minor UX gap, `night_resolve` show NightScreen.
+- [x] **Dawn Transition cinematic** ✅ — `DawnScreen` component (commit `f71e522`):
+      animated gradient night→day, sun rise, stars fade, 2.8s. Routes từ
+      `night_resolve` → DawnScreen (trước đó show NightScreen).
 - [ ] **Rotate service account key** `43449d76...` — từng bị lộ, cần user gen key mới.
 
 ## 7. Lệnh thường dùng
